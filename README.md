@@ -42,4 +42,5 @@ Estoy trabajando en varias mejoras y nuevas funcionalidades para la aplicación.
 
 Estoy abierto a contribuciones de la comunidad.
 
+![Screenshot 1](./client/public/screenshots/1.png)
 
