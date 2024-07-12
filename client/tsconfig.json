@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": false, 
+    "strict": false,  // Desactiva todas las opciones estrictas
     "forceConsistentCasingInFileNames": true,
-    "noEmit": false,
-    "noEmitOnError": false,
+    "noEmit": true,  // Asegúrate de que no se genere salida durante el build
+    "noEmitOnError": false,  // Ignora errores de compilación
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "node",
@@ -16,10 +16,10 @@
     "jsx": "preserve",
     "incremental": true,
     "baseUrl": ".",
-    "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noUnusedLocals": false,  // Ignora errores por variables no usadas
+    "noUnusedParameters": false,  // Ignora errores por parámetros no usados
+    "noImplicitAny": false,  // Permite el tipo 'any' implícito
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }
-
