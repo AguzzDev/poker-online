@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Track */
+.rangeInput {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  cursor: pointer;
+  outline: none;
+  height: 15px;
+  background: hsl(272, 56%, 74%, 5%);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Track: webkit browsers */
+.rangeInput::-webkit-slider-runnable-track {
+  height: 15px;
+  background: hsl(272, 56%, 74%, 5%);
+  border-radius: 16px;
+}
+
+/* Track: Mozilla Firefox */
+.rangeInput::-moz-range-track {
+  height: 15px;
+  background: hsl(272, 56%, 74%, 5%);
+  border-radius: 16px;
+}
+
+/* Thumb: webkit */
+.rangeInput::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 15px;
+  width: 15px;
+  background-color: #ab65ed;
+  border-radius: 50%;
+}
+/* Thumb: Firefox */
+.rangeInput::-moz-range-thumb {
+  height: 15px;
+  width: 15px;
+  background-color: #ab65ed;
+  border-radius: 50%;
+}
+
+/* Thumb: webkit */
+.rangeInput::-webkit-slider-thumb {
+  box-shadow: -407px 0 0 400px #ab65ed;
+}
+
+/* Thumb: Firefox */
+.rangeInput::-moz-range-thumb {
+  box-shadow: -407px 0 0 400px #ab65ed;
+}
+
+@font-face {
+  font-family: "poker1";
+  src: url("/fonts/font1/Quicksand-Regular.ttf");
+}
+@font-face {
+  font-family: "poker2";
+  src: url("/fonts/font2/Askhar-Regular.ttf");
+}
+
+@layer components {
+  * {
+    @apply m-0 p-0 box-border;
+  }
+  .color1 {
+    @apply bg-primary;
+  }
+  .color2 {
+    @apply bg-secondary;
+  }
+  .gradient-game {
+    @apply bg-gradient-to-tl from-[#0e0e15] from-25% to-[#2b2150];
+  }
+  .gradient1-circle {
+    @apply bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#2b2150] to-[#0e0e15] to-70%;
+  }
+  .gradient1-b {
+    @apply bg-gradient-to-b from-[#13141f] via-[#2b2150] via-40% to-[#13141f];
+  }
+  .gradient1-r {
+    @apply bg-gradient-to-r from-[#13141f] from-25% via-[#2b2150] to-[#13141f] to-75%;
+  }
+  .gradient-desk {
+    @apply bg-gradient-to-tl from-[#15192c] to-[#2f2f66];
+  }
+  .border1 {
+    @apply border-borderWidth border-borderColor1;
+  }
+  body {
+    @apply w-full min-h-screen font-poker1 select-none color1 bg-background text-text overflow-y-hidden;
+  }
+  input {
+    @apply bg-transparent outline-none w-full;
+  }
+  h1 {
+    @apply text-xl font-bold;
+  }
+  h2 {
+    @apply text-xl;
+  }
+  p {
+    @apply text-sm;
+  }
+  .buttonStyle1 {
+    @apply w-full bg-purple1 font-bold text-white p-2;
+  }
+}
