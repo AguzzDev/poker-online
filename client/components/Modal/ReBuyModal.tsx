@@ -10,7 +10,7 @@ export const ReBuyModal = () => {
   const [disabled, setDisabled] = useState<boolean>(false);
   const router = useRouter();
 
-  const { setShowReBuyMenu, rebuyChips,reBuy } = useGame();
+  const { setShowReBuyMenu, rebuyChips, reBuy } = useGame();
 
   return (
     <div className="absolute top-0 left-0 w-screen h-screen flex justify-center items-center">
