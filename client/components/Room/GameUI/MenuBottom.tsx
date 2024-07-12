@@ -130,8 +130,8 @@ export const MenuBottom = () => {
   const { status, bidToPay, players, maxPlayerRoom, blind } = room.desk;
 
   return (
-    <section className="flex justify-between items-end w-full h-full">
-      <div className="flex flex-col">
+    <section className="flex justify-between w-full">
+      <div className="flex flex-col justify-end">
         <h2>{room.name}</h2>
         <p>Blind: {blind}</p>
         <p>Buy in: {formatPrice(room.buyIn)}</p>

@@ -31,12 +31,12 @@ export const Game = ({ showChat, setShowChat }) => {
           showReBuyMenu ? "opacity-25" : null
         } flex flex-col mx-4 w-full`}
       >
-        <TopComponent showChat={showChat} setShowChat={setShowChat} />
-        <section className="relative flex flex-col w-full h-full mb-5">
+        <section className="h-[65vh] relative">
+          <TopComponent showChat={showChat} setShowChat={setShowChat} />
           <p className="absolute top-0 left-0">{roomMessage}</p>
 
-          <div className="relative min-h-[56%] md:min-h-[55%] w-[85%] md:w-[70%] bg-purple2 mt-14 border-borderWidth border-purple3 mx-auto rounded-full flex items-center justify-center">
-            <div className="relative w-[91%] h-[81%] shadow-xl rounded-full gradient-desk border-borderWidth border-purple4">
+          <div className="relative min-h-[56%] md:min-h-[65%] w-[85%] md:w-[70%] bg-purple2 mt-10 border-borderWidth border-purple3 mx-auto rounded-full flex items-center justify-center">
+            <div className="relative w-[91%] py-20 shadow-xl rounded-full gradient-desk border-borderWidth border-purple4">
               <div className="absolute w-full -top-12">
                 <div className="w-1/4 py-2 mx-auto text-center bg-accent rounded-2xl border border-purple4">
                   <h4>
@@ -99,7 +99,9 @@ export const Game = ({ showChat, setShowChat }) => {
               </div>
             </div>
           </div>
+        </section>
 
+        <section className="flex items-end h-[25vh] pb-5">
           <MenuBottom />
         </section>
       </section>

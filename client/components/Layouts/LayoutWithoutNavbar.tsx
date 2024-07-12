@@ -12,7 +12,7 @@ export const LayoutWithoutNavbar = ({ title, children }: LayoutProps) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <section className="h-screen">
+      <>
         <section className="flex flex-col max-w-6xl mx-auto h-full">
           <section className="px-5 md:px-0 h-3/4 bg-red-300">
             {children}
@@ -21,7 +21,7 @@ export const LayoutWithoutNavbar = ({ title, children }: LayoutProps) => {
             Develop by AguzzDev
           </footer>
         </section>
-      </section>
+      </>
     </>
   );
 };

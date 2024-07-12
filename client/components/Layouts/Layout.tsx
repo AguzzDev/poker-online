@@ -13,15 +13,15 @@ export const Layout = ({ title, children }: LayoutProps) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <section className="h-screen">
+      <>
         <Navbar />
         <section className="flex flex-col max-w-6xl mx-auto h-full">
-          <section className="px-5 md:px-0 h-3/4 mt-20">{children}</section>
+          <section className="px-5 md:px-0 h-3/4">{children}</section>
           <footer className="flex items-end h-full pb-3">
             Develop by AguzzDev
           </footer>
         </section>
-      </section>
+      </>
     </>
   );
 };

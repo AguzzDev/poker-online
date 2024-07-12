@@ -32,13 +32,13 @@ const Room = ({ data }: { data: RoomInterface }) => {
 
   if (room) {
     body = (
-      <section className="h-screen">
+      <>
         <Navbar />
-        <section className="flex h-full pt-10">
+        <section className="flex h-[90vh]">
           <Game showChat={showChat} setShowChat={setShowChat} />
           {showChat ? <Chat /> : null}
         </section>
-      </section>
+      </>
     );
   }
 
