@@ -1,7 +1,7 @@
 import axios from "axios";
 import { parseCookies } from "nookies";
 
-const URL = "http://localhost:4000";
+const URL = process.env.NEXT_PUBLIC_API_URL;
 
 const API_DEFAULT = axios.create({ baseURL: URL });
 
@@ -20,7 +20,8 @@ export const fetchRoom = (id) => API_DEFAULT.get(`/room/${id}`);
 
 //AUTH
 export const fetchLogin = (values) => API_DEFAULT.post("/auth/login", values);
-export const fetchRegister = (values) => API_DEFAULT.post("/auth/register", values);
+export const fetchRegister = (values) =>
+  API_DEFAULT.post("/auth/register", values);
 
 //USER
 export const fetchUpdateUser = ({ id, values }) =>
