@@ -1,7 +1,7 @@
 import { IconXs } from "components/Icon"
 import { Layout } from "components/Layouts/Layout"
 import { ModalChangePicture } from "components/Modal/ModalChangePicture"
-import { useUser } from "context/UserContext"
+import { useUser } from "context/User/UserProvider"
 import { NextPage } from "next"
 import Image from "next/image"
 import { MdEdit } from "react-icons/md"
