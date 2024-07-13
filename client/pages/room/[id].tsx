@@ -6,7 +6,6 @@ import { GetStaticProps } from "next";
 import { GetStaticPaths } from "next";
 import { useEffect } from "react";
 import { useState } from "react";
-import { API_URL } from "utils/apiUrl";
 import { useGame } from "context/Game/GameProvider";
 import { useUser } from "context/User/UserProvider";
 import { PlayerModeEnum, RoomInterface } from "models";
@@ -46,7 +45,7 @@ const Room = ({ data }: { data: RoomInterface }) => {
 };
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const { data } = await axios.get(`${API_URL}/room`);
+  const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/room`);
 
   const paths = data.map(({ _id }) => ({
     params: {
@@ -61,7 +60,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }: any) => {
-  const { data } = await axios.get(`${API_URL}/room/${params.id}`);
+  const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/room/${params.id}`);
 
   return {
     props: {

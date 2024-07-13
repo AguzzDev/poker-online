@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { parseCookies, setCookie } from "nookies";
 
-import { SOCKET_URL } from "config/default";
 import EVENTS from "utils/events";
 import { useUser } from "context/User/UserProvider";
 import * as API from "services";
@@ -142,7 +141,7 @@ const GameProvider = ({ children }: any) => {
 
   useEffect(() => {
     if (!socket && user) {
-      const newSocket = io(SOCKET_URL, {
+      const newSocket = io(process.env.NEXT_PUBLIC_API_URL, {
         reconnection: false,
         auth: {
           token: user.accessToken || "",

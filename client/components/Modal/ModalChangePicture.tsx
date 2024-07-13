@@ -5,7 +5,6 @@ import { MdEdit } from "react-icons/md";
 import { Modal } from "./Modal";
 import { getAvatars } from "utils/getAvatars";
 import axios from "axios";
-import { API_URL } from "utils/apiUrl";
 import { useUser } from "context/User/UserProvider";
 import { useRouter } from "next/router";
 
@@ -19,12 +18,12 @@ export const ModalChangePicture = () => {
     if (image) {
       const { data } = await axios
         .create({
-          baseURL: API_URL,
+          baseURL: process.env.NEXT_PUBLIC_API_URL,
           headers: {
             token: `Bearer ${user?.accessToken}`,
           },
         })
-        .put(`${API_URL}/user/changePicture`, { image });
+        .put(`/user/changePicture`, { image });
 
       if (data) {
         localStorage.setItem("user", JSON.stringify(data));
