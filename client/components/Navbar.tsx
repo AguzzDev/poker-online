@@ -9,8 +9,8 @@ export const Navbar = () => {
         <h1 className="my-auto">Poker Online</h1>
 
         <div>
-          <h2>{user.username}</h2>
-          <p className="text-xs">{user.chips} chips</p>
+          <h2>{user?.username}</h2>
+          <p className="text-xs">{user?.chips} chips</p>
         </div>
       </div>
     </section>
