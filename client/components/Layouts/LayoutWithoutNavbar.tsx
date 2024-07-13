@@ -14,7 +14,7 @@ export const LayoutWithoutNavbar = ({ title, children }: LayoutProps) => {
 
       <>
         <section className="flex flex-col max-w-6xl mx-auto h-full">
-          <section className="px-5 md:px-0 h-3/4 bg-red-300">
+          <section className="px-5 md:px-0 h-3/4">
             {children}
           </section>
           <footer className="flex items-end h-full pb-3 z-50">
