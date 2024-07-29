@@ -35,7 +35,7 @@ export const ModalChangePicture = () => {
   return (
     <div>
       <Modal
-        button={
+        trigger={
           <div
             className="w-32 h-32 flex items-center justify-center opacity-0 group-hover:opacity-100"
             style={{
@@ -70,7 +70,7 @@ export const ModalChangePicture = () => {
               className="bg-black text-white font-bold w-full text-center py-2 rounded-md"
               onClick={submit}
             >
-              Guardar
+              Save
             </button>
           </section>
         }

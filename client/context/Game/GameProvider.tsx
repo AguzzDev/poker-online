@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useRef } from "react";
 import { Socket, io } from "socket.io-client";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
@@ -6,16 +6,25 @@ import { parseCookies, setCookie } from "nookies";
 
 import EVENTS from "utils/events";
 import { useUser } from "context/User/UserProvider";
-import * as API from "services";
-import { RoomInterface, PlayerInterface } from "models";
+import {
+  RoomInterface,
+  PlayerInterface,
+  SoundsEnum,
+  GameContextType,
+} from "models";
 import { emitSound } from "utils/emitSound";
 import GameContext from "context/Game/GameContext";
+import getRoomsAdapter from "adapters/room/fetchRoomsAdapter";
+import * as API from "services/api";
 
 const GameProvider = ({ children }: any) => {
   const [socket, setSocket] = useState<Socket>(null);
   const [usersOnline, setUsersOnline] = useState<number>(0);
   const [room, setRoom] = useState<RoomInterface | null>(null);
-  const [rooms, setRooms] = useState<RoomInterface[]>([]);
+  const [rooms, setRooms] = useState<GameContextType["rooms"]>({
+    loading: true,
+    data: [],
+  });
   const [roomMessage, setRoomMessage] = useState([]);
   const [roomInfo, setRoomInfo] = useState<string>("");
   const [turn, setTurn] = useState<string>("");
@@ -34,10 +43,7 @@ const GameProvider = ({ children }: any) => {
   const { user, updateUser } = useUser();
 
   const createRoom = async (values) => {
-    socket.emit(EVENTS.CLIENT.CREATE_ROOM, {
-      ...values,
-      own: user._id,
-    });
+    socket.emit(EVENTS.CLIENT.CREATE_ROOM, values);
   };
 
   const deleteRoom = async (id) => {
@@ -45,15 +51,18 @@ const GameProvider = ({ children }: any) => {
   };
 
   const joinRoom = (values: string) => {
-    socket.emit(EVENTS.CLIENT.CONNECT_ROOM, values, (res) => {
-      if (res.error) {
-        return alert(res.error);
-      }
+    try {
+      socket.emit(EVENTS.CLIENT.CONNECT_ROOM, values, (res) => {
+        if (res.error) {
+          return alert(res.error);
+        }
 
-      setCookie(null, "lastRoomVisited", res.roomId);
-      setRoom(res.room);
-      router.push(`/room/${res.roomId}`);
-    });
+        setCookie(null, "lastRoomVisited", res.roomId);
+        setRoom(res.room);
+      });
+    } catch (error) {
+      console.log("error al conectar", error);
+    }
   };
 
   const takeSit = (sit) => {
@@ -82,7 +91,7 @@ const GameProvider = ({ children }: any) => {
     socket.emit(EVENTS.CLIENT.LEAVE_ROOM);
     setRoom(null);
     setPlayer(null);
-    router.push("/");
+    router.push("/app");
   };
 
   const newMessage = (values) => {
@@ -126,32 +135,36 @@ const GameProvider = ({ children }: any) => {
   };
 
   const rebuyChips = () => {
-    socket.emit(
-      EVENTS.CLIENT.PLAYER_REBUY,
-      {
-        roomId: room._id,
-        userId: player.userId,
-        chips: room.buyIn,
-      },
-      ({ err, message }) => {
-        setReBuy({ err, message });
-      }
-    );
+    try {
+      socket.emit(
+        EVENTS.CLIENT.PLAYER_REBUY,
+        {
+          roomId: room._id,
+          userId: player.userId,
+          chips: room.buyIn,
+        },
+        () => {
+          setReBuy("todo ok");
+        }
+      );
+    } catch (error) {
+      setReBuy(error.message);
+    }
   };
 
   useEffect(() => {
     if (!socket && user) {
-      const newSocket = io(process.env.NEXT_PUBLIC_API_URL, {
+      const newSocket = io(process.env.NEXT_PUBLIC_API_URL!, {
         reconnection: false,
         auth: {
-          token: user.accessToken || "",
+          token: user!.accessToken || "",
           lastRoomVisited: lastRoomVisited,
         },
       });
 
       setSocket(newSocket);
     }
-  }, [socket, user, router]);
+  }, [socket, user]);
 
   useEffect(() => {
     if (!socket) return;
@@ -161,11 +174,24 @@ const GameProvider = ({ children }: any) => {
     });
     socket.emit(EVENTS.CLIENT.PLAYER_CHIPS);
 
-    if (router.pathname === "/") {
-      const getRooms = async () => {
-        const { data } = await API.fetchRooms();
+    socket.on(EVENTS.SERVER.ALL_PLAYERS, (users) => {
+      setUsersOnline(users);
+    });
 
-        setRooms(data);
+    if (router.pathname === "/app") {
+      const getRooms = async () => {
+        try {
+          let timeout;
+          const data = await getRoomsAdapter();
+
+          timeout = setTimeout(() => {
+            setRooms({ loading: false, data: data });
+          }, 4000);
+
+          return () => clearInterval(timeout);
+        } catch (error) {
+          setRooms({ loading: false, data: error as string });
+        }
       };
 
       getRooms();
@@ -175,6 +201,7 @@ const GameProvider = ({ children }: any) => {
           if (type === "create") {
             return [...prevRooms, room];
           } else if (type === "update") {
+            console.log("update room", room);
             return prevRooms.map((data) =>
               data._id === room._id ? room : data
             );
@@ -186,16 +213,12 @@ const GameProvider = ({ children }: any) => {
         socket.off(EVENTS.SERVER.UPDATE_ROOMS);
       });
 
-      socket.on(EVENTS.SERVER.ALL_PLAYERS, (users) => {
-        setUsersOnline(users);
-      });
-
       return () => {
         socket.removeAllListeners();
       };
     } else {
-      socket.on(EVENTS.SERVER.GAME_SOUND, (type) => {
-        emitSound(type);
+      socket.on(EVENTS.SERVER.GAME_SOUND, (type: SoundsEnum) => {
+        emitSound(SoundsEnum[type]);
       });
       socket.on(EVENTS.SERVER.ROOM_STATUS, (status) => {
         if (status === "delete") {
@@ -207,7 +230,7 @@ const GameProvider = ({ children }: any) => {
           setRoomInfo("Tu turno");
           return;
         }
-        console.log(message)
+        console.log(message);
         setRoomInfo(message);
       });
       socket.on(EVENTS.SERVER.MESSAGE_SEND, (res) => {

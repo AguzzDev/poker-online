@@ -6,7 +6,8 @@ import UserContext from "context/User/UserContext";
 
 const UserProvider = ({ children }: { children: ChildrenType }) => {
   const router = useRouter();
-  const [user, setUser] = useState<UserInterface>(null);
+  const [user, setUser] = useState<UserInterface | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const setAccount = (data) => {
     setCookie(null, "user", JSON.stringify(data), {
@@ -36,20 +37,15 @@ const UserProvider = ({ children }: { children: ChildrenType }) => {
   };
 
   useEffect(() => {
-    const { user } = parseCookies();
-
-    if (!user && router.pathname !== "/auth") router.push("/auth");
-    if (user && router.pathname === "/auth") router.push("/");
-
-    if (user) {
-      const userR = JSON.parse(user);
-      setUser(userR);
-    }
+    const cookies = parseCookies();
+    const userCookie = cookies.user ? JSON.parse(cookies.user) : null;
+    setUser(userCookie);
+    setLoading(false)
   }, []);
 
   return (
     <UserContext.Provider
-      value={{ user, updateUser, removeAccount, setAccount }}
+      value={{ user, loading, updateUser, removeAccount, setAccount }}
     >
       {children}
     </UserContext.Provider>

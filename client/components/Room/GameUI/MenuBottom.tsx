@@ -1,7 +1,6 @@
-import { formatPrice } from "utils/formatPrice";
+import { formatChips } from "utils/formatChips";
 import { useGame } from "context/Game/GameProvider";
 import { Status } from "models";
-import { useEffect } from "react";
 
 const ActionButtons = ({ status, bid }) => {
   let body;
@@ -14,7 +13,7 @@ const ActionButtons = ({ status, bid }) => {
     let body;
     const style = `${
       type === "fold" ? "bg-red1" : Status[type] ? "bg-green1" : "bg-primary"
-    } py-2 font-bold text-sm rounded-full w-full text-center`;
+    } py-1 font-bold text-sm rounded-full w-full text-center`;
 
     if (userId == turn) {
       body = (
@@ -63,51 +62,21 @@ const ActionButtons = ({ status, bid }) => {
     );
   }
 
-  return (
-    <div className="flex justify-center space-x-3">
-      {body}
-
-      {/* {status === "bid" || status === "raise" || status === "allIn" ? (
-        status === "allIn" ? (
-          <>
-            {bidToPay < chips ? <Element type="call" text="Call" /> : null}
-            <Element type={"allIn"} text={"All In"} />
-          </>
-        ) : (
-          <>
-            {Pbid <= bidToPay ? (
-              <Element type="call" text="Call" />
-            ) : (
-              <Element type="check" text="Check" />
-            )}
-            <Element
-              type={bid === chips ? "allIn" : "raise"}
-              text={bid === chips ? "All In" : "Raise"}
-            />
-          </>
-        )
-      ) : (
-        <>
-          <Element type="check" text="Check" />
-          <Element type="bid" text="Bid" />
-        </>
-      )} */}
-    </div>
-  );
+  return <div className="flex justify-center space-x-3">{body}</div>;
 };
 
 const PotButtons = ({ setBid }) => {
   const { room, player } = useGame();
   const { totalBid } = room.desk;
 
-  const style = "px-5 py-1 text-xs bg-primary rounded-md";
+  const style = "px-3 py-[.1rem] text-xs bg-primary rounded-md";
 
   return (
     <div className="flex space-x-2">
-      <button onClick={() => setBid(50 * totalBid / 100)} className={style}>
+      <button onClick={() => setBid((50 * totalBid) / 100)} className={style}>
         2/4
       </button>
-      <button onClick={() => setBid(75 * totalBid / 100)} className={style}>
+      <button onClick={() => setBid((75 * totalBid) / 100)} className={style}>
         3/4
       </button>
       <button onClick={() => setBid(totalBid)} className={style}>
@@ -131,21 +100,21 @@ export const MenuBottom = () => {
 
   return (
     <section className="flex justify-between w-full">
-      <div className="flex flex-col justify-end">
-        <h2>{room.name}</h2>
-        <p>Blind: {blind}</p>
-        <p>Buy in: {formatPrice(room.buyIn)}</p>
-        <p>
-          {players.length} / {maxPlayerRoom} Jugadores
+      <div className="hidden md:flex flex-col justify-end ">
+        <h4>{room.name}</h4>
+        <p className="text-sm">Blind: {blind}</p>
+        <p className="text-sm">Buy in: {formatChips(room.buyIn)}</p>
+        <p className="text-sm">
+          {players.length} / {maxPlayerRoom} Players
         </p>
       </div>
 
       {player ? (
-        <div className="flex flex-col min-w-80">
+        <div className="w-full md:w-80">
           <PotButtons setBid={setBid} />
 
           <div className="py-1">
-            <h3>{formatPrice(bid)}</h3>
+            <h5>{formatChips(bid)}</h5>
             <input
               type="range"
               min={

@@ -1,21 +1,24 @@
 import * as Dialog from "@radix-ui/react-dialog";
-import { ModalProps } from "models";
+import { ModalProps, PositionsEnum } from "models";
 
-export const Modal = ({ button, content }: ModalProps) => {
+export const Modal = ({
+  trigger,
+  content,
+  position = PositionsEnum.center,
+}: ModalProps) => {
+  let elementPosition =
+    "top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2/4 h-2/4";
+
+  if (position === PositionsEnum.top) {
+    elementPosition = "top-0 inset-0 h-2/4";
+  }
+
   return (
     <Dialog.Root>
-      <Dialog.Trigger>{button}</Dialog.Trigger>
+      <Dialog.Trigger className="flex items-center">{trigger}</Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-20" />
-        <Dialog.Content
-          style={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%,-50%)",
-            margin: "auto",
-          }}
-        >
+        <Dialog.Overlay className="fixed inset-0 z-[999] bg-black bg-opacity-20" />
+        <Dialog.Content className={`fixed ${elementPosition} z-[1000] bg-secondary`}>
           {content}
         </Dialog.Content>
       </Dialog.Portal>

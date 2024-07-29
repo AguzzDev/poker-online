@@ -1,13 +1,8 @@
-import { Auth } from "components/Auth";
-import { Layout } from "components/Layouts/Layout";
-import { LayoutWithoutNavbar } from "components/Layouts/LayoutWithoutNavbar";
+import { AuthPage } from "components/Pages/AuthPage";
+import withAuth from "hoc/withAuth";
 
-const AuthPage = () => {
-  return (
-    <LayoutWithoutNavbar>
-      <Auth />
-    </LayoutWithoutNavbar>
-  );
+const Auth = () => {
+  return <AuthPage />;
 };
 
-export default AuthPage;
+export default withAuth(Auth)

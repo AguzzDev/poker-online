@@ -1,11 +1,9 @@
 import type { NextPage } from "next";
 
-import { Inicio } from "components/Inicio";
-import withAuth from "hooks/withAuth";
-import Image from "next/image";
+import { LandingPage } from "components/Pages/LandingPage";
 
 const Home: NextPage = () => {
-  return <Inicio />;
+  return <LandingPage />;
 };
 
-export default withAuth(Home);
+export default Home;

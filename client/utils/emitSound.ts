@@ -1,5 +1,7 @@
-export const emitSound = (type) => {
-  const sounds = {
+import { SoundsEnum } from "models";
+
+export const emitSound = (type: SoundsEnum) => {
+  const sounds: { [key: string]: string } = {
     shuffle: "/sounds/shuffle.mp3",
     deal: "/sounds/deal.mp3",
     check: "/sounds/check.mp3",

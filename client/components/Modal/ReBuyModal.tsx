@@ -14,7 +14,7 @@ export const ReBuyModal = () => {
 
   return (
     <div className="absolute top-0 left-0 w-screen h-screen flex justify-center items-center">
-      <div className="min-w-[40vw] h-[40vh] flex flex-col py-3 px-5 bg-background z-50">
+      <div className="min-w-[40vw] h-[40vh] flex-col py-3 px-5 bg-background z-50">
         <h1>Do you wanna keep playing?</h1>
         <p>Buy more chips...</p>
 
@@ -24,10 +24,10 @@ export const ReBuyModal = () => {
           {reBuy.error ? (
             <div className="flex justify-between space-x-5">
               <ButtonOne onClick={() => router.push("/")}>
-                Volver al inicio
+                Back to lobby
               </ButtonOne>
               <ButtonTwo onClick={() => setShowReBuyMenu(false)}>
-                Quedarse como espectador
+                Stay as a spectator
               </ButtonTwo>
             </div>
           ) : (

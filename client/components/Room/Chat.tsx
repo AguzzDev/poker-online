@@ -36,12 +36,12 @@ export const Chat = () => {
   }, [room.messages]);
 
   return (
-    <section className="hidden xl:flex flex-col bg-primary border-l-borderWidth border-borderColor1 w-1/4">
+    <section className="flex flex-col h-full border-2 border-border rounded-b-md md:rounded-md">
       <div className="py-2 px-5">
-        <h1 className="font-bold">Chat</h1>
+        <h4 className="font-bold">Chat</h4>
       </div>
 
-      <div className="flex flex-col space-y-3 px-5 py-2 h-full overflow-y-scroll">
+      <div className="flex-col space-y-3 px-5 py-2 flex-1 overflow-y-scroll">
         {room.messages.length > 0
           ? room.messages.map(({ image, message, username, time }, i) => (
               <div
@@ -51,19 +51,12 @@ export const Chat = () => {
                   user.username === username ? "flex-row-reverse" : "flex-row"
                 } flex space-x-3 items-start relative w-full`}
               >
-                <div className="mr-7">
-                  <div className="absolute top-0 w-8 h-8 bg-gray2 rounded-full">
-                    <Image
-                      src={image ? image : "/noImage.png"}
-                      height={50}
-                      width={50}
-                      className="rounded-full"
-                    />
-                  </div>
+                <div className="relative w-8 h-8 bg-primary rounded-full">
+                  <Image src={image ? image : "/noImage.png"} layout="fill" />
                 </div>
-                <div className="w-10/12 px-3 py-1 rounded-lg border border-gray1 break-words">
-                  <p>{message}</p>
-                  <p className="text-gray-600 text-xs">{time}</p>
+
+                <div className="flex-1 px-3 py-1 rounded-lg border-borderWidth bg-purple1 border-border break-words">
+                  <p className="text-sm">{message}</p>
                 </div>
               </div>
             ))
@@ -74,7 +67,7 @@ export const Chat = () => {
         <div className="py-2 px-5">
           <div className="py-2 rounded-full">
             <form onSubmit={submitMessage}>
-              <input type="text" placeholder="Mensaje..." ref={messageRef} />
+              <input type="text" placeholder="Message..." ref={messageRef} />
             </form>
           </div>
         </div>

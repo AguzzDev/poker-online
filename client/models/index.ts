@@ -15,10 +15,26 @@ export interface RFCButtonProps extends Omit<RFCProps, "style"> {
 export interface LayoutProps {
   title?: string;
   children: React.ReactNode;
+  type?: LayoutTypeEnum;
+  navType?: NavbarTypeEnum;
 }
-export interface ModalProps {
-  button?: JSX.Element | JSX.Element[] | string;
+export interface FooterProps {
+  type?: FooterTypeEnum;
+}
+export interface NavbarProps {
+  type: NavbarTypeEnum;
+}
+export interface ContainerProps {
+  style?: string;
+  children: React.ReactNode;
+  type?: ContainerTypeEnum;
+}
+export interface RadixComponentProps {
+  trigger?: JSX.Element | JSX.Element[] | string;
   content: JSX.Element | JSX.Element[];
+}
+export interface ModalProps extends RadixComponentProps {
+  position?: PositionsEnum;
 }
 export interface CreateRoomProps {
   name: string;
@@ -43,7 +59,7 @@ export interface GameContextType {
   player: PlayerInterface;
   room: RoomInterface;
   roomMessage: any;
-  rooms: RoomInterface[];
+  rooms: { loading: boolean; data: RoomInterface[] | string };
   timer: number;
   turn: string;
   showReBuyMenu: boolean;
@@ -66,16 +82,23 @@ export interface GameContextType {
   deleteGame: Function;
 }
 export interface UserContextType {
-  user: UserInterface;
+  user: UserInterface | null;
   updateUser: Function;
   removeAccount: Function;
   setAccount: Function;
+}
+export interface CardIconProps {
+  value: string;
+  suit: CardSuitEnum;
+  opacity?: boolean;
+  style?: string;
+  delay?: string;
 }
 
 //interfaces
 export interface CardInterface {
   id: number;
-  suit: string;
+  suit: CardSuitEnum;
   value: number;
 }
 export interface PlayerInterface {
@@ -119,23 +142,25 @@ export interface RoomInterface {
   desk?: DeskInterface;
   messages?: MessageInterface[];
   buyIn?: number;
+  players?: number;
 }
 export interface UserInterface {
   _id: string;
   username: string;
   image: string;
   chips: number;
+  role: UserRoleEnum;
   matches: {
-    wins: number;
-    loses: number;
-    par: number;
-    trio: number;
-    full: number;
-    poker: number;
-    flush: number;
-    straight: number;
-    straightFlush: number;
-    straightFlushReal: number;
+    highCard: number;
+    onePair: number;
+    twoPair: nu;
+    threeOfKind: nu;
+    straight: nu;
+    flush: nu;
+    fullHouse: nu;
+    poker: nu;
+    straightFlush: nu;
+    royalFlush: nu;
   };
   createdAt: Date;
   accessToken: string;
@@ -145,11 +170,10 @@ export interface UserInterface {
 export interface LoginInput {
   email: string;
   password: string;
+  global: string;
 }
-export interface RegisterInput {
+export interface RegisterInput extends LoginInput {
   username: string;
-  email: string;
-  password: string;
   password2: string;
 }
 //enum
@@ -164,4 +188,67 @@ export enum Status {
 export enum PlayerModeEnum {
   Spectator,
   Player,
+}
+
+export enum SoundsEnum {
+  shuffle = "shuffle",
+  deal = "deal",
+  check = "check",
+  bid = "bid",
+  allIn = "allIn",
+}
+
+export enum LayoutTypeEnum {
+  default = "default",
+  withoutFooter = "withoutFooter",
+  empty = "empty",
+  app = "app",
+  appRoom = "appRoom",
+}
+
+export enum NavbarTypeEnum {
+  default = "default",
+  app = "app",
+}
+
+export enum FooterTypeEnum {
+  default = "default",
+  app = "app",
+}
+
+export enum ContainerTypeEnum {
+  default = "default",
+  bordersWhite = "bordersWhite",
+}
+
+export enum UserRoleEnum {
+  user = "user",
+  vip = "vip",
+  admin = "admin",
+  creator = "creator",
+}
+
+export enum CardSuitEnum {
+  spades = "spades",
+  diamonds = "diamonds",
+  hearts = "hearts",
+  clubs = "clubs",
+}
+
+export enum PokerHandsEnum {
+  highCard = "highCard",
+  onePair = "onePair",
+  twoPair = "twoPair",
+  threeOfKind = "threeOfKind",
+  straight = "straight",
+  flush = "flush",
+  fullHouse = "fullHouse",
+  poker = "poker",
+  straightFlush = "straightFlush",
+  royalFlush = "royalFlush",
+}
+
+export enum PositionsEnum {
+  center = "center",
+  top = "top",
 }

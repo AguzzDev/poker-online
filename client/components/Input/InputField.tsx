@@ -9,11 +9,9 @@ export const InputField = (props) => {
         {...field}
         {...props}
         autoComplete="off"
-        className={`border border-gray-300 p-2 rounded-lg ${
-          !meta.error ? "mb-5" : "my-2"
-        }`}
+        className={`border-b border-border p-2`}
       />
-      {meta.error && <p className="text-xs text-red-500">{meta.error}</p>}
+      {meta.error && <p className="text-xs text-red-500 mt-2">{meta.error}</p>}
     </div>
   );
 };

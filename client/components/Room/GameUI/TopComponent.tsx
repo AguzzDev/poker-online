@@ -9,6 +9,8 @@ import {
 } from "react-icons/fa";
 import { MdChevronLeft } from "react-icons/md";
 import { useGame } from "context/Game/GameProvider";
+import { SpeakerWaveIcon, SpeakerXMarkIcon } from "@heroicons/react/20/solid";
+import { ChatModal } from "components/Modal/ChatModal";
 
 export const TopComponent = ({ showChat, setShowChat }) => {
   const { leaveRoom, roomInfo } = useGame();
@@ -43,28 +45,30 @@ export const TopComponent = ({ showChat, setShowChat }) => {
   };
 
   return (
-    <section className="pt-6">
-      <div className="flex items-center justify-between mx-auto">
-        <div className="flex justify-between w-full">
-          <button className="flex items-center" onClick={() => leaveRoom()}>
-            <IconXs Icon={MdChevronLeft} />
-            <h2>Salir</h2>
+    <div className="flex items-center justify-between mx-auto">
+      <div className="flex justify-between w-full">
+        <button className="flex items-center" onClick={() => leaveRoom()}>
+          <IconXs Icon={MdChevronLeft} />
+          <p className="hidden md:block">Salir</p>
+        </button>
+
+        <h4 className="font-bold">{roomInfo || "Esperando Jugadores..."}</h4>
+
+        <div className="flex space-x-2 md:space-x-5 items-center">
+          <button onClick={() => toggleSound()}>
+            <IconXs Icon={!sound ? SpeakerXMarkIcon : SpeakerWaveIcon} />
           </button>
-
-          <h2 className="text-2xl font-bold">
-            {roomInfo || "Esperando Jugadores..."}
-          </h2>
-
-          <div className="flex space-x-5">
-            <button onClick={() => toggleSound()}>
-              <IconXs Icon={!sound ? FaVolumeOff : FaVolumeUp} />
-            </button>
-            <button onClick={() => setShowChat(!showChat)}>
-              <IconXs Icon={showChat ? FaComments : FaCommentSlash} />
-            </button>
+          <button
+            className="hidden md:block"
+            onClick={() => setShowChat(!showChat)}
+          >
+            <IconXs Icon={showChat ? FaComments : FaCommentSlash} />
+          </button>
+          <div className="block md:hidden">
+            <ChatModal showChat={showChat} setShowChat={setShowChat} />
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 };

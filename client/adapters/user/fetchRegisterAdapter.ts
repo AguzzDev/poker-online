@@ -8,10 +8,9 @@ const fetchRegisterAdapter = async (
 ): Promise<UserInterface | AxiosError> => {
   try {
     const user = await fetchRegister(values);
-console.log(user.data)
+
     return userValues(user.data);
   } catch (error) {
-    console.log("err",error.response)
     throw error;
   }
 };

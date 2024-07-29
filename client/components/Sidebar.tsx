@@ -1,24 +1,24 @@
-import * as Tooltip from "@radix-ui/react-tooltip"
-import { GiPokerHand } from "react-icons/gi"
-import { IoIosSettings, IoIosPodium } from "react-icons/io"
-import { ImSpinner4 } from "react-icons/im"
-import { MdLogout } from "react-icons/md"
-import Link from "next/link"
-import { useRouter } from "next/router"
-import { destroyCookie } from "nookies"
+import * as Tooltip from "@radix-ui/react-tooltip";
+import { GiPokerHand } from "react-icons/gi";
+import { IoIosSettings, IoIosPodium } from "react-icons/io";
+import { ImSpinner4 } from "react-icons/im";
+import { MdLogout } from "react-icons/md";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { destroyCookie } from "nookies";
 
-import { IconSm } from "components/Icon"
-import { useUser } from "context/UserContext"
+import { IconSm } from "components/Icon";
+import { useUser } from "context/UserContext";
 
 interface Props {
-  title: string
-  link?: string
-  id?: string
-  children: JSX.Element
+  title: string;
+  link?: string;
+  id?: string;
+  children: JSX.Element;
 }
 
 export const Sidebar = () => {
-  const { removeAccount } = useUser()
+  const { removeAccount } = useUser();
 
   const Button = ({ children, link, title, id }: Props) => {
     return (
@@ -49,12 +49,12 @@ export const Sidebar = () => {
           </Tooltip.Content>
         </Tooltip.Root>
       </Tooltip.Provider>
-    )
-  }
+    );
+  };
 
   return (
-    <section className="h-screen bg-white shadow-xl w-[5%] flex flex-col justify-between items-center py-10">
-      <div className="flex flex-col space-y-6">
+    <section className="h-screen bg-white shadow-xl w-[5%] flex-col justify-between items-center py-10">
+      <div className="flex-col space-y-6">
         <Button
           title="Inicio"
           link="/"
@@ -72,7 +72,7 @@ export const Sidebar = () => {
         />
       </div>
 
-      <div className="flex flex-col space-y-6">
+      <div className="flex-col space-y-6">
         <Button
           title="Configuracion"
           link="/settings"
@@ -85,5 +85,5 @@ export const Sidebar = () => {
         />
       </div>
     </section>
-  )
-}
+  );
+};

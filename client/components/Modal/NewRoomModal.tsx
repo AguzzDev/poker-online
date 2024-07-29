@@ -4,7 +4,6 @@ import { Form, Formik, Field } from "formik";
 import { useRouter } from "next/dist/client/router";
 import { createRoomValidation } from "utils/yup";
 import { Modal } from "./Modal";
-import EVENTS from "utils/events";
 import { CreateRoomProps } from "models";
 
 export const NewRoomModal = () => {
@@ -20,17 +19,17 @@ export const NewRoomModal = () => {
 
   return (
     <Modal
-      button={<button className="buttonStyle1">Crear una sala</button>}
+      trigger={<button className="buttonStyle1">Create room</button>}
       content={
-        <div className="flex flex-col items-center justify-center rounded-md bg-white min-h-[40vh] p-4">
-          <h1>Crea una sala</h1>
+        <div className="flex-col items-center justify-center rounded-md bg-black min-h-[40vh] p-4">
+          <h1>Create your room</h1>
           <Formik
             initialValues={initialValues}
             validationSchema={createRoomValidation}
             onSubmit={async (values) => await createRoom(values)}
           >
             {({ handleChange, errors, values }) => (
-              <Form className="flex flex-col space-y-3">
+              <Form className="flex-col space-y-3">
                 <Field
                   name="name"
                   onChange={handleChange}
@@ -59,7 +58,7 @@ export const NewRoomModal = () => {
                   onChange={handleChange}
                 />
 
-                <button type="submit">Crear sala</button>
+                <button type="submit">Create Room</button>
               </Form>
             )}
           </Formik>
