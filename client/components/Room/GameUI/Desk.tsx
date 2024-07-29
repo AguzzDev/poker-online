@@ -3,6 +3,7 @@ import Image from "next/image";
 import { formatChips } from "utils/formatChips";
 import { PlayerInTable } from "./PlayerInTable";
 import { RoomInterface } from "models";
+import { motion } from "framer-motion";
 
 interface RoomProps {
   room: RoomInterface;
