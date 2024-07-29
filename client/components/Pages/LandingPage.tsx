@@ -38,7 +38,7 @@ export const LandingPage = () => {
 
       <section className="h-full relative">
         <div className="absolute top-10 left-0 w-full h-2/4">
-          <Image src="/ellipseLanding.png" layout="fill" alt="Ellipse Image" />
+          <Image src="/EllipseLanding.png" layout="fill" alt="Ellipse Image" />
         </div>
 
         <div className="absolute top-40 inset-0 bg-black1">
