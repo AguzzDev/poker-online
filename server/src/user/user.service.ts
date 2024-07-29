@@ -5,14 +5,12 @@ import * as bcrypt from 'bcrypt';
 
 import { User } from 'src/schemas/user.schema';
 import {
-  PlayerInterface,
   RoomInterface,
   UpdateChipsArgs,
   UpdateUserArgs,
   UserInterface,
-  UserJoinToRoomArgs,
 } from 'src/models';
-import { RegisterInputValues } from 'src/dto/registerInputValues';
+import { RegisterInputDto } from 'src/dto/registerInputDto';
 import { EVENTS } from 'const';
 import { Room } from 'src/schemas/room.schema';
 
@@ -34,10 +32,10 @@ export class UserService {
   }
 
   async getUserById(id: string): Promise<UserInterface> {
-    return await this.userModel.findById(id);
+    return await this.userModel.findById({ _id: id });
   }
 
-  async createUser(values: RegisterInputValues): Promise<UserInterface> {
+  async createUser(values: RegisterInputDto): Promise<UserInterface> {
     const passwordEncrypted = bcrypt.hashSync(values.password, 12);
     const user = await this.userModel.create({
       ...values,
@@ -74,21 +72,6 @@ export class UserService {
     } else {
       await update(id, values);
     }
-  }
-
-  async userJoinToRoom({
-    id,
-    values,
-  }: UserJoinToRoomArgs): Promise<PlayerInterface> {
-    const updatedRoom = await this.roomModel
-      .findOneAndUpdate(
-        { _id: id },
-        { $push: { 'desk.players': values } },
-        { new: true },
-      )
-      .lean();
-
-    return updatedRoom.desk.players[updatedRoom.desk.players.length - 1];
   }
 
   async removeUser(): Promise<any> {

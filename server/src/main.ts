@@ -5,7 +5,7 @@ import { BadRequestException, ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: {
-      origin: '*',
+      origin: process.env.APP_URL,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       credentials: true,
     },
@@ -26,7 +26,7 @@ async function bootstrap() {
       },
     }),
   );
-  const port = process.env.PORT || 4000
+  const port = process.env.PORT || 4000;
   await app.listen(port);
 }
 bootstrap();

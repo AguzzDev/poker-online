@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import bcrypt from 'bcrypt';
@@ -22,9 +18,9 @@ import {
   UpdatePlayerChipsArgs,
   UpdatePlayerOptionsEnum,
   findPlayerMoveArgs,
-  updateInRoomArgs,
   DeskTypesEnum,
   PlayerInterface,
+  updateInRoomArgs,
 } from 'src/models';
 import { WsException } from '@nestjs/websockets';
 import { CreateRoomDto } from 'src/dto';
@@ -37,6 +33,32 @@ export class RoomService {
   ) {}
 
   public rooms: RoomInterface[] = [];
+
+  async addPlayerInDesk({ id, values }) {
+    await this.roomModel.findOneAndUpdate(
+      { _id: id },
+      { $push: { 'desk.players': values }, $inc: { players: 1 } },
+      { new: true },
+    );
+  }
+
+  async removePlayerInDesk({ id, values }) {
+    await this.roomModel.findOneAndUpdate(
+      { _id: id },
+      { $pull: { 'desk.players': values }, $inc: { players: -1 } },
+      { new: true },
+    );
+  }
+
+  async findRooms() {
+    if (this.rooms.length === 0) {
+      const getRooms = (await this.roomModel.find({})).flat();
+
+      this.rooms = getRooms;
+    }
+
+    return this.rooms;
+  }
 
   async findRoom(id: string) {
     try {
@@ -76,7 +98,7 @@ export class RoomService {
         dealer: [],
       };
 
-      this.rooms.map((room, i) => {
+      this.rooms.map(async (room, i) => {
         if (room._id.toString() != id) return room;
         updateRoom = room;
 
@@ -144,18 +166,19 @@ export class RoomService {
     try {
       let updateRoom: RoomInterface;
 
-      this.rooms.map((room, i) => {
+      this.rooms.map(async (room, i) => {
         if (room._id.toString() === id) {
           updateRoom = room;
           if (type === PlayerTypesEnum.add) {
             updateRoom.desk.players = [...room.desk.players, values].sort(
               (a, b) => (a.sit > b.sit ? 1 : -1),
             );
-
             this.rooms[i] = updateRoom;
             return updateRoom;
           }
           if (type === PlayerTypesEnum.delete) {
+            await this.removePlayerInDesk({ id, values });
+
             updateRoom.desk.players = updateRoom.desk.players
               .filter((player) => player.userId != values.userId.toString())
               .sort((a, b) => (a.sit > b.sit ? 1 : -1));
@@ -250,16 +273,6 @@ export class RoomService {
       }));
   }
 
-  async getRooms() {
-    if (this.rooms.length === 0) {
-      const getRooms = (await this.roomModel.find({})).flat();
-
-      this.rooms = getRooms;
-    }
-
-    return this.rooms;
-  }
-
   async createRoom(values: CreateRoomDto) {
     const { withPass, ...res } = values;
 
@@ -294,7 +307,7 @@ export class RoomService {
     if (socket.user.chips < room.buyIn)
       throw new WsException('Chips insuficientes');
 
-    const values: PlayerInterface = {
+    const playerValues: PlayerInterface = {
       userId: socket.user._id.toString(),
       name: socket.user.username,
       chips: room.buyIn,
@@ -307,10 +320,6 @@ export class RoomService {
       showAction: null,
     };
 
-    await this.userService.userJoinToRoom({
-      id: roomId,
-      values,
-    });
     await this.userService.updateUser({
       id: socket.user._id,
       values: { lastRoomVisited: roomId },
@@ -320,10 +329,9 @@ export class RoomService {
       chips: -room.buyIn,
       socket,
     });
-
     return await this.updateInPlayer({
       id: roomId,
-      values,
+      values: playerValues,
       type: PlayerTypesEnum.add,
     });
   }
@@ -391,9 +399,9 @@ export class RoomService {
     return room.messages[room.messages.length - 1];
   }
 
-  async deleteRoom(id: any): Promise<any> {
-    const room = await this.roomModel.findOneAndDelete(id);
-    this.rooms = this.rooms.filter(({ _id }) => _id != id);
+  async deleteRoom(id: string): Promise<RoomInterface> {
+    const room = await this.roomModel.findOneAndDelete({ _id: id });
+    this.rooms = this.rooms.filter(({ _id }) => _id.toString() != id);
 
     return room;
   }

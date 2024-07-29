@@ -7,7 +7,7 @@ export interface RequestInterface extends Request {
   user: string;
 }
 export interface SocketCustom extends Socket {
-  user: UserInterface;
+  user: Partial<UserInterface>;
 }
 export interface CardInterface {
   id: number;
@@ -54,6 +54,7 @@ export interface RoomInterface {
   buyIn?: number;
   desk?: DeskInterface;
   messages?: MessageInterface[];
+  players?: number;
 }
 export interface UserInterface {
   _id: string;
@@ -86,6 +87,43 @@ export interface UserWithTokenInterface extends UserInterface {
 }
 
 //args
+export interface PlayerRebuyChipsArgs {
+  roomId: string;
+  userId: string;
+  chips: number;
+}
+export interface GetMyChipsArgs {
+  id: string;
+  socket: SocketCustom;
+}
+export interface DeleteRoomArgs {
+  roomId: string;
+  server: Server;
+}
+export interface PlayersRebuyChipsArgs {
+  roomId: string;
+  server: Server;
+  players: PlayerInterface[];
+}
+export interface InitialRoundArgs {
+  roomId: string;
+  room: RoomInterface;
+  server: Server;
+  playerPos: number;
+}
+export interface StartGameArgs {
+  roomId: string;
+  server: Server;
+}
+export interface ClearPlayerMoveArgs {
+  roomId: string;
+  userId: string;
+}
+export interface AdvancedRoundArgs {
+  roomId: string;
+  type: ContinueGameTypeEnum;
+  server: Server;
+}
 export interface SetAutoBlindArgs {
   roomId: string;
   x: number;
@@ -135,7 +173,7 @@ export interface SetMessageArgs {
   roomId: string;
   message: MessageInterface;
 }
-export interface newMessageArgs {
+export interface NewMessageArgs {
   values: { roomId?: string; message: string };
   server: Server;
   socket?: SocketCustom;
@@ -171,9 +209,13 @@ export interface TakeSitArgs {
   server: Server;
   socket: SocketCustom;
 }
-export interface leaveRoomOrDisconnectArgs {
+export interface LeaveRoomOrDisconnectArgs {
   server: Server;
   socket: SocketCustom;
+}
+export interface ShuffleArgs {
+  roomId: string;
+  cards: CardInterface[];
 }
 
 //enums
@@ -222,4 +264,10 @@ export enum ContinueGameTypeEnum {
   desk = 'desk',
   allIn = 'allIn',
   player = 'player',
+}
+export enum UserRoleEnum {
+  user = 'user',
+  vip = 'vip',
+  admin = 'admin',
+  creator = 'creator',
 }

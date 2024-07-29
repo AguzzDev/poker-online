@@ -1,7 +1,7 @@
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
-import { LoginInputValues } from './loginInputValues';
+import { LoginInputDto } from './loginInputDto';
 
-export class RegisterInputValues extends LoginInputValues {
+export class RegisterInputDto extends LoginInputDto {
   @IsNotEmpty({ message: 'Username is required' })
   @MinLength(3, { message: '3 characters minimum' })
   username: string;

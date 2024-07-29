@@ -19,6 +19,9 @@ export class Room {
   @Prop({ type: Number, default: 10000 })
   buyIn: number;
 
+  @Prop({type: Number, default: 0})
+  players: number 
+  
   @Prop({
     type: MongooseSchema.Types.Mixed,
     default: {

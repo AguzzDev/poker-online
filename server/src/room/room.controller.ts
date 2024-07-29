@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  InternalServerErrorException,
   Post,
   Req,
   UseGuards,
@@ -15,6 +16,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { CreateRoomDto } from 'src/dto';
 import { AdminGuard } from 'src/guards/adminGuard';
 import { Request } from 'express';
+import { CreatorGuard } from 'src/guards/creatorGuard';
 
 @Controller('room')
 export class RoomController {
@@ -22,28 +24,47 @@ export class RoomController {
 
   @Get()
   a() {
-    return this.roomService.getRooms();
+    try {
+      return this.roomService.findRooms();
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
   }
 
   @Get(':id')
   b(@Req() req: RequestInterface) {
-    return this.roomService.findRoom(req.params.id);
+    try {
+      return this.roomService.findRoom(req.params.id);
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
   }
 
   @Post()
-  @UseGuards(AdminGuard)
   c(@Body() values: CreateRoomDto) {
-    return this.roomService.createRoom(values);
+    try {
+      return this.roomService.createRoom(values);
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
   }
 
   @Delete(':id')
   @UseGuards(AdminGuard)
-  async d(@Req() req: Request): Promise<any> {
-    return this.roomService.deleteRoom(req.params.id);
+  d(@Req() req: Request): Promise<any> {
+    try {
+      return this.roomService.deleteRoom(req.params.id);
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
   }
 
   @Delete()
-  async e() {
-    return this.roomService.deleteAllRooms();
+  e() {
+    try {
+      return this.roomService.deleteAllRooms();
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
   }
 }

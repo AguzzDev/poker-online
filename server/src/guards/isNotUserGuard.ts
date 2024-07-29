@@ -1,11 +1,11 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { WsException } from '@nestjs/websockets';
-import { SocketCustom } from 'src/models';
+import { SocketCustom, UserRoleEnum } from 'src/models';
 import { UserService } from 'src/user/user.service';
 
 @Injectable()
-export class SocketGuard implements CanActivate {
+export class AdminGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private userService: UserService,
@@ -21,10 +21,11 @@ export class SocketGuard implements CanActivate {
 
       const decodedToken = this.jwtService.verify(token);
       const user = await this.userService.getUserById(decodedToken.id);
-      if (!user) throw new WsException('no user');
+
+      if (user.role == UserRoleEnum.user) throw new WsException('not the expected role');
 
       socket.user = user;
-
+      
       return true;
     } catch (error) {
       throw new WsException('Error');

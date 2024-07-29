@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { LoginInputValues } from 'src/dto/loginInputValues';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
 import { UserService } from 'src/user/user.service';
-import { RegisterInputValues } from 'src/dto/registerInputValues';
+import { LoginInputDto } from 'src/dto/loginInputDto';
+import { RegisterInputDto } from 'src/dto/registerInputDto';
 import { UserInterface } from 'src/models';
 
 @Injectable()
@@ -14,13 +14,13 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async login(body: LoginInputValues) {
+  async login(body: LoginInputDto) {
     const { email: vEmail, password: vPassword } = body;
     const user = await this.usersService.getUser(vEmail);
 
     if (!user) {
       throw new BadRequestException({
-        message: { email: 'Usuario no encontrado' },
+        message: { email: 'user not exist' },
       });
     }
 
@@ -43,18 +43,20 @@ export class AuthService {
       matches: user.matches,
       accessToken,
       createdAt: user.createdAt,
+      role: user.role,
     };
 
     return userResponse;
   }
 
-  async register(body: RegisterInputValues) {
+  async register(body: RegisterInputDto) {
     const findUser = await this.usersService.getUser(body.email);
 
     if (findUser) {
       throw new BadRequestException({ message: { email: 'mail ya usado' } });
     }
 
+    //mailgun
     const user = await this.usersService.createUser(body);
     const accessToken = await this.jwtService.signAsync({
       id: user._id,
@@ -68,8 +70,9 @@ export class AuthService {
       matches: user.matches,
       accessToken,
       createdAt: user.createdAt,
+      role: user.role,
     };
 
-    return userResponse
+    return userResponse;
   }
 }

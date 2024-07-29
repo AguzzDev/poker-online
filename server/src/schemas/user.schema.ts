@@ -22,29 +22,29 @@ export class User {
 
   @Prop(
     raw({
-      wins: { type: Number, default: 0 },
-      loses: { type: Number, default: 0 },
-      par: { type: Number, default: 0 },
-      trio: { type: Number, default: 0 },
-      full: { type: Number, default: 0 },
-      poker: { type: Number, default: 0 },
-      flush: { type: Number, default: 0 },
+      highCard: { type: Number, default: 0 },
+      onePair: { type: Number, default: 0 },
+      twoPair: { type: Number, default: 0 },
+      threeOfKind: { type: Number, default: 0 },
       straight: { type: Number, default: 0 },
+      flush: { type: Number, default: 0 },
+      fullHouse: { type: Number, default: 0 },
+      poker: { type: Number, default: 0 },
       straightFlush: { type: Number, default: 0 },
-      straightFlushReal: { type: Number, default: 0 },
+      royalFlush: { type: Number, default: 0 },
     }),
   )
   matches: {
-    wins: number;
-    loses: number;
-    par: number;
-    trio: number;
-    full: number;
-    poker: number;
-    flush: number;
+    highCard: number;
+    onePair: number;
+    twoPair: number;
+    threeOfKind: number;
     straight: number;
+    flush: number;
+    fullHouse: number;
+    poker: number;
     straightFlush: number;
-    straightFlushReal: number;
+    royalFlush: number;
   };
 
   @Prop()

@@ -1,5 +1,5 @@
-export * from './loginInputValues';
-export * from './registerInputValues';
+export * from './loginInputDto';
+export * from './registerInputDto';
 export * from './playerActionDto';
 export * from './sendMessageDto';
 export * from './createRoomDto';
