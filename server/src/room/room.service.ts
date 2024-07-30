@@ -43,11 +43,15 @@ export class RoomService {
   }
 
   async removePlayerInDesk({ id, values }) {
-    await this.roomModel.findOneAndUpdate(
-      { _id: id },
-      { $pull: { 'desk.players': values }, $inc: { players: -1 } },
+    const a = await this.roomModel.findOneAndUpdate(
+      { _id: id, 'desk.players.userId': values.userId },
+      {
+        $pull: { 'desk.players': { userId: values.userId } },
+        $inc: { players: -1 },
+      },
       { new: true },
     );
+    console.log('sacando al jugador DB', a);
   }
 
   async findRooms() {
@@ -177,8 +181,6 @@ export class RoomService {
             return updateRoom;
           }
           if (type === PlayerTypesEnum.delete) {
-            await this.removePlayerInDesk({ id, values });
-
             updateRoom.desk.players = updateRoom.desk.players
               .filter((player) => player.userId != values.userId.toString())
               .sort((a, b) => (a.sit > b.sit ? 1 : -1));
@@ -262,15 +264,19 @@ export class RoomService {
     }
   }
 
-  async findUserInRoom(id: string) {
-    return this.rooms
-      .filter((room) =>
-        room.desk.players.some((player) => player.userId === id),
-      )
-      .map((room) => ({
-        id: room._id.toString(),
-        player: room.desk.players.filter(({ userId }) => userId)[0],
-      }));
+  async findUserInRoom(userId: string): Promise<any> {
+    const room = this.rooms.find((room) =>
+      room.desk.players.find((player) => player.userId === userId),
+    );
+
+    if (!room) return;
+
+    return {
+      id: room._id.toString(),
+      player: room.desk.players.filter(
+        (player) => player.userId === userId.toString(),
+      )[0],
+    };
   }
 
   async createRoom(values: CreateRoomDto) {
@@ -302,8 +308,7 @@ export class RoomService {
       socket.user._id.toString(),
     );
 
-    if (findUserInRooms.length > 0)
-      throw new WsException('Ya estas en una sala');
+    if (findUserInRooms) throw new WsException('Ya estas en una sala');
     if (socket.user.chips < room.buyIn)
       throw new WsException('Chips insuficientes');
 
@@ -336,28 +341,28 @@ export class RoomService {
     });
   }
 
-  async removePlayer(userId: string) {
-    const findUserInRooms = await this.findUserInRoom(userId);
-    if (findUserInRooms.length === 0) return;
+  async removePlayer(userId) {
+    const room = await this.findUserInRoom(userId);
 
-    return await Promise.all(
-      findUserInRooms.map(async ({ id, player }) => {
-        await this.userService.updateUser({
-          id: player.userId,
-          values: { lastRoomVisited: null },
-        });
-        await this.userService.updateChips({
-          id: player.userId,
-          chips: player.chips,
-        });
+    if (!room) return;
 
-        return await this.updateInPlayer({
-          id: id,
-          values: player,
-          type: PlayerTypesEnum.delete,
-        });
-      }),
-    );
+    const { id, player } = room;
+
+    await this.userService.updateUser({
+      id: userId,
+      values: { lastRoomVisited: null },
+    });
+
+    await this.userService.updateChips({
+      id: userId,
+      chips: player.chips,
+    });
+
+    return await this.updateInPlayer({
+      id,
+      values: player,
+      type: PlayerTypesEnum.delete,
+    });
   }
 
   async findPlayerMove({ roomId, userId }: findPlayerMoveArgs) {

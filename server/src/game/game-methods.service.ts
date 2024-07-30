@@ -117,26 +117,24 @@ export class GameMethodsService {
     const user = socket.user as UserInterface;
     if (!user) return;
 
-    const rooms = await this.roomService.removePlayer(user._id.toString());
-    if (!rooms) return;
+    const room = await this.roomService.removePlayer(
+      socket.user._id.toString(),
+    );
+    
+    if (!room) return;
 
-    rooms.map(async (room) => {
-      if (room.desk.players.length === 1) {
-        await this.stopGame(room._id.toString());
-      }
+    if (room.desk.players.length === 1) {
+      await this.stopGame(room._id.toString());
+    }
 
-      server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
-      server.to(room._id.toString()).emit(EVENTS.SERVER.UPDATE_GAME, room.desk);
-      server
-        .to(room._id.toString())
-        .emit(EVENTS.SERVER.PLAYERS_IN_ROOM, room.desk.players);
-      server
-        .to(room._id.toString())
-        .emit(
-          EVENTS.SERVER.ROOM_MESSAGES,
-          `${user.username} salio de la sala!`,
-        );
-    });
+    server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
+    server.to(room._id.toString()).emit(EVENTS.SERVER.UPDATE_GAME, room.desk);
+    server
+      .to(room._id.toString())
+      .emit(EVENTS.SERVER.PLAYERS_IN_ROOM, room.desk.players);
+    server
+      .to(room._id.toString())
+      .emit(EVENTS.SERVER.ROOM_MESSAGES, `${user.username} salio de la sala!`);
   }
 
   async shuffle({ roomId, cards }: ShuffleArgs) {
@@ -229,8 +227,8 @@ export class GameMethodsService {
 
     if (playersEmptyChips.length === 0) return room;
 
-    for (const { userId } of playersEmptyChips) {
-      await this.roomService.removePlayer(userId);
+    for (const player of playersEmptyChips) {
+      // await this.roomService.removePlayer({ roomId, player });
     }
 
     const updateRoom = await this.roomService.findRoom(roomId);
@@ -324,6 +322,12 @@ export class GameMethodsService {
 
     if (!room.start) {
       let time = 5;
+
+      await this.roomService.updateInRoom({
+        id: room._id.toString(),
+        values: { start: true },
+      });
+
       const interval = setInterval(async () => {
         server.to(roomId).emit(EVENTS.SERVER.ROOM_INFO, {
           message: `El juego inicia en ${time}`,
@@ -332,10 +336,6 @@ export class GameMethodsService {
         time--;
         if (time == 0) {
           clearInterval(interval);
-          await this.roomService.updateInRoom({
-            id: room._id.toString(),
-            values: { start: true },
-          });
 
           this.initGame({ roomId, server });
         }

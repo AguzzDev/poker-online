@@ -46,14 +46,14 @@ export class UserService {
   }
 
   async updateChips({ id, chips, socket }: UpdateChipsArgs) {
-    const { chips: playerChips } = await this.userModel.findByIdAndUpdate(
+    const player = await this.userModel.findByIdAndUpdate(
       id,
       { $inc: { chips } },
       { new: true },
     );
 
     if (!socket) return;
-    socket.emit(EVENTS.SERVER.PLAYER_CHIPS, playerChips);
+    socket.emit(EVENTS.SERVER.PLAYER_CHIPS, player.chips);
   }
 
   async updateUser({ id, values }: UpdateUserArgs) {
