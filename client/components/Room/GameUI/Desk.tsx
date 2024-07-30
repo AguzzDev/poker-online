@@ -22,7 +22,7 @@ const DeskComponent = ({ room }: RoomProps) => (
         </div>
       </div>
 
-      <div className="flex w-full justify-center mt-8">
+      <div className="flex flex-col sm:flex-row w-full justify-center items-center space-y-2 sm:space-y-0 mt-8">
         {room?.desk?.dealer.map(({ id }, i) => (
           <motion.div
             key={`${id}-${i}`}
@@ -31,11 +31,12 @@ const DeskComponent = ({ room }: RoomProps) => (
             transition={{
               delay: i < 3 ? i / 3 + 0.1 : 0,
             }}
+            className="relative h-14 md:h-16 w-14"
           >
             <Image
               src={`/cards/${id}.svg`}
-              height={75}
-              width={60}
+              layout="fill"
+              objectFit="contain"
               alt="Carta"
             />
           </motion.div>
@@ -45,25 +46,25 @@ const DeskComponent = ({ room }: RoomProps) => (
       <div>
         <PlayerInTable
           sit={1}
-          position="-bottom-10 -left-16 md:-left-24 lg:-left-34"
+          position="bottom-10 xl:-bottom-2 -left-16 md:-left-24 lg:-left-34"
           x="left"
           y="bottom"
         />
         <PlayerInTable
           sit={2}
-          position="-top-10 -left-16 md:-left-24 lg:-left-34"
+          position="top-10 xl:-top-2 -left-16 md:-left-24 lg:-left-34"
           x="left"
           y="top"
         />
         <PlayerInTable
           sit={4}
-          position="-bottom-10 -right-16 md:-right-24 lg:-right-34"
+          position="bottom-10 xl:-bottom-2 -right-16 md:-right-24 lg:-right-34"
           x="right"
           y="bottom"
         />
         <PlayerInTable
           sit={3}
-          position="-top-10 -right-16 md:-right-24 lg:-right-34"
+          position="top-10 xl:-top-2 -top-10 -right-16 md:-right-24 lg:-right-34"
           x="right"
           y="top"
         />
@@ -80,7 +81,7 @@ export const Desk = () => {
   const { room } = useGame();
   return (
     <>
-      <section className="max-w-3xl mx-auto h-full pt-10">
+      <section className="max-w-3xl mx-auto h-full pt-12 md:pt-10">
         <DeskComponent room={room} />
       </section>
     </>
