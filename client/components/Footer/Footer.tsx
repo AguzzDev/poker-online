@@ -7,7 +7,7 @@ export const Footer = ({ type = FooterTypeEnum.default }: FooterProps) => {
     body = (
       <footer className="w-full border-t border-border bg-secondary">
         <div className="appScreenWidth py-2">
-          <h5>Develop by AguzzDev</h5>
+          <h4>Develop by AguzzDev</h4>
         </div>
       </footer>
     );
@@ -15,7 +15,7 @@ export const Footer = ({ type = FooterTypeEnum.default }: FooterProps) => {
     body = (
       <footer className="w-full border-t border-border bg-secondary">
         <div className="screenWidth py-2">
-          <h5>Develop by AguzzDev</h5>
+          <h4>Develop by AguzzDev</h4>
         </div>
       </footer>
     );

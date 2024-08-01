@@ -30,7 +30,7 @@ export const RoomPage = (props: { room: RoomInterface }) => {
           <Game showChat={showChat} setShowChat={setShowChat} />
 
           {showChat ? (
-            <section className="hidden md:block w-1/4">
+            <section className="hidden md:block w-[35%] lg:w-1/4">
               <Chat />
             </section>
           ) : null}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { IconXs } from "components/Icon";
+import { IconSm } from "components/Icon";
 import {
   FaVolumeOff,
   FaVolumeUp,
@@ -45,24 +45,24 @@ export const TopComponent = ({ showChat, setShowChat }) => {
   };
 
   return (
-    <div className="flex items-center justify-between mx-auto">
+    <div className="flex items-center justify-between mx-auto mb-3">
       <div className="flex justify-between w-full">
         <button className="flex items-center" onClick={() => leaveRoom()}>
-          <IconXs Icon={MdChevronLeft} />
-          <p className="hidden md:block">Salir</p>
+          <IconSm Icon={MdChevronLeft} />
+          <h4 className="hidden md:block">Salir</h4>
         </button>
 
-        <h4 className="font-bold">{roomInfo || "Esperando Jugadores..."}</h4>
+        <h3 className="font-bold">{roomInfo || "Esperando Jugadores..."}</h3>
 
         <div className="flex space-x-2 md:space-x-5 items-center">
           <button onClick={() => toggleSound()}>
-            <IconXs Icon={!sound ? SpeakerXMarkIcon : SpeakerWaveIcon} />
+            <IconSm Icon={!sound ? SpeakerXMarkIcon : SpeakerWaveIcon} />
           </button>
           <button
             className="hidden md:block"
             onClick={() => setShowChat(!showChat)}
           >
-            <IconXs Icon={showChat ? FaComments : FaCommentSlash} />
+            <IconSm Icon={showChat ? FaComments : FaCommentSlash} />
           </button>
           <div className="block md:hidden">
             <ChatModal showChat={showChat} setShowChat={setShowChat} />

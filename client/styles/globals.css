@@ -66,20 +66,20 @@
     width: 100%;
     cursor: pointer;
     outline: none;
-    height: 15px;
+    height: 20px;
     background: hsl(272, 56%, 74%, 5%);
     border-radius: 16px;
     overflow: hidden;
   }
 
   .rangeInput::-webkit-slider-runnable-track {
-    height: 15px;
+    height: 20px;
     background: hsl(272, 56%, 74%, 5%);
     border-radius: 16px;
   }
 
   .rangeInput::-moz-range-track {
-    height: 15px;
+    height: 20px;
     background: hsl(272, 56%, 74%, 5%);
     border-radius: 16px;
   }
@@ -87,15 +87,15 @@
   .rangeInput::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    height: 15px;
-    width: 15px;
+    height: 20px;
+    width: 20px;
     background-color: #ab65ed;
     border-radius: 50%;
   }
 
   .rangeInput::-moz-range-thumb {
-    height: 15px;
-    width: 15px;
+    height: 20px;
+    width: 20px;
     background-color: #ab65ed;
     border-radius: 50%;
   }
@@ -125,51 +125,37 @@
     @apply bg-clip-text text-transparent bg-gradient-to-r from-[#DB9FFF] from-0% to-[#9337C7] to-70%;
   }
   .screenWidth {
-    @apply w-full max-w-5xl mx-auto px-5 sm:px-10 xl:px-0;
+    @apply w-full max-w-screen-xl mx-auto px-5 sm:px-10 xl:px-0;
   }
   .appScreenWidth {
-    @apply px-5 md:px-10;
+    @apply w-full max-w-screen-1920 mx-auto px-5 md:px-10 lg:px-20;
+  }
+  .cardSize{
+    @apply w-8 h-12 sm:w-14 sm:h-20 lg:w-20 lg:h-24 1920:w-24 1920:h-28
   }
   h1 {
-    @apply font-outfitBold text-gradient1 leading-[.9]  tracking-heading text-heading-mobile md:text-heading-laptop lg:text-heading-desktop;
+    @apply font-outfitBold text-gradient1 leading-[.9] tracking-heading text-6xl md:text-7xl lg:text-8xl 1920:text-[7rem];
   }
   h2 {
-    @apply font-outfitMedium text-2xl md:text-3xl lg:text-4xl;
+    @apply font-outfitMedium text-3xl md:text-4xl lg:text-5xl 1920:text-6xl;
   }
   h3 {
-    @apply font-outfitMedium text-xl md:text-2xl lg:text-3xl;
+    @apply font-outfitMedium text-xl md:text-2xl lg:text-3xl 1920:text-4xl;
   }
   h4 {
-    @apply font-outfitMedium text-lg md:text-xl lg:text-2xl;
+    @apply font-outfitMedium text-lg md:text-xl lg:text-2xl 1920:text-3xl;
   }
   h5 {
+    @apply font-outfitMedium text-base md:text-lg lg:text-xl 1920:text-2xl;
+  }
+  h6 {
     @apply font-outfitMedium text-base md:text-lg lg:text-xl;
   }
   p {
     @apply font-workSans text-sm md:text-base;
   }
-
-  /* viejos */
-  .gradient-game {
-    @apply bg-gradient-to-tl from-[#0e0e15] from-25% to-[#2b2150];
-  }
-  .gradient1-circle {
-    @apply bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#2b2150] to-[#0e0e15] to-70%;
-  }
-  .gradient1-b {
-    @apply bg-gradient-to-b from-[#13141f] via-[#2b2150] via-40% to-[#13141f];
-  }
-  .gradient1-r {
-    @apply bg-gradient-to-r from-[#13141f] from-25% via-[#2b2150] to-[#13141f] to-75%;
-  }
-  .gradient-desk {
-    @apply bg-gradient-to-tl from-[#15192c] to-[#2f2f66];
-  }
-  .border1 {
-    @apply border-borderWidth border-borderColor1;
-  }
   input {
-    @apply bg-transparent outline-none w-full;
+    @apply bg-transparent outline-none w-full text-base md:text-xl;
   }
 }
 @layer utilities {

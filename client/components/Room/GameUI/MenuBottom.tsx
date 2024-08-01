@@ -13,7 +13,7 @@ const ActionButtons = ({ status, bid }) => {
     let body;
     const style = `${
       type === "fold" ? "bg-red1" : Status[type] ? "bg-green1" : "bg-primary"
-    } py-1 font-bold text-sm rounded-full w-full text-center`;
+    } py-2 1920:py-4 font-bold text-md lg:text-xl rounded-xl w-full text-center`;
 
     if (userId == turn) {
       body = (
@@ -69,7 +69,7 @@ const PotButtons = ({ setBid }) => {
   const { room, player } = useGame();
   const { totalBid } = room.desk;
 
-  const style = "px-3 py-[.1rem] text-xs bg-primary rounded-md";
+  const style = "px-3 py-1 text-sm 1920:text-base bg-primary rounded-md";
 
   return (
     <div className="flex space-x-2">
@@ -100,21 +100,21 @@ export const MenuBottom = () => {
 
   return (
     <section className="flex justify-between w-full">
-      <div className="hidden md:flex flex-col justify-end ">
-        <h4>{room.name}</h4>
-        <p className="text-sm">Blind: {blind}</p>
-        <p className="text-sm">Buy in: {formatChips(room.buyIn)}</p>
-        <p className="text-sm">
+      <div className="hidden md:flex flex-1 flex-col justify-end">
+        <h3>{room.name}</h3>
+        <h6>Blind: {blind}</h6>
+        <h6>Buy in: {formatChips(room.buyIn)}</h6>
+        <h6>
           {players.length} / {maxPlayerRoom} Players
-        </p>
+        </h6>
       </div>
 
       {player ? (
-        <div className="w-full md:w-80">
+        <div className="flex-col space-y-2 w-full md:w-2/4">
           <PotButtons setBid={setBid} />
 
-          <div className="py-1">
-            <h5>{formatChips(bid)}</h5>
+          <div>
+            <h4 className="pb-1">{formatChips(bid)}</h4>
             <input
               type="range"
               min={

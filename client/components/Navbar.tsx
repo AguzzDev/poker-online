@@ -6,8 +6,6 @@ import { NavbarProps, NavbarTypeEnum } from "models";
 import { useRouter } from "next/router";
 import ChipsIcon from "public/icons/ChipsIcon";
 import { formatChips } from "utils/formatChips";
-import { IconSm } from "./Icon";
-import { Bars2Icon } from "@heroicons/react/20/solid";
 import { UserNavbarDropdown } from "./Dropdown/UserNavbarDropdown";
 import LogoMobile from "public/LogoMobile";
 
@@ -26,7 +24,7 @@ const NavLink = ({ href, text }) => {
   return (
     <Link href={`/app${href}`} passHref>
       <a className={`w-max ${condition ? "text-accent" : null}`}>
-        {text}
+        <h5>{text}</h5>
         {condition ? (
           <div className="h-[.2em] bg-accent w-3/4"></div>
         ) : (
@@ -62,10 +60,10 @@ export const Navbar = ({ type = NavbarTypeEnum.default }: NavbarProps) => {
 
         <div className="flex items-center space-x-3">
           <div className="flex-col text-end">
-            <h5 className="font-bold">{username}</h5>
+            <h4 className="font-bold">{username}</h4>
             <div className="flex items-center space-x-0 md:space-x-2">
               <ChipsIcon className="scale-50 sm:scale-100" />
-              <p className="text-sm">{formatChips(chips)}</p>
+              <h5>{formatChips(chips)}</h5>
             </div>
           </div>
           <div className="hidden sm:block w-14 h-full bg-black"></div>

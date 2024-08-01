@@ -6,7 +6,7 @@ export const ButtonOne: React.FC<RFCButtonProps> = ({
   ...props
 }) => {
   return (
-    <button {...props} className={`bg-primary hover:opacity-90 px-5 py-1 rounded-md w-full ${style}`}>
+    <button {...props} className={`bg-primary hover:opacity-90 px-10 py-2 md:py-4 rounded-md w-full ${style} text-xl`}>
       {children}
     </button>
   );

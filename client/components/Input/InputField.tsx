@@ -9,9 +9,9 @@ export const InputField = (props) => {
         {...field}
         {...props}
         autoComplete="off"
-        className={`border-b border-border p-2`}
+        className={`border-b border-border p-2 text-xl md:text-2xl`}
       />
-      {meta.error && <p className="text-xs text-red-500 mt-2">{meta.error}</p>}
+      {meta.error && <p className="text-red-500 mt-2">{meta.error}</p>}
     </div>
   );
 };

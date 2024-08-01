@@ -28,13 +28,13 @@ export const Game = ({ showChat, setShowChat }) => {
         <section className="relative flex-1 pb-16">
           <div className="relative w-full">
             <TopComponent showChat={showChat} setShowChat={setShowChat} />
-            <p className="absolute -bottom-4 left-0 text-xs">{roomMessage}</p>
+            <h5 className="absolute -bottom-8 left-2">{roomMessage}</h5>
           </div>
 
           <Desk />
         </section>
 
-        <section className="flex items-end">
+        <section className="flex items-end h-[20%] sm:h-1/4">
           <MenuBottom />
         </section>
       </section>

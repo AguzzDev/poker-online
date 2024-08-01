@@ -4,8 +4,8 @@ import Link from "next/link";
 
 const Item = ({ title, data }) => (
   <div className="text-center">
-    <p className="text-xs">{title}</p>
-    <p className="text-xs">{data}</p>
+    <h5>{title}</h5>
+    <p>{data}</p>
   </div>
 );
 export const RoomItem = ({ data, i }) => {
@@ -19,9 +19,9 @@ export const RoomItem = ({ data, i }) => {
         </div>
 
         <div className="flex-1 flex flex-col items-center">
-          <h5>{name}</h5>
+          <h4>{name}</h4>
 
-          <div className="flex space-x-5">
+          <div className="flex space-x-5 pt-3">
             <Item title="Buy in" data={buyIn} />
             <Item title="Blind" data={(1 * buyIn) / 100} />
             <Item title="Players" data={players} />

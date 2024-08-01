@@ -57,7 +57,7 @@ export const CardIcon = ({
       <div
         className={`${
           opacity ? "opacity-40" : ""
-        } ${style} relative w-6 h-10 border-[1.5px] border-[#3A3A3A] bg-[#303030] rounded-md overflow-hidden`}
+        } ${style} relative w-10 h-16 md:w-14 md:h-24 1920:w-16 1920:h-26 border-[1.5px] border-[#3A3A3A] bg-[#303030] rounded-md overflow-hidden`}
       >
         <div className="absolute top-[2px] left-[2px] flex flex-col items-center">
           <p className={`${color} text-[0.5rem] leading-[0.5rem] mb-[2px]`}>

@@ -7,7 +7,7 @@ export const CircularProgressBar = ({ percentage }) => {
   const dashOffset = dashArray - (percentage / 100) * dashArray;
 
   return (
-    <svg viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`} className="w-[4.8rem] h-[4.8rem]">
+    <svg viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`} className="w-full h-full">
       <circle
         r={radius}
         cx={50}

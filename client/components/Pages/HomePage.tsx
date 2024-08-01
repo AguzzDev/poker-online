@@ -30,37 +30,37 @@ export const HomePage = () => {
     twoPair,
   } = user!.matches;
 
-  const roomsData = Array.isArray(rooms.data)
-    ? rooms.data.map((data: Partial<RoomInterface>, i: number) => (
+  const roomsData = Array.isArray(rooms)
+    ? rooms.map((data: Partial<RoomInterface>, i: number) => (
         <RoomItem data={data} i={i} />
       ))
-    : rooms.data;
+    : rooms;
 
   return (
     <Layout type={LayoutTypeEnum.app} navType={NavbarTypeEnum.app}>
-      <section className="flex flex-col-reverse md:flex-row md:space-x-5 h-full">
-        <Container style="flex flex-col w-full md:w-4/6 h-full md:h-full">
+      <section className="flex flex-col-reverse lg:flex-row lg:space-x-5 h-full">
+        <Container style="flex flex-col w-full lg:w-4/6 h-full md:h-full">
           <div className="flex items-center justify-between">
             <TextUnderline text="Rooms" />
 
-            <h5>Players online: {usersOnline}</h5>
+            <h4>Players online: {usersOnline}</h4>
           </div>
 
-          {rooms.loading ? (
+          {!rooms ? (
             <div className="flex items-center justify-center h-3/4">
               <LoadingSpinner />
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 overflow-y-scroll mt-3 pr-5 md:pr-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 overflow-y-scroll mt-3 pr-5 md:pr-3">
               {roomsData}
             </div>
           )}
         </Container>
 
-        <Container style="flex flex-col h-48 md:flex-1 mb-5 md:mb-0 md:h-full">
+        <Container style="flex flex-col h-72 lg:flex-1 lg:h-full mb-5 lg:mb-0">
           <TextUnderline text="Statistics" />
 
-          <div className="flex flex-row md:flex-col items-center md:items-start h-full space-x-4 md:space-x-0 md:space-y-2 overflow-x-auto overflow-y-hidden md:overflow-x-hidden md:overflow-y-scroll md:pb-2 pr-5 md:pr-3">
+          <div className="flex flex-row lg:flex-col items-center lg:items-start h-full space-x-10 lg:space-x-0 lg:space-y-5 overflow-x-auto overflow-y-hidden lg:overflow-x-hidden lg:overflow-y-scroll lg:pb-2 pr-5 lg:pr-3">
             <Stats title={PokerHandsEnum["highCard"]} value={highCard} />
             <Stats title={PokerHandsEnum["onePair"]} value={onePair} />
             <Stats title={PokerHandsEnum["twoPair"]} value={twoPair} />

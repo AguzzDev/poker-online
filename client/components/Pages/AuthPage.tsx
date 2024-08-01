@@ -14,7 +14,7 @@ import { LineOne } from "components/Line/LineOne";
 import { ButtonOne } from "components/Button/ButtonOne";
 
 const Error = ({ error }: { error: string | undefined }) => (
-  <>{error ? <p className="text-xs text-red-500">{error}</p> : <></>}</>
+  <>{error ? <p className="text-red-500">{error}</p> : <></>}</>
 );
 
 export const AuthPage = () => {
@@ -42,11 +42,13 @@ export const AuthPage = () => {
           <div className="h-[95%]">
             <Logo />
 
-            <div className="mt-5 flex-col space-y-2">
+            <div className="mt-5">
               {screen === 0 ? (
                 <section className="flex-col">
                   <h2>Welcome Back!</h2>
-                  <p>Continue with Google or enter your details</p>
+                  <h5 className="my-2">
+                    Continue with Google or enter your details
+                  </h5>
                   <LineOne />
 
                   <Formik
@@ -62,7 +64,7 @@ export const AuthPage = () => {
                     }}
                   >
                     {({ resetForm, errors }) => (
-                      <Form className="flex flex-col space-y-5">
+                      <Form className="flex flex-col space-y-2 md:space-y-8">
                         <InputField
                           name="email"
                           type="text"
@@ -76,20 +78,18 @@ export const AuthPage = () => {
 
                         <Error error={errors?.global} />
 
-                        <ButtonOne style="py-2" type="submit">
-                          Log in
-                        </ButtonOne>
+                        <ButtonOne type="submit">Log in</ButtonOne>
 
                         <div className="flex space-x-3">
-                          <p className="text-xs">Don’t have an account?</p>
+                          <h5>Don’t have an account?</h5>
                           <button
-                            className="text-xs font-bold hover:text-primary hover:opacity-90"
+                            className="font-bold hover:text-primary hover:opacity-90"
                             onClick={() => {
                               resetForm();
                               setScreen(1);
                             }}
                           >
-                            Sign up
+                            <h5>Sign up</h5>
                           </button>
                         </div>
                       </Form>
@@ -98,7 +98,7 @@ export const AuthPage = () => {
                 </section>
               ) : (
                 <section className="flex-col">
-                  <h2>We were waiting for you :)</h2>
+                  <h2 className="mb-2">We were waiting for you :)</h2>
                   <LineOne />
 
                   <Formik
@@ -114,7 +114,7 @@ export const AuthPage = () => {
                     }}
                   >
                     {({ resetForm, errors }) => (
-                      <Form className="flex flex-col space-y-5">
+                      <Form className="flex flex-col space-y-2 md:space-y-8">
                         <InputField
                           name="username"
                           type="text"
@@ -138,14 +138,10 @@ export const AuthPage = () => {
 
                         <Error error={errors?.global} />
 
-                        <ButtonOne style="py-2" type="submit">
-                          Sign in
-                        </ButtonOne>
+                        <ButtonOne type="submit">Sign in</ButtonOne>
 
                         <div className="flex space-x-3 pt-2">
-                          <p className="text-xs">
-                            Do you already have an account?
-                          </p>
+                          <h5>Do you already have an account?</h5>
                           <button
                             className="text-xs font-bold hover:text-primary hover:opacity-90"
                             onClick={() => {
@@ -153,7 +149,7 @@ export const AuthPage = () => {
                               setScreen(0);
                             }}
                           >
-                            Log in
+                            <h5>Log in</h5>
                           </button>
                         </div>
                       </Form>

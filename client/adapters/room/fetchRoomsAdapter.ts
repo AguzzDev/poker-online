@@ -9,7 +9,7 @@ const getRoomsAdapter = async (): Promise<RoomInterface[] | string> => {
       return roomValues(room);
     });
   } catch (error) {
-    throw "Failed getting rooms"
+    throw "Failed getting rooms";
   }
 };
 

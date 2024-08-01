@@ -37,8 +37,8 @@ export const Chat = () => {
 
   return (
     <section className="flex flex-col h-full border-2 border-border rounded-b-md md:rounded-md">
-      <div className="py-2 px-5">
-        <h4 className="font-bold">Chat</h4>
+      <div className="py-4 px-5">
+        <h3 className="font-bold">Chat</h3>
       </div>
 
       <div className="flex-col space-y-3 px-5 py-2 flex-1 overflow-y-scroll">
@@ -51,12 +51,12 @@ export const Chat = () => {
                   user.username === username ? "flex-row-reverse" : "flex-row"
                 } flex space-x-3 items-start relative w-full`}
               >
-                <div className="relative w-8 h-8 bg-primary rounded-full">
+                <div className="relative w-12 h-12 md:w-14 md:h-14 bg-primary rounded-full">
                   <Image src={image ? image : "/noImage.png"} layout="fill" />
                 </div>
 
-                <div className="flex-1 px-3 py-1 rounded-lg border-borderWidth bg-purple1 border-border break-words">
-                  <p className="text-sm">{message}</p>
+                <div className="flex-1 min-h-20 px-3 pt-1 pb-3 rounded-lg border-borderWidth bg-purple1 border-border break-words">
+                  <p className="text-base md:text-xl">{message}</p>
                 </div>
               </div>
             ))

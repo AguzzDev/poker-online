@@ -14,6 +14,9 @@ module.exports = {
         workSans: ["workSans", "sans-serif"],
         workSansSBI: ["workSansSBI", "sans-serif"],
       },
+      screens: {
+        1920: "1920px",
+      },
       saturate: {
         25: ".25",
       },
@@ -25,6 +28,9 @@ module.exports = {
       },
       borderRadius: {
         ellipse: "50%",
+      },
+      scale: {
+        "160": "1.60",
       },
       colors: {
         text: "#ffff",
@@ -39,7 +45,7 @@ module.exports = {
         green1: "#1b513c",
       },
       fontSize: {
-        "heading-desktop": "5rem",
+        "heading-desktop": "5.5rem",
         "heading-laptop": "4rem",
         "heading-mobile": "2rem",
       },

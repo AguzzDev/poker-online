@@ -1,4 +1,4 @@
-import { useState, useContext, useRef } from "react";
+import { useState, useContext } from "react";
 import { Socket, io } from "socket.io-client";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
@@ -15,16 +15,12 @@ import {
 import { emitSound } from "utils/emitSound";
 import GameContext from "context/Game/GameContext";
 import getRoomsAdapter from "adapters/room/fetchRoomsAdapter";
-import * as API from "services/api";
 
 const GameProvider = ({ children }: any) => {
   const [socket, setSocket] = useState<Socket>(null);
   const [usersOnline, setUsersOnline] = useState<number>(0);
   const [room, setRoom] = useState<RoomInterface | null>(null);
-  const [rooms, setRooms] = useState<GameContextType["rooms"]>({
-    loading: true,
-    data: [],
-  });
+  const [rooms, setRooms] = useState<GameContextType["rooms"] | null>(null);
   const [roomMessage, setRoomMessage] = useState([]);
   const [roomInfo, setRoomInfo] = useState<string>("");
   const [turn, setTurn] = useState<string>("");
@@ -182,15 +178,15 @@ const GameProvider = ({ children }: any) => {
       const getRooms = async () => {
         try {
           let timeout;
-          const data = await getRoomsAdapter();
+          const res = await getRoomsAdapter();
 
           timeout = setTimeout(() => {
-            setRooms({ loading: false, data: data });
+            setRooms(res);
           }, 4000);
 
           return () => clearInterval(timeout);
         } catch (error) {
-          setRooms({ loading: false, data: error as string });
+          setRooms(error as string);
         }
       };
 
@@ -199,13 +195,18 @@ const GameProvider = ({ children }: any) => {
       socket.on(EVENTS.SERVER.ROOMS, ({ type, room }) => {
         setRooms((prevRooms) => {
           if (type === "create") {
+            if (!Array.isArray(prevRooms)) return;
+
             return [...prevRooms, room];
           } else if (type === "update") {
-            console.log("update room", room);
+            if (!Array.isArray(prevRooms)) return;
+
             return prevRooms.map((data) =>
               data._id === room._id ? room : data
             );
           } else if (type === "delete") {
+            if (!Array.isArray(prevRooms)) return;
+
             return prevRooms.filter(({ _id }) => _id != room._id);
           }
           return prevRooms;

@@ -59,7 +59,7 @@ export interface GameContextType {
   player: PlayerInterface;
   room: RoomInterface;
   roomMessage: any;
-  rooms: { loading: boolean; data: RoomInterface[] | string };
+  rooms: RoomInterface[] | string;
   timer: number;
   turn: string;
   showReBuyMenu: boolean;
