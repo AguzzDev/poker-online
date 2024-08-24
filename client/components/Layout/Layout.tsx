@@ -1,4 +1,3 @@
-import Head from "next/head";
 import React from "react";
 import { Navbar } from "components/Navbar";
 import {
@@ -14,7 +13,6 @@ import Link from "next/link";
 import LogoMobile from "public/LogoMobile";
 
 export const Layout = ({
-  title,
   children,
   type = LayoutTypeEnum.default,
   navType = NavbarTypeEnum.default,
