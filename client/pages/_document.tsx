@@ -7,7 +7,7 @@ export default function Document() {
       <Head>
         <script
           async
-          src={`https://www.googletagmanager.com/gtag/js?id='${process.env.NEXT_PUBLIC_ANALITYCS_ID}`}
+          src={`https://www.googletagmanager.com/gtag/js?id='${process.env.NEXT_PUBLIC_ANALYTICS_ID}`}
         />
         <script
           dangerouslySetInnerHTML={{
@@ -15,10 +15,9 @@ export default function Document() {
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
-  gtag('config', '${process.env.NEXT_PUBLIC_ANALITYCS_ID}')`,
+  gtag('config', '${process.env.NEXT_PUBLIC_ANALYTICS_ID}')`,
           }}
         />
-        <title>Poker Online</title>
         <link rel="shortcut icon" href="/Logo.png" />
         <Metatags />
       </Head>

@@ -5,6 +5,7 @@ import UserProvider from "context/User/UserProvider";
 import GameProvider from "context/Game/GameProvider";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Head from "next/head";
 
 function MyApp({ Component, pageProps }: AppProps) {
   let body;
@@ -26,6 +27,10 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <>
+      <Head>
+        <title>Poker Online</title>
+      </Head>
+
       <ToastContainer />
 
       {body}
