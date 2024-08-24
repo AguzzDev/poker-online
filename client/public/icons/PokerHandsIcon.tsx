@@ -3,15 +3,16 @@ import { CardIcon } from "../../public/icons/CardIcon";
 
 export const PokerHandsIcon = ({ type }: { type: PokerHandsEnum }) => {
   let body = <></>;
+  const opacity = "opacity-30";
 
   if (type === PokerHandsEnum.highCard) {
     body = (
       <div className="flex space-x-2">
         <CardIcon suit={CardSuitEnum.clubs} value="A" />
-        <CardIcon opacity={true} suit={CardSuitEnum.hearts} value="2" />
-        <CardIcon opacity={true} suit={CardSuitEnum.hearts} value="6" />
-        <CardIcon opacity={true} suit={CardSuitEnum.diamonds} value="8" />
-        <CardIcon opacity={true} suit={CardSuitEnum.diamonds} value="J" />
+        <CardIcon style={opacity} suit={CardSuitEnum.hearts} value="2" />
+        <CardIcon style={opacity} suit={CardSuitEnum.hearts} value="6" />
+        <CardIcon style={opacity} suit={CardSuitEnum.diamonds} value="8" />
+        <CardIcon style={opacity} suit={CardSuitEnum.diamonds} value="J" />
       </div>
     );
   }
@@ -20,9 +21,9 @@ export const PokerHandsIcon = ({ type }: { type: PokerHandsEnum }) => {
       <div className="flex space-x-2">
         <CardIcon suit={CardSuitEnum.clubs} value="A" />
         <CardIcon suit={CardSuitEnum.hearts} value="A" />
-        <CardIcon opacity={true} suit={CardSuitEnum.hearts} value="6" />
-        <CardIcon opacity={true} suit={CardSuitEnum.diamonds} value="8" />
-        <CardIcon opacity={true} suit={CardSuitEnum.diamonds} value="J" />
+        <CardIcon style={opacity} suit={CardSuitEnum.hearts} value="6" />
+        <CardIcon style={opacity} suit={CardSuitEnum.diamonds} value="8" />
+        <CardIcon style={opacity} suit={CardSuitEnum.diamonds} value="J" />
       </div>
     );
   }
@@ -33,7 +34,7 @@ export const PokerHandsIcon = ({ type }: { type: PokerHandsEnum }) => {
         <CardIcon suit={CardSuitEnum.hearts} value="A" />
         <CardIcon suit={CardSuitEnum.hearts} value="Q" />
         <CardIcon suit={CardSuitEnum.clubs} value="Q" />
-        <CardIcon opacity={true} suit={CardSuitEnum.diamonds} value="J" />
+        <CardIcon style={opacity} suit={CardSuitEnum.diamonds} value="J" />
       </div>
     );
   }
@@ -43,8 +44,8 @@ export const PokerHandsIcon = ({ type }: { type: PokerHandsEnum }) => {
         <CardIcon suit={CardSuitEnum.clubs} value="A" />
         <CardIcon suit={CardSuitEnum.hearts} value="A" />
         <CardIcon suit={CardSuitEnum.diamonds} value="A" />
-        <CardIcon opacity={true} suit={CardSuitEnum.clubs} value="Q" />
-        <CardIcon opacity={true} suit={CardSuitEnum.diamonds} value="J" />
+        <CardIcon style={opacity} suit={CardSuitEnum.clubs} value="Q" />
+        <CardIcon style={opacity} suit={CardSuitEnum.diamonds} value="J" />
       </div>
     );
   }
@@ -88,7 +89,7 @@ export const PokerHandsIcon = ({ type }: { type: PokerHandsEnum }) => {
         <CardIcon suit={CardSuitEnum.clubs} value="A" />
         <CardIcon suit={CardSuitEnum.spades} value="A" />
         <CardIcon suit={CardSuitEnum.spades} value="A" />
-        <CardIcon opacity={true} suit={CardSuitEnum.clubs} value="J" />
+        <CardIcon style={opacity} suit={CardSuitEnum.clubs} value="J" />
       </div>
     );
   }

@@ -1,24 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 
 import { User } from 'src/schemas/user.schema';
-import {
-  RoomInterface,
-  UpdateChipsArgs,
-  UpdateUserArgs,
-  UserInterface,
-} from 'src/models';
-import { RegisterInputDto } from 'src/dto/registerInputDto';
+import { UpdateChipsArgs, UpdateUserArgs, UserInterface } from 'src/models';
 import { EVENTS } from 'const';
-import { Room } from 'src/schemas/room.schema';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserInterface>,
-    @InjectModel(Room.name) private roomModel: Model<RoomInterface>,
   ) {}
 
   async getUsers(): Promise<UserInterface[]> {
@@ -31,34 +23,56 @@ export class UserService {
     });
   }
 
+  async getUserByVerifyCode(token: string): Promise<UserInterface> {
+    const findUser = await this.userModel.findOne({
+      verifyCode: token,
+    });
+    if (!findUser) throw new BadRequestException('User not found');
+    return findUser;
+  }
+
   async getUserById(id: string): Promise<UserInterface> {
     return await this.userModel.findById({ _id: id });
   }
 
-  async createUser(values: RegisterInputDto): Promise<UserInterface> {
+  async getUserByEmail(email: string): Promise<UserInterface> {
+    return await this.userModel.findOne({ email });
+  }
+
+  async getUserByToken(token: string): Promise<string> {
+    const user = await this.userModel.findOne({ accessToken: token });
+
+    return user.username;
+  }
+
+  async createUser(values: Partial<UserInterface>): Promise<UserInterface> {
+    if (values.provider) {
+      const user = await this.userModel.create(values);
+      return user;
+    }
+
     const passwordEncrypted = bcrypt.hashSync(values.password, 12);
     const user = await this.userModel.create({
       ...values,
       password: passwordEncrypted,
     });
-
     return user;
   }
 
   async updateChips({ id, chips, socket }: UpdateChipsArgs) {
-    const player = await this.userModel.findByIdAndUpdate(
+    const user = await this.userModel.findByIdAndUpdate(
       id,
       { $inc: { chips } },
       { new: true },
     );
 
     if (!socket) return;
-    socket.emit(EVENTS.SERVER.PLAYER_CHIPS, player.chips);
+    socket.emit(EVENTS.SERVER.UPDATE_USER, { chips: user.chips });
   }
 
   async updateUser({ id, values }: UpdateUserArgs) {
     const update = async (id: string, values: Partial<UserInterface>) => {
-      await this.userModel.findByIdAndUpdate(id, {
+      return await this.userModel.findByIdAndUpdate(id, {
         $set: values,
       });
     };
@@ -70,8 +84,33 @@ export class UserService {
         }),
       );
     } else {
-      await update(id, values);
+      return await update(id, values);
     }
+  }
+
+  async updateUserMatches({ id, values }: { id: string; values: string }) {
+    const heirarchy = {
+      'High Card': 'highCard',
+      'One Pair': 'onePair',
+      'Two Pair': 'twoPair',
+      'Three of a Kind': 'threeOfKind',
+      Straight: 'straight',
+      Flush: 'flush',
+      'Full House': 'fullHouse',
+      Poker: 'poker',
+      'Straight Flush': 'straightFlush',
+      'Royal Flush': 'royalFlush',
+    };
+
+    await this.userModel.findByIdAndUpdate(
+      id,
+      {
+        $inc: {
+          [`matches.${heirarchy[values]}`]: 1,
+        },
+      },
+      { new: true },
+    );
   }
 
   async removeUser(): Promise<any> {

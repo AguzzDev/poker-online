@@ -1,12 +1,13 @@
 import { PokerHandsEnum } from "models";
 import { PokerHandsIcon } from "public/icons/PokerHandsIcon";
 
-interface PropsStats {
+export const Stats = ({
+  title,
+  value,
+}: {
   title: PokerHandsEnum;
-  value: number | undefined;
-}
-
-export const Stats = ({ title, value }: PropsStats) => {
+  value: number;
+}) => {
   const statsTextDictionary = {
     highCard: "High Card",
     onePair: "One Pair",

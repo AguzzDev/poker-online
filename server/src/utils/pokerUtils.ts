@@ -1,4 +1,4 @@
-import { CardInterface } from 'src/models';
+import { CardInterface, PlayerInterface } from 'src/models';
 
 interface Card {
   value: number;
@@ -44,7 +44,7 @@ const heirarchyValues = {
   'Royal Flush': 10,
 };
 
-const checkDraw = (array) => {
+const checkDraw = (array, totalBid) => {
   const orderByCardDecider = array.sort((a, b) =>
     a.cardDecider < b.cardDecider ? 1 : -1,
   );
@@ -56,17 +56,18 @@ const checkDraw = (array) => {
   if (cardDeciderIsUnique.length > 1) {
     return {
       usersId: orderByCardDecider.map(({ _id }) => _id),
-      message: `${orderByCardDecider.map(({ name }) => name).join(', ')} tied with ${orderByCardDecider[0].heirarchy}`,
+      message: `${orderByCardDecider.map(({ name }) => name).join(', ')} split ${totalBid} chips tied with ${orderByCardDecider[0].heirarchy}`,
     };
   }
 
   return {
-    usersId: [orderByCardDecider[0].name],
-    message: `${orderByCardDecider[0].name} won with ${orderByCardDecider[0].heirarchy}`,
+    usersId: orderByCardDecider[0]._id,
+    heirarchy: orderByCardDecider[0].heirarchy,
+    message: `${orderByCardDecider[0].name} won ${totalBid} chips with ${orderByCardDecider[0].heirarchy}`,
   };
 };
 
-export const getWinner = (playerHands) => {
+export const getWinner = (playerHands, totalBid) => {
   const orderPlayersArray = (array, type) => {
     return type === 'array'
       ? array
@@ -88,46 +89,25 @@ export const getWinner = (playerHands) => {
   );
 
   if (playersFilter.length === 1) {
+    const player = playersFilter[0];
+
     return {
-      usersId: [playersFilter[0]._id],
-      message: `${playersFilter[0].name} won with ${playersFilter[0].heirarchy}`,
+      usersId: player._id,
+      heirarchy: player.heirarchy,
+      message: `${player.name} won ${totalBid} chips with ${player.heirarchy}`,
     };
-  }
+  } else {
+    order = orderPlayersArray(playersFilter, 'string');
 
-  const heirarchy = playersFilter[0].heirarchyValue;
-  switch (heirarchy) {
-    case heirarchyValues.Straight:
-    case heirarchyValues['Royal Flush']:
-    case heirarchyValues['Straight Flush']:
-    case heirarchyValues['Two Pair']:
-    case heirarchyValues['Full House']:
-      order = orderPlayersArray(playersFilter, 'array');
+    if (order.every(({ cardHigh }) => cardHigh === order[0].cardHigh)) {
+      return checkDraw(order, totalBid);
+    }
 
-      if (order.every(({ cards }) => cards === order[0].cards)) {
-        return checkDraw(order);
-      }
-
-      return {
-        usersId: [order[0]._id],
-        message: `${order[0].name} won with ${order[0].heirarchy}`,
-      };
-    case heirarchyValues.Flush:
-      return {
-        usersId: playersFilter.map(({ _id }) => _id),
-        message: `${playersFilter.map(({ name }) => name).join(', ')} tied with Flush`,
-      };
-
-    default:
-      order = orderPlayersArray(playersFilter, 'string');
-
-      if (order.every(({ cardHigh }) => cardHigh === order[0].cardHigh)) {
-        return checkDraw(order);
-      }
-
-      return {
-        usersId: [order[0]._id],
-        message: `${order[0].name} won with ${order[0].heirarchy}`,
-      };
+    return {
+      usersId: order[0]._id,
+      heirarchy: order[0].heirarchy,
+      message: `${order[0].name} won ${totalBid} chips with ${order[0].heirarchy}`,
+    };
   }
 };
 

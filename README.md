@@ -25,22 +25,14 @@ Bienvenido a **Poker Online App**, mi plataforma para jugar al póker con amigos
 
 Estoy trabajando en varias mejoras y nuevas funcionalidades para la aplicación. Aquí tienes un vistazo a lo que está por venir:
 
-- **Mostrar las estadisticas del jugador**
-- **Cambiar la logica de sistema de juego**
 - **Sistema de Fichas Cada Cierto Tiempo**:
 - **Traducir la Página**
-- **Rango Admin**
-- **Diferentes tipos de Salas**
 - **Devolver el Sobrante de Fichas en el Win**
-- **Tests en el Backend (Jest)**
-- **Tests en el Frontend (Cypress)**
-- **Refactorización Global**
-- **Mejorar el Tipado**
-- **Mejorar la UI/UX**:
 
 ## Contribuir
 
 Estoy abierto a contribuciones de la comunidad.
 
 ![Screenshot 1](./client/public/screenshots/1.png)
+![Screenshot 2](./client/public/screenshots/2.png)
 

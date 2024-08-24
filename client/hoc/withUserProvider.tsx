@@ -1,11 +1,18 @@
 import UserProvider from "context/User/UserProvider";
+import { SessionProvider } from "next-auth/react";
 
-const withUserProvider = (WrappedComponent: React.FC) => {
-  const withUserProvider = (props) => {
+interface Props {}
+
+const withUserProvider = <T extends Props>(
+  WrappedComponent: React.ComponentType<T>
+) => {
+  const withUserProvider = (props: T) => {
     return (
-      <UserProvider>
-        <WrappedComponent {...props} />
-      </UserProvider>
+      <SessionProvider>
+        <UserProvider>
+          <WrappedComponent {...props} />
+        </UserProvider>
+      </SessionProvider>
     );
   };
 

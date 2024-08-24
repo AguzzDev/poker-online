@@ -2,20 +2,33 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import withUserProvider from "./withUserProvider";
 import { useUser } from "context/User/UserProvider";
+import { useSession } from "next-auth/react";
+import { UserInterface } from "models";
 
-const withAuth = (WrappedComponent: React.FC) => {
-  const withAuth = (props) => {
+interface Props {}
+
+const withAuth = <T extends Props>(
+  WrappedComponent: React.ComponentType<T>
+) => {
+  const withAuth = (props: T) => {
     const router = useRouter();
-    const { user, loading } = useUser();
-    const condition = user && router.pathname == "/auth";
+
+    const { data: session } = useSession();
+    const { user, setAccount } = useUser();
 
     useEffect(() => {
-      if (!loading && condition) {
+      if (session && !user) {
+        setAccount(session.user as UserInterface);
+      }
+    }, [session]);
+
+    useEffect(() => {
+      if (user) {
         router.push("/app");
       }
-    }, [loading]);
+    }, [router, user]);
 
-    if (loading || condition) {
+    if (user) {
       return null;
     }
 

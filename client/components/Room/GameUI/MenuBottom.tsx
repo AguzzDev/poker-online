@@ -2,72 +2,93 @@ import { formatChips } from "utils/formatChips";
 import { useGame } from "context/Game/GameProvider";
 import { Status } from "models";
 
-const ActionButtons = ({ status, bid }) => {
-  let body;
-  const { player, turn, playMove, room } = useGame();
+const ActionButtons = () => {
+  const { player, turn, playMove, room, bid } = useGame();
 
-  const { bidToPay } = room.desk;
-  const { userId, bid: Pbid, chips } = player;
+  const { bidToPay } = room!.desk;
+  const { userId, bid: playerBid, chips } = player!;
 
-  const Element = ({ type, text }) => {
+  const playerBidToPay = bidToPay - playerBid;
+  const SecondButton = () => (
+    <>
+      {playerBid < bidToPay ? (
+        <Element type="call" text="Call" />
+      ) : (
+        <Element type="check" text="Check" />
+      )}
+    </>
+  );
+
+  const ThirdButton = () => {
     let body;
-    const style = `${
-      type === "fold" ? "bg-red1" : Status[type] ? "bg-green1" : "bg-primary"
-    } py-2 1920:py-4 font-bold text-md lg:text-xl rounded-xl w-full text-center`;
 
-    if (userId == turn) {
+    if (
+      room!.desk.status === Status.bid ||
+      room!.desk.status === Status.raise
+    ) {
       body = (
-        <button className={style} onClick={() => playMove(type)}>
-          {text}
-        </button>
+        <>
+          {bidToPay * 2 > chips || bidToPay >= chips + bid ? (
+            <Element type="allIn" text="All In" />
+          ) : (
+            <Element type="raise" text="Raise" />
+          )}
+        </>
       );
     } else {
-      body = <div className={style}>{text}</div>;
+      body = <Element type="bid" text="Bid" />;
     }
 
     return body;
   };
 
-  if (!status) {
-    body = (
-      <>
-        <Element type="fold" text="Fold" />
-        <Element type="check" text="Check" />
-        <Element
-          type={bid === chips ? "allIn" : "bid"}
-          text={bid === chips ? "All In" : "Bid"}
-        />
-      </>
-    );
-  } else {
-    body = (
-      <>
-        <Element type="fold" text="Fold" />
+  const Element = ({ type, text }: { [key: string]: string }) => {
+    let body;
+    const style = `${
+      type === "fold" ? "bg-red1" : "bg-green1"
+    } py-2 1920:py-2 font-bold text-md lg:text-xl rounded-xl w-full flex flex-col justify-center items-center`;
 
-        {Pbid < bidToPay ? (
-          <Element type="call" text="Call" />
-        ) : (
-          <Element type="check" text="Check" />
-        )}
+    const statusType = type as Status
 
-        {bidToPay * 2 > chips ? (
-          <Element type="allIn" text="All In" />
-        ) : (
-          <Element
-            type={bid === chips ? "allIn" : "raise"}
-            text={bid === chips ? "All In" : "Raise"}
-          />
-        )}
-      </>
-    );
-  }
+    if (userId == turn) {
+      body = (
+        <button className={style} onClick={() => playMove(statusType)}>
+          {text}
+          <br />
+          <span className="text-sm">{type === "call" && playerBidToPay}</span>
+        </button>
+      );
+    } else {
+      body = (
+        <div className={style}>
+          {text}
+          <br />
+          <span className="text-sm">{type === "call" && playerBidToPay}</span>
+        </div>
+      );
+    }
 
-  return <div className="flex justify-center space-x-3">{body}</div>;
+    return body;
+  };
+
+  return (
+    <div className="flex justify-center space-x-3">
+      <Element type="fold" text="Fold" />
+      {bid !== chips && bidToPay < chips + playerBid ? (
+        <>
+          <SecondButton />
+          <ThirdButton />
+        </>
+      ) : (
+        <Element type="allIn" text="All In" />
+      )}
+    </div>
+  );
 };
 
-const PotButtons = ({ setBid }) => {
-  const { room, player } = useGame();
-  const { totalBid } = room.desk;
+const PotButtons = () => {
+  const { room, player, setBid } = useGame();
+  const { totalBid } = room!.desk;
 
   const style = "px-3 py-1 text-sm 1920:text-base bg-primary rounded-md";
 
@@ -84,7 +105,7 @@ const PotButtons = ({ setBid }) => {
       </button>
       <button
         onClick={() => {
-          setBid(player.chips);
+          setBid(player!.chips);
         }}
         className={style}
       >
@@ -96,32 +117,28 @@ const PotButtons = ({ setBid }) => {
 
 export const MenuBottom = () => {
   const { room, player, bid, setBid } = useGame();
-  const { status, bidToPay, players, maxPlayerRoom, blind } = room.desk;
+  const { players, maxPlayerRoom, blind, totalBid } = room!.desk;
 
   return (
     <section className="flex justify-between w-full">
       <div className="hidden md:flex flex-1 flex-col justify-end">
-        <h3>{room.name}</h3>
+        <h3>{room!.name}</h3>
         <h6>Blind: {blind}</h6>
-        <h6>Buy in: {formatChips(room.buyIn)}</h6>
+        <h6>Buy in: {formatChips(room!.buyIn)}</h6>
         <h6>
           {players.length} / {maxPlayerRoom} Players
         </h6>
       </div>
 
-      {player ? (
+      {player && player.chips! > 0 ? (
         <div className="flex-col space-y-2 w-full md:w-2/4">
-          <PotButtons setBid={setBid} />
+          <PotButtons />
 
           <div>
             <h4 className="pb-1">{formatChips(bid)}</h4>
             <input
               type="range"
-              min={
-                bidToPay
-                  ? Math.round((bidToPay * 100) / player.chips)
-                  : Math.round((blind * 100) / player.chips)
-              }
+              min={Math.round((totalBid * 100) / player.chips)}
               onChange={(e) =>
                 setBid((Number(e.target.value) * player.chips) / 100)
               }
@@ -130,7 +147,7 @@ export const MenuBottom = () => {
             />
           </div>
 
-          <ActionButtons status={status} bid={bid} />
+          <ActionButtons />
         </div>
       ) : null}
     </section>

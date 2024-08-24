@@ -1,20 +1,19 @@
 import { useGame } from "context/Game/GameProvider";
-import { MenuBottom, TopComponent, PlayerInTable } from "./GameUI";
-
+import { Desk, MenuBottom, TopComponent } from "./GameUI";
 import { ReBuyModal } from "components/Modal/ReBuyModal";
-import { Desk } from "./GameUI/Desk";
 import { useEffect } from "react";
+import { ShowChatProps } from "models";
 
-export const Game = ({ showChat, setShowChat }) => {
-  const { showReBuyMenu, room, roomMessage, setRoomMessage } = useGame();
+export const Game = ({ showChat, setShowChat }: ShowChatProps) => {
+  const { showReBuyMenu, roomNotification, setRoomNotification } = useGame();
 
   useEffect(() => {
-    if (roomMessage) {
+    if (roomNotification) {
       setTimeout(() => {
-        setRoomMessage(null);
+        setRoomNotification(null);
       }, 5000);
     }
-  }, [roomMessage]);
+  }, [roomNotification]);
 
   return (
     <section className="flex-1">
@@ -28,13 +27,13 @@ export const Game = ({ showChat, setShowChat }) => {
         <section className="relative flex-1 pb-16">
           <div className="relative w-full">
             <TopComponent showChat={showChat} setShowChat={setShowChat} />
-            <h5 className="absolute -bottom-8 left-2">{roomMessage}</h5>
+            <h5 className="absolute -bottom-8 left-2">{roomNotification}</h5>
           </div>
 
           <Desk />
         </section>
 
-        <section className="flex items-end h-[20%] sm:h-1/4">
+        <section className="flex items-end h-[20%] sm:h-[30%]">
           <MenuBottom />
         </section>
       </section>

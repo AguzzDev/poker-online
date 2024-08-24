@@ -1,15 +1,26 @@
 import axios from "axios";
 import { RoomPage } from "components/Pages/RoomPage";
-import withGame from "hoc/withGame";
 import { RoomInterface } from "models";
 import { GetStaticProps, GetStaticPaths, NextPage } from "next";
+import { useRouter } from "next/router";
+import { parseCookies } from "nookies";
+import { useEffect } from "react";
 
-const Room: NextPage<any> = ({ data }: { data: RoomInterface }) => {
-  return <RoomPage room={data} />;
+const Room: NextPage = () => {
+  const router = useRouter();
+
+  useEffect(() => {
+    const cookie = parseCookies();
+    if (!cookie.user) router.push("/");
+  }, []);
+
+  return <RoomPage />;
 };
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/room`);
+  const { data }: { data: RoomInterface[] } = await axios.get(
+    `${process.env.NEXT_PUBLIC_API_URL}/room`
+  );
 
   const paths = data.map(({ _id }) => ({
     params: {
@@ -35,4 +46,4 @@ export const getStaticProps: GetStaticProps = async ({ params }: any) => {
   };
 };
 
-export default withGame(Room);
+export default Room

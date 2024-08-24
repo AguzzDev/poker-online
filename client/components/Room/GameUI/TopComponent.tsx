@@ -1,19 +1,14 @@
 import React, { useEffect, useState } from "react";
-
 import { IconSm } from "components/Icon";
-import {
-  FaVolumeOff,
-  FaVolumeUp,
-  FaComments,
-  FaCommentSlash,
-} from "react-icons/fa";
+import { FaComments, FaCommentSlash } from "react-icons/fa";
 import { MdChevronLeft } from "react-icons/md";
 import { useGame } from "context/Game/GameProvider";
 import { SpeakerWaveIcon, SpeakerXMarkIcon } from "@heroicons/react/20/solid";
 import { ChatModal } from "components/Modal/ChatModal";
+import { ShowChatProps } from "models";
 
-export const TopComponent = ({ showChat, setShowChat }) => {
-  const { leaveRoom, roomInfo } = useGame();
+export const TopComponent = ({ showChat, setShowChat }: ShowChatProps) => {
+  const { leaveRoom, roomStatus } = useGame();
 
   const [sound, setSound] = useState(false);
   const [music] = useState(new Audio("/sounds/music1.mp3"));
@@ -52,7 +47,7 @@ export const TopComponent = ({ showChat, setShowChat }) => {
           <h4 className="hidden md:block">Salir</h4>
         </button>
 
-        <h3 className="font-bold">{roomInfo || "Esperando Jugadores..."}</h3>
+        <h3 className="font-bold">{roomStatus || "Waiting players..."}</h3>
 
         <div className="flex space-x-2 md:space-x-5 items-center">
           <button onClick={() => toggleSound()}>

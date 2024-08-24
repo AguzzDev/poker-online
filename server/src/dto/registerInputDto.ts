@@ -11,6 +11,6 @@ export class RegisterInputDto extends LoginInputDto {
   email: string;
 
   @IsNotEmpty({ message: 'Password is required' })
-  @MinLength(10, { message: '10 characters minimum' })
+  @MinLength(6, { message: '6 characters minimum' })
   password: string;
 }

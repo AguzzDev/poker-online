@@ -20,8 +20,8 @@ import {
   PlayerAddChipsDto,
   TakeSitDto,
 } from 'src/dto';
-import { AdminGuard } from 'src/guards/adminGuard';
 import { CreatorGuard } from 'src/guards/creatorGuard';
+import { UserService } from 'src/user/user.service';
 
 @WebSocketGateway({
   cors: {
@@ -29,15 +29,22 @@ import { CreatorGuard } from 'src/guards/creatorGuard';
   },
 })
 export class GameGateway implements OnModuleInit {
-  constructor(private gameService: GameService) {}
+  constructor(
+    private gameService: GameService,
+    private userService: UserService,
+  ) {}
 
   @WebSocketServer() io: Server;
 
   onModuleInit() {
+    const users = [];
     this.io.on('connection', async (socket: SocketCustom) => {
-      const { sockets } = this.io.sockets;
+      const token = socket.handshake.auth.token;
 
-      this.io.emit(EVENTS.SERVER.ALL_PLAYERS, sockets.size);
+      users.push(token);
+      socket.users = users;
+
+      this.io.emit(EVENTS.SERVER.ALL_PLAYERS, users.length);
 
       socket.on('disconnect', () => {
         this.gameService.leaveRoomOrDisconnect({
@@ -45,7 +52,14 @@ export class GameGateway implements OnModuleInit {
           socket,
         });
         socket.leave(socket.id);
-        this.io.emit(EVENTS.SERVER.ALL_PLAYERS, sockets.size);
+
+        const index = users.indexOf(token);
+        if (index !== -1) {
+          users.splice(index, 1);
+        }
+        socket.users = users;
+
+        this.io.emit(EVENTS.SERVER.ALL_PLAYERS, socket.users.length);
       });
     });
   }
@@ -57,7 +71,7 @@ export class GameGateway implements OnModuleInit {
   }
 
   @SubscribeMessage(EVENTS.CLIENT.DELETE_ROOM)
-  @UseGuards(AdminGuard)
+  @UseGuards(CreatorGuard)
   b(@MessageBody() roomId: string) {
     this.gameService.deleteRoom({ roomId, server: this.io });
   }
@@ -116,9 +130,24 @@ export class GameGateway implements OnModuleInit {
     return this.gameService.playerRebuyChips(values);
   }
 
-  @SubscribeMessage(EVENTS.CLIENT.PLAYER_CHIPS)
+  @SubscribeMessage(EVENTS.CLIENT.UPDATE_USER)
   @UseGuards(SocketGuard)
-  j(@ConnectedSocket() socket: SocketCustom) {
-    this.gameService.getMyChips({ id: socket.user._id, socket });
+  async j(@ConnectedSocket() socket: SocketCustom) {
+    const user = await this.userService.getUserById(socket.user._id);
+    return {
+      chips: user.chips,
+      matches: user.matches,
+    };
+  }
+
+  @SubscribeMessage(EVENTS.CLIENT.GET_PLAYERS)
+  @UseGuards(SocketGuard)
+  async k(@ConnectedSocket() socket: SocketCustom) {
+    const players = await Promise.all(
+      socket.users.map(async (token) => {
+        return await this.userService.getUserByToken(token);
+      }),
+    );
+    return players;
   }
 }

@@ -5,6 +5,7 @@ export const userValues = (user: UserInterface): UserInterface => {
     _id: user._id,
     username: user.username,
     image: user.image,
+    provider: user.provider,
     chips: user.chips,
     role: user.role,
     matches: {

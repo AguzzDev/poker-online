@@ -1,29 +1,35 @@
 import type { AppProps } from "next/app";
-
 import "../styles/globals.css";
-
 import { useRouter } from "next/router";
-import type { AppProps } from "next/app";
-import "../styles/globals.css";
 import UserProvider from "context/User/UserProvider";
 import GameProvider from "context/Game/GameProvider";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
+  let body;
   const router = useRouter();
-  const isAppRoute = router.pathname.startsWith("/app");
+  const path = router.pathname;
+  const appRoute = path.includes("/app") || path.includes("/dashboard");
+
+  if (appRoute) {
+    body = (
+      <UserProvider>
+        <GameProvider>
+          <Component {...pageProps} />
+        </GameProvider>
+      </UserProvider>
+    );
+  } else {
+    body = <Component {...pageProps} />;
+  }
 
   return (
-    <div>
-      {isAppRoute ? (
-        <UserProvider>
-          <GameProvider>
-            <Component {...pageProps} />
-          </GameProvider>
-        </UserProvider>
-      ) : (
-        <Component {...pageProps} />
-      )}
-    </div>
+    <>
+      <ToastContainer />
+
+      {body}
+    </>
   );
 }
 

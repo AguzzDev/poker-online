@@ -1,25 +1,37 @@
-import Image from "next/image";
-import { useState } from "react";
-import { Form, Formik } from "formik";
-import { loginValidation, registerValidation } from "utils/yup";
+import { signIn } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { Formik } from "formik";
+import {
+  changePasswordValidation,
+  loginValidation,
+  registerValidation,
+} from "utils/yup";
 import { useUser } from "context/User/UserProvider";
-import { InputField } from "../Input/InputField";
 import fetchRegisterAdapter from "adapters/user/fetchRegisterAdapter";
 import fetchLoginAdapter from "adapters/user/fetchLoginAdapter";
-import { LayoutTypeEnum, LoginInput, RegisterInput } from "models";
+import {
+  ChangePasswordInput,
+  LayoutTypeEnum,
+  LoginInput,
+  LoginScreenTypeEnum,
+  RegisterInput,
+} from "models";
 import { handleApiCall } from "utils/apiHelper";
 import { Layout } from "../Layout/Layout";
-import Logo from "public/Logo";
 import { LineOne } from "components/Line/LineOne";
-import { ButtonOne } from "components/Button/ButtonOne";
-
-const Error = ({ error }: { error: string | undefined }) => (
-  <>{error ? <p className="text-red-500">{error}</p> : <></>}</>
-);
+import { Form } from "components/Form/Form";
+import fetchChangePassword from "adapters/user/fetchChangePassword";
+import { useRouter } from "next/router";
+import Image from "next/image";
+import { Error } from "components/Form/Error";
 
 export const AuthPage = () => {
-  const [screen, setScreen] = useState<number>(0);
-
+  let body;
+  const router = useRouter();
+  const [error, setError] = useState<string | undefined>(undefined);
+  const [screen, setScreen] = useState<LoginScreenTypeEnum>(
+    LoginScreenTypeEnum.login
+  );
   const { setAccount } = useUser();
 
   const valuesRegister: RegisterInput = {
@@ -29,150 +41,181 @@ export const AuthPage = () => {
     password2: "",
     global: "",
   };
+  const inputsRegister = [
+    { name: "username" },
+    { name: "email" },
+    { name: "password", type: "password" },
+    { name: "password2", type: "password" },
+  ];
   const valuesLogin: LoginInput = {
     email: "",
     password: "",
     global: "",
   };
+  const inputsLogin = [
+    { name: "email" },
+    { name: "password", type: "password" },
+  ];
+  const valuesChangePassword: ChangePasswordInput = {
+    email: "",
+    global: "",
+  };
+  const inputsChangePassword = [{ name: "email" }];
 
-  return (
-    <Layout type={LayoutTypeEnum.empty}>
-      <section className="flex flex-col-reverse lg:flex-row h-full">
-        <section className="flex-col flex-1 lg:w-[45vw] py-5 px-10">
-          <div className="h-[95%]">
-            <Logo />
+  useEffect(() => {
+    if (router?.query?.error) {
+      setError(router.query.error as string);
+    }
+  }, [router.query]);
 
-            <div className="mt-5">
-              {screen === 0 ? (
-                <section className="flex-col">
-                  <h2>Welcome Back!</h2>
-                  <h5 className="my-2">
-                    Continue with Google or enter your details
-                  </h5>
-                  <LineOne />
+  if (screen === LoginScreenTypeEnum.login) {
+    body = (
+      <section className="flex-col">
+        <h2>Welcome Back!</h2>
+        <h6 className="my-2">Continue with Google or enter your details</h6>
+        <button
+          className="flex items-center py-2 px-4 bg-secondary rounded-md"
+          onClick={() => signIn("google")}
+        >
+          <Image src="/icons/GoogleIcon.png" width={24} height={24} />
+          <span className="pl-2">Google</span>
+        </button>
+        <Error error={error} />
+        <LineOne />
 
-                  <Formik
-                    initialValues={valuesLogin}
-                    validationSchema={loginValidation}
-                    onSubmit={async (values, { setErrors }) => {
-                      handleApiCall(
-                        fetchLoginAdapter,
-                        values,
-                        setAccount,
-                        setErrors
-                      );
-                    }}
-                  >
-                    {({ resetForm, errors }) => (
-                      <Form className="flex flex-col space-y-2 md:space-y-8">
-                        <InputField
-                          name="email"
-                          type="text"
-                          placeholder="Email"
-                        />
-                        <InputField
-                          name="password"
-                          type="password"
-                          placeholder="Password"
-                        />
+        <Formik
+          initialValues={valuesLogin}
+          validationSchema={loginValidation}
+          onSubmit={async (values, { setErrors }) => {
+            const res = await handleApiCall(
+              () => fetchLoginAdapter(values),
+              setErrors
+            );
 
-                        <Error error={errors?.global} />
-
-                        <ButtonOne type="submit">Log in</ButtonOne>
-
-                        <div className="flex space-x-3">
-                          <h5>Don’t have an account?</h5>
-                          <button
-                            className="font-bold hover:text-primary hover:opacity-90"
-                            onClick={() => {
-                              resetForm();
-                              setScreen(1);
-                            }}
-                          >
-                            <h5>Sign up</h5>
-                          </button>
-                        </div>
-                      </Form>
-                    )}
-                  </Formik>
-                </section>
-              ) : (
-                <section className="flex-col">
-                  <h2 className="mb-2">We were waiting for you :)</h2>
-                  <LineOne />
-
-                  <Formik
-                    initialValues={valuesRegister}
-                    validationSchema={registerValidation}
-                    onSubmit={async (values, { setErrors }) => {
-                      handleApiCall(
-                        fetchRegisterAdapter,
-                        values,
-                        setAccount,
-                        setErrors
-                      );
-                    }}
-                  >
-                    {({ resetForm, errors }) => (
-                      <Form className="flex flex-col space-y-2 md:space-y-8">
-                        <InputField
-                          name="username"
-                          type="text"
-                          placeholder="Name"
-                        />
-                        <InputField
-                          name="email"
-                          type="text"
-                          placeholder="Email"
-                        />
-                        <InputField
-                          name="password"
-                          type="password"
-                          placeholder="Password"
-                        />
-                        <InputField
-                          name="password2"
-                          type="password"
-                          placeholder="Confirm your password"
-                        />
-
-                        <Error error={errors?.global} />
-
-                        <ButtonOne type="submit">Sign in</ButtonOne>
-
-                        <div className="flex space-x-3 pt-2">
-                          <h5>Do you already have an account?</h5>
-                          <button
-                            className="text-xs font-bold hover:text-primary hover:opacity-90"
-                            onClick={() => {
-                              resetForm();
-                              setScreen(0);
-                            }}
-                          >
-                            <h5>Log in</h5>
-                          </button>
-                        </div>
-                      </Form>
-                    )}
-                  </Formik>
-                </section>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-end h-[5%]">Develop By AguzzDev</div>
-        </section>
-
-        <section className="h-1/4 lg:h-full lg:flex-1 relative rounded-b-[5%] md:rounded-l-[5%] overflow-hidden">
-          <Image
-            src="/cardsAuth.jpg"
-            layout="fill"
-            alt="Cards Image"
-            className="saturate-25"
-            objectFit="cover"
-          />
-        </section>
+            if (res) {
+              setAccount(res);
+            }
+          }}
+        >
+          {(props) => (
+            <Form
+              resetForm={props.resetForm}
+              errors={props.errors.global}
+              inputs={inputsLogin}
+              buttonText="Log in"
+              actionButton={[
+                {
+                  title: "Don’t have an account?",
+                  text: "Sign in",
+                  action: () => setScreen(LoginScreenTypeEnum.register),
+                },
+                {
+                  title: "Reset your password",
+                  text: "Reset",
+                  action: () => setScreen(LoginScreenTypeEnum.resetPassword),
+                },
+              ]}
+            />
+          )}
+        </Formik>
       </section>
-    </Layout>
-  );
+    );
+  }
+  if (screen === LoginScreenTypeEnum.register) {
+    body = (
+      <section className="flex-col">
+        <h2 className="mb-2">Welcome</h2>
+        <LineOne />
+
+        <Formik
+          initialValues={valuesRegister}
+          validationSchema={registerValidation}
+          onSubmit={async (values, { setErrors }) => {
+            const res = await handleApiCall(
+              () => fetchRegisterAdapter(values),
+              setErrors
+            );
+
+            if (res) {
+              setScreen(LoginScreenTypeEnum.accountCreated);
+            }
+          }}
+        >
+          {(props) => (
+            <Form
+              resetForm={props.resetForm}
+              errors={props.errors.global}
+              inputs={inputsRegister}
+              buttonText="Sign in"
+              actionButton={[
+                {
+                  title: "Do you already have an account?",
+                  text: "Log in",
+                  action: () => setScreen(LoginScreenTypeEnum.login),
+                },
+              ]}
+            />
+          )}
+        </Formik>
+      </section>
+    );
+  }
+  if (screen === LoginScreenTypeEnum.resetPassword) {
+    body = (
+      <section className="flex-col">
+        <h2 className="mb-5">Reset your password</h2>
+
+        <Formik
+          initialValues={valuesChangePassword}
+          validationSchema={changePasswordValidation}
+          onSubmit={async (values, { setErrors }) => {
+            const res = await handleApiCall(
+              () => fetchChangePassword(values.email),
+              setErrors
+            );
+
+            if (res) {
+              setScreen(LoginScreenTypeEnum.resetPasswordSuccessful);
+            }
+          }}
+        >
+          {(props) => (
+            <Form
+              resetForm={props.resetForm}
+              errors={props.errors.global}
+              inputs={inputsChangePassword}
+              buttonText="Reset"
+              actionButton={[
+                {
+                  title: "Back to login?",
+                  text: "Log in",
+                  action: () => setScreen(LoginScreenTypeEnum.login),
+                },
+              ]}
+            />
+          )}
+        </Formik>
+      </section>
+    );
+  }
+  if (screen === LoginScreenTypeEnum.accountCreated) {
+    body = (
+      <section>
+        <h2 className="mb-5">Account Created</h2>
+        <h5>Please check your email address to complete the registration</h5>
+      </section>
+    );
+  }
+  if (screen === LoginScreenTypeEnum.resetPasswordSuccessful) {
+    body = (
+      <section>
+        <h2 className="mb-5">Check Your Email</h2>
+        <h5>
+          Check your inbox for further instructions to reset your password.
+        </h5>
+      </section>
+    );
+  }
+
+  return <Layout type={LayoutTypeEnum.form}>{body}</Layout>;
 };

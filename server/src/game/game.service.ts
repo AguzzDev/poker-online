@@ -1,31 +1,46 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-
+import { Injectable } from '@nestjs/common';
+import { PlayerActionDto } from 'src/dto';
+import { WsException } from '@nestjs/websockets';
+import { UserService } from 'src/user/user.service';
+import { RoomService } from 'src/room/room.service';
+import { EVENTS } from 'const';
 import {
+  AdvancedRoundArgs,
+  ClearPlayerMoveArgs,
   ConnectRoomArgs,
   ContinueGameArgs,
   CreateRoomArgs,
-  PlayerTurnArgs,
-  SetAutoBlindArgs,
-  TakeSitArgs,
+  DeleteRoomArgs,
+  DeskTypesEnum,
+  GameSoundTypesEnum,
+  GameStatusEnum,
+  GetMyChipsArgs,
+  InitialRoundArgs,
   LeaveRoomOrDisconnectArgs,
   NewMessageArgs,
-  ShuffleArgs,
-  PlayersRebuyChipsArgs,
-  InitialRoundArgs,
-  AdvancedRoundArgs,
-  ClearPlayerMoveArgs,
-  StartGameArgs,
-  DeleteRoomArgs,
-  GetMyChipsArgs,
+  PlayerInterface,
   PlayerRebuyChipsArgs,
+  PlayersRebuyChipsArgs,
+  PlayerTurnArgs,
+  PlayerTypesEnum,
+  RoomInterface,
+  SetAutoBlindArgs,
+  ShuffleArgs,
+  StartGameArgs,
+  Status,
+  TakeSitArgs,
+  UserInterface,
+  ErrorInterface,
+  UserRoleEnum,
 } from 'src/models';
-import { PlayerActionDto } from 'src/dto';
-import { GameMethodsService } from './game-methods.service';
-import { WsException } from '@nestjs/websockets';
+import { evaluateHand, getAllCards, getWinner } from 'src/utils/pokerUtils';
 
 @Injectable()
 export class GameService {
-  constructor(private GameMethodsService: GameMethodsService) {}
+  constructor(
+    private roomService: RoomService,
+    private userService: UserService,
+  ) {}
 
   public players = [];
 
@@ -37,168 +52,733 @@ export class GameService {
     this.players = this.players.filter((playerId) => playerId !== id);
   }
 
-  getUsersOnline() {
+  getUsersOnline(): number {
     return this.players.length;
   }
 
   async createRoom({ values, server }: CreateRoomArgs) {
-    try {
-      await this.GameMethodsService.createRoom({ values, server });
-    } catch (error) {
-      throw new WsException('Error creating room');
-    }
+    const room = await this.roomService.createRoom(values);
+
+    server.emit(EVENTS.SERVER.ROOMS, { type: 'create', room });
   }
 
   async deleteRoom({ roomId, server }: DeleteRoomArgs) {
-    try {
-      await this.GameMethodsService.deleteRoom({ roomId, server });
-    } catch (error) {
-      throw new WsException('Error deleting room');
-    }
+    const room = await this.roomService.deleteRoom(roomId);
+
+    server.emit(EVENTS.SERVER.ROOMS, { type: 'delete', room });
+    server.to(room._id.toString()).emit(EVENTS.SERVER.ROOM_STATUS, 'delete');
   }
 
-  async connectRoom({ values, socket, server }: ConnectRoomArgs) {
-    try {
-      const { room, roomId } = await this.GameMethodsService.connectRoom({
-        values,
-        socket,
-        server,
-      });
-      
-      return { room, roomId };
-    } catch (error) {
-      throw new InternalServerErrorException(error);
+  async connectRoom({
+    values,
+    socket,
+    server,
+  }: ConnectRoomArgs): Promise<ErrorInterface | RoomInterface> {
+    const { id } = values;
+    const room = await this.roomService.findRoom(id);
+
+    if (!room) {
+      return { error: true, message: 'Room not exist' };
     }
+
+    const roomId = room._id.toString();
+    socket.join(roomId);
+
+    server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
+    server
+      .to(roomId)
+      .emit(
+        EVENTS.SERVER.ROOM_NOTIFICATIONS,
+        `${socket.user.username} entered the room!`,
+      );
+
+    return room;
   }
 
-  async takeSit({ values, socket, server }: TakeSitArgs) {
-    try {
-      const { room, roomId, player } = await this.GameMethodsService.takeSit({
-        values,
-        socket,
-        server,
-      });
+  async takeSit({
+    values,
+    socket,
+    server,
+  }: TakeSitArgs): Promise<
+    ErrorInterface | { room: RoomInterface; player: PlayerInterface }
+  > {
+    const { roomId, sit } = values;
 
-      return { room, roomId, player, error: false };
-    } catch (error) {
-      return { error: error.message };
-    }
+    const room = await this.roomService.addPlayer({
+      roomId,
+      sit,
+      socket,
+    });
+
+    if ('error' in room) return room;
+
+    const findMe = room.desk.players.filter(
+      ({ userId }) => userId == socket.user._id,
+    )[0];
+
+    server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
+    server.to(roomId).emit(EVENTS.SERVER.PLAYERS_IN_ROOM, room.desk.players);
+
+    return { room, player: findMe };
   }
 
   async newMessage({ values, server, socket }: NewMessageArgs) {
-    try {
-      return await this.GameMethodsService.newMessage({
-        values,
-        server,
-        socket,
-      });
-    } catch (error) {
-      return { error: error.message };
-    }
-  }
+    const roomId = values.id;
+    const message = await this.roomService.setMessage({
+      roomId,
+      message: {
+        userId: socket ? socket.user._id : 'System',
+        username: socket ? socket.user.username : 'System',
+        message: values.message,
+        image: socket ? socket.user.image : '',
+        role: socket ? UserRoleEnum[socket.user.role] : '',
+        timestamp: new Date(),
+      },
+    });
 
-  async playerRebuyChips(values: PlayerRebuyChipsArgs) {
-    await this.GameMethodsService.playerRebuyChips(values);
+    server.to(roomId).emit(EVENTS.SERVER.MESSAGE_SEND, message);
   }
 
   async leaveRoomOrDisconnect({ server, socket }: LeaveRoomOrDisconnectArgs) {
-    await this.GameMethodsService.leaveRoomOrDisconnect({
-      server,
-      socket,
-    });
+    const user = socket.user as UserInterface;
+    if (!user) return;
+
+    const room = await this.roomService.removePlayer(
+      socket.user._id.toString(),
+    );
+
+    if (!room) return;
+
+    if (room.desk.players.length === 1) {
+      await this.stopGame(room._id.toString());
+    }
+
+    server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
+    server.to(room._id.toString()).emit(EVENTS.SERVER.UPDATE_GAME, room.desk);
+    server
+      .to(room._id.toString())
+      .emit(EVENTS.SERVER.PLAYERS_IN_ROOM, room.desk.players);
+    server
+      .to(room._id.toString())
+      .emit(
+        EVENTS.SERVER.ROOM_NOTIFICATIONS,
+        `${user.username} left the room!`,
+      );
   }
 
   async shuffle({ roomId, cards }: ShuffleArgs) {
-    await this.GameMethodsService.shuffle({ roomId, cards });
+    for (let i = 0; i < cards.length; i++) {
+      const newIndex = Math.floor(Math.random() * (i + 1));
+      const oldValue = cards[newIndex];
+      cards[newIndex] = cards[i];
+      cards[i] = oldValue;
+    }
+
+    await this.roomService.updateInDesk({ id: roomId, values: { cards } });
   }
 
   async dealCardsPlayer(roomId: string) {
-    await this.GameMethodsService.dealCardsPlayer(roomId);
+    const room = await this.roomService.findRoom(roomId);
+
+    const players = room.desk.players;
+
+    const takeLastCard = async () => {
+      await this.roomService.updateInDesk({
+        id: roomId,
+        type: DeskTypesEnum.takeCard,
+      });
+
+      return room.desk.cards[room.desk.cards.length - 1];
+    };
+    for (let x = 0; x < players.length; x++) {
+      let playerCards = [];
+
+      for (let i = 0; i < 2; i++) {
+        playerCards.push(await takeLastCard());
+      }
+
+      await this.roomService.updateInPlayer({
+        id: roomId,
+        values: { userId: players[x].userId, cards: playerCards },
+      });
+    }
   }
 
   async dealCardsDealer(roomId: string) {
-    await this.GameMethodsService.dealCardsDealer(roomId);
+    const room = await this.roomService.findRoom(roomId);
+
+    const dealer = room.desk.dealer;
+
+    const takeLastCard = async () => {
+      await this.roomService.updateInDesk({
+        id: roomId,
+        type: DeskTypesEnum.takeCard,
+      });
+      return room.desk.cards[room.desk.cards.length - 1];
+    };
+
+    if (dealer.length === 0) {
+      let cards = [];
+      for (let i = 0; i < 3; i++) {
+        cards.push(await takeLastCard());
+      }
+
+      return await this.roomService.updateInDesk({
+        id: roomId,
+        values: { cards },
+        type: DeskTypesEnum.dealer,
+      });
+    }
+
+    const cards = await takeLastCard();
+    await this.roomService.updateInDesk({
+      id: roomId,
+      values: { cards: [cards] },
+      type: DeskTypesEnum.dealer,
+    });
   }
 
   async playersRebuyChips({ roomId, server, players }: PlayersRebuyChipsArgs) {
-    await this.GameMethodsService.playersRebuyChips({
-      roomId,
-      server,
-      players,
+    server.to(roomId).emit(EVENTS.SERVER.ROOM_INFO, {
+      message:
+        players.length === 1
+          ? `Waiting for ${players[0].username} Rebuy`
+          : `Waiting for ${players.length}-player Rebuy)`,
+      by: 'server',
     });
+    server.to(roomId).emit(EVENTS.SERVER.PLAYER_REBUY, players);
+    await new Promise((resolve) => setTimeout(resolve, 15000));
+
+    const room = await this.roomService.findRoom(roomId);
+
+    const playersEmptyChips = this.roomService.findPlayersEmptyChips(room);
+    if (playersEmptyChips.length === 0) return;
+
+    for (const player of playersEmptyChips) {
+      await this.roomService.removePlayer(player.userId);
+    }
+
+    const updateRoom = await this.roomService.findRoom(roomId);
+    if (updateRoom.desk.players.length === 1) {
+      await this.stopGame(roomId);
+    }
   }
 
   async initialRound({ roomId, room, server, playerPos }: InitialRoundArgs) {
-    await this.GameMethodsService.initialRound({
+    let cards = getAllCards();
+    await this.shuffle({ roomId, cards });
+    await this.dealCardsPlayer(roomId);
+    await this.dealCardsDealer(roomId);
+    await this.setAutoBlind({
       roomId,
-      room,
-      server,
-      playerPos,
+      x: playerPos,
+      blind: room.desk.blind,
+      players: room.desk.players,
     });
+
+    server
+      .to(roomId)
+      .emit(EVENTS.SERVER.GAME_SOUND, GameSoundTypesEnum.shuffle);
   }
 
-  async advancedRound({ roomId, type, server }: AdvancedRoundArgs) {
-    await this.GameMethodsService.advancedRound({ roomId, type, server });
+  async advancedRound({ roomId, server }: AdvancedRoundArgs) {
+    await this.dealCardsDealer(roomId);
+    const room = await this.roomService.findRoom(roomId);
+    const card = room.desk.cards[room.desk.cards.length - 1];
+
+    server.to(roomId).emit(EVENTS.SERVER.DEAL_CARDS, card);
+    server.to(roomId).emit(EVENTS.SERVER.GAME_SOUND, GameSoundTypesEnum.deal);
   }
 
   async shouldContinueGame({
     room,
     roomId,
     server,
-    player,
     round,
-  }: ContinueGameArgs) {
-    await this.GameMethodsService.shouldContinueGame({
-      room,
-      roomId,
-      server,
-      player,
-      round,
+  }: ContinueGameArgs): Promise<GameStatusEnum> {
+    return new Promise(async (resolve) => {
+      if (!room.start) {
+        const roomUpdate = await this.stopGame(roomId);
+        server.to(roomId).emit(EVENTS.SERVER.ROOM_INFO, {
+          message: 'Waiting players...',
+          by: 'server',
+        });
+        server.to(roomId).emit(EVENTS.SERVER.UPDATE_GAME, roomUpdate.desk);
+
+        resolve(GameStatusEnum.stopGame);
+      }
+
+      const playersInFold = room.desk.players.filter(
+        ({ action }) => action === Status.fold,
+      ).length;
+      const playersAllIn = room.desk.players.filter(
+        ({ action }) => action === Status.allIn,
+      ).length;
+
+      if (round === 1) {
+        const playersEmptyChips = this.roomService.findPlayersEmptyChips(room);
+
+        if (playersEmptyChips.length === 0)
+          return resolve(GameStatusEnum.continue);
+
+        await this.playersRebuyChips({
+          roomId,
+          server,
+          players: playersEmptyChips,
+        });
+
+        resolve(await this.shouldContinueGame({ room, roomId, server }));
+      } else if (playersAllIn == room.desk.players.length) {
+        resolve(GameStatusEnum.allIn);
+      } else if (playersInFold == room.desk.players.length - 1) {
+        resolve(GameStatusEnum.endGame);
+      } else {
+        resolve(GameStatusEnum.continue);
+      }
     });
   }
 
-  async startGame({ roomId, server }: StartGameArgs) {
-    await this.GameMethodsService.startGame({ roomId, server });
+  async initGame({ roomId, server }: StartGameArgs) {
+    let roundNum = 1;
+    let blindPos = 0;
+    let stop = false;
+    let room = await this.roomService.findRoom(roomId);
+    let gameStatus = GameStatusEnum.continue;
+    let playersInGame;
+
+    while (roundNum <= 3 && !stop) {
+      const response = await this.shouldContinueGame({
+        roomId,
+        room,
+        server,
+        round: roundNum,
+      });
+
+      gameStatus = GameStatusEnum[response];
+      if (
+        gameStatus === GameStatusEnum.stopGame ||
+        gameStatus === GameStatusEnum.endGame
+      ) {
+        stop = true;
+      }
+
+      if (!stop) {
+        if (roundNum === 1) {
+          await this.initialRound({
+            room,
+            roomId,
+            playerPos: blindPos,
+            server,
+          });
+        } else {
+          await this.advancedRound({ roomId, server });
+        }
+
+        room = await this.roomService.findRoom(roomId);
+
+        playersInGame = room.desk.players.filter(
+          ({ cards, action }) =>
+            cards && action !== Status.fold && action !== Status.allIn,
+        );
+        playersInGame = playersInGame.length === 1 ? [] : playersInGame;
+
+        if (blindPos !== room.desk.players.length - 1) {
+          playersInGame = playersInGame.reverse();
+        }
+
+        server.to(roomId).emit(EVENTS.SERVER.UPDATE_GAME, room.desk);
+
+        while (playersInGame.length > 0) {
+          const player = playersInGame[0] as PlayerInterface;
+
+          const response = await this.shouldContinueGame({
+            room,
+            roomId,
+            player,
+            server,
+          });
+          gameStatus = GameStatusEnum[response];
+
+          if (gameStatus !== GameStatusEnum.continue) break;
+
+          const playerAction = await this.playTurn({
+            roomId,
+            player,
+            server,
+            bidToPay: room.desk.bidToPay,
+          });
+
+          if (playerAction != Status.allIn && playerAction != Status.fold) {
+            await this.clearPlayerMove({ roomId, userId: player.userId });
+          }
+
+          if (
+            playerAction == Status.raise ||
+            playerAction == Status.bid ||
+            playerAction == Status.allIn
+          ) {
+            const activePlayers = room.desk.players.filter(
+              ({ cards, action }) => cards && action !== Status.fold,
+            );
+            const num = activePlayers.findIndex(
+              ({ sit }) => sit === player.sit,
+            );
+
+            const left = activePlayers.slice(0, num);
+            const right = activePlayers.slice(num + 1);
+
+            playersInGame = [...right, ...left];
+          } else {
+            playersInGame = playersInGame.splice(1);
+          }
+
+          server
+            .to(roomId)
+            .emit(EVENTS.SERVER.GAME_SOUND, GameSoundTypesEnum[playerAction]);
+
+          room = await this.roomService.findRoom(roomId);
+          server.to(roomId).emit(EVENTS.SERVER.UPDATE_GAME, room.desk);
+        }
+      }
+
+      if (roundNum === 3 || stop) {
+        if (playersInGame) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          const getWinner = await this.determinateWinner(roomId);
+
+          if (!!getWinner) {
+            await this.newMessage({
+              values: { id: roomId, message: getWinner.message },
+              server,
+            });
+          }
+
+          const room = await this.endGame(roomId);
+          server.to(roomId).emit(EVENTS.SERVER.UPDATE_GAME, room.desk);
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+
+          await this.roomService.updateInPlayer({
+            id: roomId,
+            type: PlayerTypesEnum.clearWinningPot,
+          });
+
+          if (blindPos < room.desk.players.length - 1) {
+            blindPos++;
+          } else {
+            blindPos = 0;
+          }
+        }
+
+        if (gameStatus === GameStatusEnum.stopGame) {
+          break;
+        } else {
+          stop = false;
+        }
+
+        roundNum = 1;
+        gameStatus = GameStatusEnum.continue;
+      } else {
+        if (gameStatus === GameStatusEnum.allIn) {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+        }
+
+        await this.endRound(room._id.toString());
+        roundNum++;
+      }
+    }
   }
 
-  async playTurn({ roomId, player, server, bidToPay }: PlayerTurnArgs) {
-    await this.GameMethodsService.playTurn({
-      roomId,
-      player,
-      server,
-      bidToPay,
+  async startGame({ roomId, server }: StartGameArgs) {
+    const room = await this.roomService.findRoom(roomId);
+
+    if (!room.start) {
+      let time = 5;
+
+      await this.roomService.updateInRoom({
+        id: room._id.toString(),
+        values: { start: true },
+      });
+
+      const interval = setInterval(async () => {
+        server.to(roomId).emit(EVENTS.SERVER.ROOM_INFO, {
+          message: `Game starts in ${time}`,
+          by: 'server',
+        });
+        time--;
+        if (time == 0) {
+          clearInterval(interval);
+
+          this.initGame({ roomId, server });
+        }
+      }, 1000);
+    }
+  }
+
+  async playTurn({
+    roomId,
+    player,
+    server,
+    bidToPay,
+  }: PlayerTurnArgs): Promise<Status> {
+    return new Promise((resolve) => {
+      let timer = 10;
+
+      server.to(roomId).emit(EVENTS.SERVER.ROOM_INFO, {
+        message: `${player.username} turn`,
+        by: player.userId,
+      });
+      server.to(roomId).emit(EVENTS.SERVER.PLAYER_TURN, player.userId);
+
+      const interval = setInterval(async () => {
+        server.to(roomId).emit(EVENTS.SERVER.PLAYER_TIMER, timer);
+
+        const playerResult = await this.roomService.findPlayerMove({
+          roomId,
+          userId: player.userId,
+        });
+
+        if (playerResult?.action) {
+          clearInterval(interval);
+          resolve(Status[playerResult.action]);
+        }
+
+        if (timer <= 0) {
+          const playerPayBid =
+            player.bid >= bidToPay ? Status.check : Status.fold;
+
+          const values = {
+            roomId,
+            userId: player.userId,
+            action: playerPayBid,
+          };
+
+          await this.setPlayerMove(values);
+          clearInterval(interval);
+          resolve(Status[values.action]);
+        }
+
+        timer--;
+      }, 1000);
     });
   }
 
   async setPlayerMove(values: PlayerActionDto) {
-    await this.GameMethodsService.setPlayerMove(values);
+    const {
+      roomId,
+      userId,
+      action,
+      bid = 0,
+      totalBid = 0,
+      bidToPay = 0,
+    } = values;
+
+    switch (action) {
+      case Status.fold:
+      case Status.check: {
+        await this.roomService.updateInPlayer({
+          id: roomId,
+          values: {
+            userId,
+            action: Status[action],
+            showAction: Status[action],
+          },
+        });
+        break;
+      }
+      case Status.bid:
+      case Status.raise:
+      case Status.allIn: {
+        await this.roomService.updateInDesk({
+          id: roomId,
+          values: {
+            status: Status[action],
+            bidToPay,
+            totalBid,
+          },
+        });
+        await this.roomService.updateInPlayer({
+          id: roomId,
+          values: {
+            userId,
+            action: Status[action],
+            showAction: Status[action],
+            chips: -bid,
+            bid: bid,
+          },
+        });
+
+        break;
+      }
+      case Status.call:
+        await this.roomService.updateInDesk({
+          id: roomId,
+          values: {
+            totalBid,
+          },
+        });
+        await this.roomService.updateInPlayer({
+          id: roomId,
+          values: {
+            userId,
+            action: Status[action],
+            showAction: Status[action],
+            chips: -bid,
+            bid: bid,
+          },
+        });
+    }
   }
 
   async clearPlayerMove({ roomId, userId }: ClearPlayerMoveArgs) {
-    await this.GameMethodsService.clearPlayerMove({ roomId, userId });
+    await this.roomService.updateInPlayer({
+      id: roomId,
+      values: { userId },
+      type: PlayerTypesEnum.clearActions,
+    });
   }
 
   async stopGame(roomId: string) {
-    await this.GameMethodsService.stopGame(roomId);
+    await this.roomService.updateInRoom({
+      id: roomId,
+      values: { start: false },
+    });
+    await this.roomService.updateInDesk({
+      id: roomId,
+      type: DeskTypesEnum.stop,
+    });
+    const room = await this.roomService.updateInPlayer({
+      id: roomId,
+      type: PlayerTypesEnum.reset,
+    });
+    return room;
   }
 
   async endGame(roomId: string) {
-    await this.GameMethodsService.endGame(roomId);
+    await this.roomService.updateInDesk({
+      id: roomId,
+      type: DeskTypesEnum.reset,
+    });
+    return await this.roomService.updateInPlayer({
+      id: roomId,
+      type: PlayerTypesEnum.reset,
+    });
   }
 
   async endRound(roomId: string) {
-    await this.GameMethodsService.endRound(roomId);
+    await this.roomService.updateInDesk({
+      id: roomId,
+      values: { status: null, bidToPay: 0 },
+    });
+
+    return await this.roomService.updateInPlayer({
+      id: roomId,
+      type: PlayerTypesEnum.clearShowAction,
+    });
   }
 
   async setAutoBlind({ roomId, x, blind, players }: SetAutoBlindArgs) {
-    await this.GameMethodsService.setAutoBlind({ roomId, x, blind, players });
+    const playerBlind = !players[x] ? players[0] : players[x];
+    const playerAutoBlind = !players[x + 1] ? players[0] : players[x + 1];
+
+    const playerBlindValues = {
+      userId: playerBlind.userId,
+      blind: true,
+    };
+    const playerAutoBlindValues = {
+      userId: playerAutoBlind.userId,
+      bid: blind,
+      chips: -blind,
+    };
+
+    await this.roomService.updateInDesk({
+      id: roomId,
+      values: {
+        status: Status.bid,
+        bidToPay: blind,
+        totalBid: blind,
+      },
+    });
+    await this.roomService.updateInPlayer({
+      id: roomId,
+      values: playerBlindValues,
+    });
+    await this.roomService.updateInPlayer({
+      id: roomId,
+      values: playerAutoBlindValues,
+    });
   }
 
-  async determinateWinner(roomId: string) {
-    await this.GameMethodsService.determinateWinner(roomId);
+  async determinateWinner(
+    roomId: string,
+  ): Promise<{ usersId: string[] | string; message: string }> {
+    let playerHands = [];
+    const room = await this.roomService.findRoom(roomId);
+
+    const playersInGame = room.desk.players.filter(
+      ({ cards, action }) => cards.length > 0 && action !== Status.fold,
+    );
+
+    if (playersInGame.length === 0) return;
+
+    playersInGame.forEach((player) => {
+      const evaluate = evaluateHand({
+        cards: room.desk.dealer,
+        player,
+      });
+
+      playerHands.push({
+        _id: player.userId.toString(),
+        name: player.username,
+        ...evaluate,
+      });
+    });
+
+    const playerWinners = getWinner(playerHands, room.desk.totalBid);
+
+    if (!Array.isArray(playerWinners.usersId)) {
+      await this.roomService.updatePlayerChips({
+        roomId,
+        userId: playerWinners.usersId,
+        chips: room.desk.totalBid,
+        winningPot: room.desk.totalBid,
+      });
+      await this.userService.updateUserMatches({
+        id: playerWinners.usersId,
+        values: playerWinners.heirarchy,
+      });
+    } else {
+      playerWinners.usersId.forEach(async (userId) => {
+        await this.roomService.updatePlayerChips({
+          roomId,
+          userId,
+          chips: room.desk.totalBid / playerWinners.usersId.length,
+          winningPot: room.desk.totalBid / playerWinners.usersId.length,
+        });
+        await this.userService.updateUserMatches({
+          id: userId,
+          values: playerWinners.heirarchy,
+        });
+      });
+    }
+
+    return {
+      usersId: playerWinners.usersId,
+      message: playerWinners.message,
+    };
   }
 
-  async getMyChips({ id, socket }: GetMyChipsArgs) {
-    await this.GameMethodsService.getMyChips({ id, socket });
+  async playerRebuyChips(
+    values: PlayerRebuyChipsArgs,
+  ): Promise<ErrorInterface> {
+    const findPlayer = await this.userService.getUserById(values.userId);
+
+    if (!findPlayer) return { error: true, message: 'Player not found' };
+    if (findPlayer.chips < values.chips)
+      return { error: true, message: "You don't have enough chips" };
+
+    await this.roomService.updatePlayerChips(values);
+    return { error: false, message: 'Done' };
   }
 }

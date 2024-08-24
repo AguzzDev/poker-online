@@ -1,26 +1,76 @@
-import { IconSm } from "components/Icon";
 import { Dropdown } from "./Dropdown";
-import { Bars2Icon } from "@heroicons/react/20/solid";
 import Link from "next/link";
+import { formatChips } from "utils/formatChips";
+import ChipsIcon from "public/icons/ChipsIcon";
+import { useUser } from "context/User/UserProvider";
+import { UserImage } from "utils/userImage";
 
 export const UserNavbarDropdown = () => {
-  const Item = ({ href, title }: { href: string; title: string }) => (
-    <Link href={href}>
-      <a className="block w-full h-full hover:text-primary active:text-primary">{title}</a>
-    </Link>
+  const { user, removeAccount } = useUser();
+
+  const { chips, username, image } = user!;
+
+  const Item = ({
+    href,
+    title,
+    action,
+  }: {
+    action?: Function;
+    href?: string;
+    title: string;
+  }) => (
+    <>
+      {action ? (
+        <button
+          className=" hover:text-accent active:text-accent"
+          onClick={() => action()}
+        >
+          {title}
+        </button>
+      ) : (
+        <Link href={href!}>
+          <a className=" hover:text-accent active:text-accent">{title}</a>
+        </Link>
+      )}
+    </>
+  );
+
+  const Trigger = () => (
+    <>
+      <div className="flex-col text-end">
+        <h5 className="font-bold">{username}</h5>
+        <div className="flex items-center space-x-0 md:space-x-1">
+          <ChipsIcon className="scale-50 sm:scale-75" />
+          <h6>{formatChips(chips)}</h6>
+        </div>
+      </div>
+
+      <div className="hidden sm:block relative w-16 h-16 bg-black1 rounded-md overflow-hidden">
+        <UserImage image={image} />
+      </div>
+    </>
   );
 
   return (
-    <Dropdown
-      trigger={
-        <div className="block sm:hidden bg-primary rounded-full p-2">
-          <IconSm Icon={Bars2Icon} />
-        </div>
-      }
-      content={[
-        <Item title="Profile" href="/app/profile" />,
-        <Item title="Leaderboard" href="/app/leaderboard" />,
-      ]}
-    />
+    <>
+      <div className="hidden sm:block">
+        <Dropdown
+          trigger={<Trigger />}
+          content={[<Item key="1" title="Logout" action={removeAccount} />]}
+          size={40}
+        />
+      </div>
+      <div className="block sm:hidden">
+        <Dropdown
+          trigger={<Trigger />}
+          content={[
+            <Item key="2" title="Profile" href="/app/profile" />,
+            <Item key="3" title="Leaderboard" href="/app/leaderboard" />,
+            <Item key="4" title="Logout" action={removeAccount} />,
+          ]}
+          size={40}
+        />
+      </div>
+    </>
   );
 };

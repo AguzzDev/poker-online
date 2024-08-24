@@ -13,4 +13,10 @@ export class PlayerActionDto {
 
   @IsOptional()
   bid?: number;
+
+  @IsOptional()
+  totalBid?: number;
+
+  @IsOptional()
+  bidToPay?: number;
 }

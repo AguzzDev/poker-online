@@ -3,24 +3,29 @@ import { useRouter } from "next/router";
 import { destroyCookie, parseCookies, setCookie } from "nookies";
 import { useState, useEffect, useContext } from "react";
 import UserContext from "context/User/UserContext";
+import { signOut } from "next-auth/react";
+import * as API from "services";
 
 const UserProvider = ({ children }: { children: ChildrenType }) => {
   const router = useRouter();
   const [user, setUser] = useState<UserInterface | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [adminRole, setAdminRole] = useState<boolean>(false);
 
-  const setAccount = (data) => {
+  const setAccount = (data: UserInterface) => {
     setCookie(null, "user", JSON.stringify(data), {
       maxAge: 30 * 24 * 60 * 60 * 3,
     });
-
     router.reload();
   };
 
   const removeAccount = () => {
+    if (user!.provider) {
+      signOut();
+    }
     destroyCookie(null, "user");
-    router.push("/auth");
-    setUser(null);
+    setTimeout(() => {
+      router.reload();
+    }, 100);
   };
 
   const updateUser = (values: Partial<UserInterface>) => {
@@ -40,12 +45,28 @@ const UserProvider = ({ children }: { children: ChildrenType }) => {
     const cookies = parseCookies();
     const userCookie = cookies.user ? JSON.parse(cookies.user) : null;
     setUser(userCookie);
-    setLoading(false)
-  }, []);
+  }, [router]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const fetch = async () => {
+      const { data } = await API.fetchDashboard(user?._id);
+      setAdminRole(data);
+    };
+
+    fetch();
+  }, [user]);
+  
   return (
     <UserContext.Provider
-      value={{ user, loading, updateUser, removeAccount, setAccount }}
+      value={{
+        user,
+        adminRole,
+        updateUser,
+        removeAccount,
+        setAccount,
+      }}
     >
       {children}
     </UserContext.Provider>

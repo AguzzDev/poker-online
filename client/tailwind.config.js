@@ -30,7 +30,7 @@ module.exports = {
         ellipse: "50%",
       },
       scale: {
-        "160": "1.60",
+        160: "1.60",
       },
       colors: {
         text: "#ffff",

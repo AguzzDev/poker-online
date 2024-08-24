@@ -1,13 +1,14 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import bcrypt from 'bcrypt';
-
 import { Room } from 'src/schemas/room.schema';
 import { UserService } from 'src/user/user.service';
 import {
   AddPlayerArgs,
-  Status,
   RoomInterface,
   SetMessageArgs,
   UpdateDeskOptionsEnum,
@@ -21,8 +22,10 @@ import {
   DeskTypesEnum,
   PlayerInterface,
   updateInRoomArgs,
+  ErrorInterface,
+  MessageInterface,
+  Status,
 } from 'src/models';
-import { WsException } from '@nestjs/websockets';
 import { CreateRoomDto } from 'src/dto';
 
 @Injectable()
@@ -34,27 +37,7 @@ export class RoomService {
 
   public rooms: RoomInterface[] = [];
 
-  async addPlayerInDesk({ id, values }) {
-    await this.roomModel.findOneAndUpdate(
-      { _id: id },
-      { $push: { 'desk.players': values }, $inc: { players: 1 } },
-      { new: true },
-    );
-  }
-
-  async removePlayerInDesk({ id, values }) {
-    const a = await this.roomModel.findOneAndUpdate(
-      { _id: id, 'desk.players.userId': values.userId },
-      {
-        $pull: { 'desk.players': { userId: values.userId } },
-        $inc: { players: -1 },
-      },
-      { new: true },
-    );
-    console.log('sacando al jugador DB', a);
-  }
-
-  async findRooms() {
+  async findRooms(): Promise<RoomInterface[]> {
     if (this.rooms.length === 0) {
       const getRooms = (await this.roomModel.find({})).flat();
 
@@ -64,15 +47,15 @@ export class RoomService {
     return this.rooms;
   }
 
-  async findRoom(id: string) {
+  async findRoom(id: string): Promise<RoomInterface> {
     try {
       return this.rooms.filter(({ _id }) => _id.toString() == id)[0];
     } catch (error) {
-      throw new InternalServerErrorException(error);
+      throw new BadRequestException('Room not found');
     }
   }
 
-  async updateInRoom({ id, values }: updateInRoomArgs) {
+  async updateInRoom({ id, values }: updateInRoomArgs): Promise<RoomInterface> {
     try {
       let updateRoom;
 
@@ -91,7 +74,11 @@ export class RoomService {
     }
   }
 
-  async updateInDesk({ id, values, type }: UpdateInDeskArgs) {
+  async updateInDesk({
+    id,
+    values,
+    type,
+  }: UpdateInDeskArgs): Promise<RoomInterface> {
     try {
       let updateRoom;
       const resetValues = {
@@ -105,6 +92,25 @@ export class RoomService {
       this.rooms.map(async (room, i) => {
         if (room._id.toString() != id) return room;
         updateRoom = room;
+
+        if (type === DeskTypesEnum.addPlayer) {
+          updateRoom.desk.players = [...room.desk.players, values].sort(
+            (a, b) => (a.sit > b.sit ? 1 : -1),
+          );
+          updateRoom.players = updateRoom.desk.players.length;
+
+          this.rooms[i] = updateRoom;
+          return updateRoom;
+        }
+        if (type === DeskTypesEnum.removePlayer) {
+          updateRoom.desk.players = updateRoom.desk.players
+            .filter((player) => player.userId != values.userId.toString())
+            .sort((a, b) => (a.sit > b.sit ? 1 : -1));
+          updateRoom.players = updateRoom.desk.players.length;
+
+          this.rooms[i] = updateRoom;
+          return updateRoom;
+        }
 
         if (type !== DeskTypesEnum.dealer && values?.cards) {
           updateRoom.desk.cards = [...updateRoom.desk.cards, ...values.cards];
@@ -121,9 +127,8 @@ export class RoomService {
         if (values?.status !== undefined) {
           updateRoom.desk.status = values.status;
         }
-
         if (values?.totalBid) {
-          updateRoom.desk.totalBid += values.totalBid;
+          updateRoom.desk.totalBid = values.totalBid;
         }
 
         if (values) {
@@ -147,7 +152,10 @@ export class RoomService {
     }
   }
 
-  async updateInMessages({ id, values }: UpdateInMessagesArgs) {
+  async updateInMessages({
+    id,
+    values,
+  }: UpdateInMessagesArgs): Promise<RoomInterface> {
     try {
       let updateRoom;
 
@@ -166,70 +174,66 @@ export class RoomService {
       throw new InternalServerErrorException();
     }
   }
-  async updateInPlayer({ id, values, type }: UpdateInPlayerArgs) {
+
+  async updateInPlayer({
+    id,
+    values,
+    type,
+  }: UpdateInPlayerArgs): Promise<RoomInterface> {
     try {
       let updateRoom: RoomInterface;
 
       this.rooms.map(async (room, i) => {
         if (room._id.toString() === id) {
           updateRoom = room;
-          if (type === PlayerTypesEnum.add) {
-            updateRoom.desk.players = [...room.desk.players, values].sort(
-              (a, b) => (a.sit > b.sit ? 1 : -1),
-            );
-            this.rooms[i] = updateRoom;
-            return updateRoom;
-          }
-          if (type === PlayerTypesEnum.delete) {
-            updateRoom.desk.players = updateRoom.desk.players
-              .filter((player) => player.userId != values.userId.toString())
-              .sort((a, b) => (a.sit > b.sit ? 1 : -1));
 
-            this.rooms[i] = updateRoom;
-            return updateRoom;
-          }
-          if (type === PlayerTypesEnum.clearActions) {
+          const update = (values) => {
             updateRoom.desk.players = updateRoom.desk.players.map((player) => {
-              if (player.userId == values.userId) return player;
+              return { ...player, ...values };
+            });
 
-              return {
-                ...player,
-                action: '',
-                showAction: '',
-              };
+            this.rooms[i] = updateRoom;
+            return updateRoom;
+          };
+
+          if (type === PlayerTypesEnum.clearWinningPot) {
+            return update({
+              winningPot: 0,
+            });
+          }
+
+          if (
+            type === PlayerTypesEnum.clearActions ||
+            type === PlayerTypesEnum.clearShowAction
+          ) {
+            updateRoom.desk.players = updateRoom.desk.players.map((player) => {
+              if (type === PlayerTypesEnum.clearActions) {
+                if (player.userId !== values.userId) return player;
+
+                return { ...player, action: null };
+              } else {
+                if (
+                  player.action == Status.fold ||
+                  player.action == Status.allIn
+                ) {
+                  return player;
+                }
+
+                return { ...player, showAction: '' };
+              }
             });
 
             this.rooms[i] = updateRoom;
             return updateRoom;
           }
-          if (type === PlayerTypesEnum.reset || type === PlayerTypesEnum.stop) {
-            updateRoom.desk.players = updateRoom.desk.players.map((player) => {
-              return {
-                ...player,
-                cards: type === PlayerTypesEnum.stop ? player.cards : [],
-                action: '',
-                showAction: '',
-                bid: 0,
-                blind: false,
-              };
+          if (type === PlayerTypesEnum.reset) {
+            return update({
+              cards: [],
+              action: '',
+              showAction: '',
+              bid: 0,
+              blind: false,
             });
-            this.rooms[i] = updateRoom;
-            return updateRoom;
-          }
-          if (type === PlayerTypesEnum.endRound) {
-            updateRoom.desk.players = updateRoom.desk.players.map((player) => {
-              if (player.action == Status.fold || player.action == Status.allIn)
-                return player;
-
-              return {
-                ...player,
-                action: '',
-                showAction: '',
-              };
-            });
-            this.rooms[i] = updateRoom;
-
-            return updateRoom;
           }
 
           updateRoom.desk.players = updateRoom.desk.players.map((player) => {
@@ -264,12 +268,14 @@ export class RoomService {
     }
   }
 
-  async findUserInRoom(userId: string): Promise<any> {
+  async findUserInRoom(
+    userId: string,
+  ): Promise<{ id: string; player: PlayerInterface } | null> {
     const room = this.rooms.find((room) =>
       room.desk.players.find((player) => player.userId === userId),
     );
 
-    if (!room) return;
+    if (!room) return null;
 
     return {
       id: room._id.toString(),
@@ -280,14 +286,9 @@ export class RoomService {
   }
 
   async createRoom(values: CreateRoomDto) {
-    const { withPass, ...res } = values;
-
-    const passHash =
-      values.password && (await bcrypt.hash(values.password, 12));
-
     const room = await this.roomModel.create({
-      ...res,
-      password: passHash,
+      name: values.name,
+      buyIn: Number(values.buyIn),
     });
 
     const updateRoom = await this.roomModel.findOneAndUpdate(
@@ -302,55 +303,61 @@ export class RoomService {
     return room;
   }
 
-  async addPlayer({ roomId, sit, socket }: AddPlayerArgs) {
+  async addPlayer({
+    roomId,
+    sit,
+    socket,
+  }: AddPlayerArgs): Promise<ErrorInterface | RoomInterface> {
     const room = await this.findRoom(roomId);
     const findUserInRooms = await this.findUserInRoom(
       socket.user._id.toString(),
     );
 
-    if (findUserInRooms) throw new WsException('Ya estas en una sala');
+    if (findUserInRooms) return { error: true, message: 'Already in the room' };
     if (socket.user.chips < room.buyIn)
-      throw new WsException('Chips insuficientes');
+      return { error: true, message: 'No enough chips' };
 
-    const playerValues: PlayerInterface = {
-      userId: socket.user._id.toString(),
-      name: socket.user.username,
-      chips: room.buyIn,
+    const defaultValues = {
       sit,
       action: null,
       bid: 0,
+      winningPot: 0,
       blind: false,
       cards: [],
       hand: null,
       showAction: null,
     };
 
-    await this.userService.updateUser({
-      id: socket.user._id,
-      values: { lastRoomVisited: roomId },
-    });
+    const playerValues: PlayerInterface = {
+      ...defaultValues,
+      userId: socket.user._id.toString(),
+      image: socket.user.image,
+      chips: room.buyIn,
+      username: socket.user.username,
+    };
+
     await this.userService.updateChips({
       id: socket.user._id,
       chips: -room.buyIn,
       socket,
     });
-    return await this.updateInPlayer({
+    return await this.updateInDesk({
       id: roomId,
       values: playerValues,
-      type: PlayerTypesEnum.add,
+      type: DeskTypesEnum.addPlayer,
     });
   }
 
-  async removePlayer(userId) {
+  async removePlayer(userId: string) {
     const room = await this.findUserInRoom(userId);
-
     if (!room) return;
 
     const { id, player } = room;
 
-    await this.userService.updateUser({
-      id: userId,
-      values: { lastRoomVisited: null },
+    const roomUpdate = await this.updateInDesk({
+      id,
+      values: player,
+      type: DeskTypesEnum.removePlayer,
     });
 
     await this.userService.updateChips({
@@ -358,45 +365,39 @@ export class RoomService {
       chips: player.chips,
     });
 
-    return await this.updateInPlayer({
-      id,
-      values: player,
-      type: PlayerTypesEnum.delete,
-    });
+    return roomUpdate;
   }
 
-  async findPlayerMove({ roomId, userId }: findPlayerMoveArgs) {
+  async findPlayerMove({
+    roomId,
+    userId,
+  }: findPlayerMoveArgs): Promise<PlayerInterface> {
     const { desk } = await this.findRoom(roomId);
 
-    const player = desk.players.filter((v) => v.userId === userId)[0];
-
-    return {
-      chips: desk.totalBid,
-      playersQuantity: desk.players.length,
-      deskStatus: desk.status,
-      bidToPay: desk.bidToPay,
-      player: !player
-        ? { action: Status.fold, bid: null }
-        : { action: Status[player.action], bid: player.bid },
-    };
+    return desk.players.filter((v) => v.userId === userId)[0];
   }
 
-  async updatePlayerChips({ roomId, userId, chips }: UpdatePlayerChipsArgs) {
+  async updatePlayerChips({ roomId, ...rest }: UpdatePlayerChipsArgs) {
     await this.updateInPlayer({
       id: roomId,
-      values: { userId, chips },
+      values: rest,
     });
   }
 
-  async setMessage({ roomId, message }: SetMessageArgs) {
-    await this.roomModel.findOneAndUpdate(
+  async setMessage({
+    roomId,
+    message,
+  }: SetMessageArgs): Promise<MessageInterface> {
+    await this.roomModel.updateOne(
       { _id: roomId },
       {
         $push: {
-          messages: message,
+          messages: {
+            $each: [message],
+            $slice: -50,
+          },
         },
       },
-      { new: true },
     );
 
     const room = await this.updateInMessages({ id: roomId, values: message });
@@ -411,7 +412,7 @@ export class RoomService {
     return room;
   }
 
-  async deleteAllRooms(): Promise<any> {
+  async deleteAllRooms() {
     await this.roomModel.deleteMany({});
     this.rooms = [];
   }

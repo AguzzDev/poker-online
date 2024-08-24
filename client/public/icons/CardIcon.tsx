@@ -1,4 +1,4 @@
-import { CardIconProps, CardSuitEnum } from "models";
+import { CardIconProps, CardIconTypeEnum, CardSuitEnum } from "models";
 import ClubsIcon from "public/icons/ClubsIcon";
 import DiamondsIcon from "public/icons/DiamondsIcon";
 import HeartsIcon from "public/icons/HeartsIcon";
@@ -7,13 +7,14 @@ import SpadesIcon from "public/icons/SpadesIcon";
 export const CardIcon = ({
   suit,
   value,
-  opacity = false,
   style,
   delay,
+  type = CardIconTypeEnum.default,
 }: CardIconProps) => {
+  let body;
   let color = "";
 
-  if (!!delay) {
+  if (type === CardIconTypeEnum.loading) {
     color = "text-primary";
   } else {
     color =
@@ -25,48 +26,52 @@ export const CardIcon = ({
   const SuitIcon = () => {
     switch (suit) {
       case CardSuitEnum.clubs:
-        return <ClubsIcon className={`fill-current ${color}`} />;
+        return <ClubsIcon className={color} />;
       case CardSuitEnum.diamonds:
-        return <DiamondsIcon className={`fill-current ${color}`} />;
+        return <DiamondsIcon className={color} />;
       case CardSuitEnum.hearts:
-        return <HeartsIcon className={`fill-current ${color}`} />;
+        return <HeartsIcon className={color} />;
       case CardSuitEnum.spades:
-        return <SpadesIcon className={`fill-current ${color}`} />;
-      default:
-        return null;
+        return <SpadesIcon className={color} />;
     }
   };
 
-  if (!!delay) {
-    return (
+  if (type === CardIconTypeEnum.loading) {
+    body = (
       <div
         style={{ animationDelay: `${delay}ms` }}
         className={`${style} card-animation invisible relative w-10 h-14 border-[1.5px] border-[#3A3A3A] bg-[#303030] rounded-md overflow-hidden`}
       >
-        <div className="absolute top-[2px] left-[2px] flex flex-col items-center">
-          <p className={`${color} text-[0.5rem] leading-[0.5rem] mb-[2px]`}>
+        <div className="absolute top-[2px] left-[2px] flex flex-col items-center h-[50%] w-[30%]">
+          <p className={`${color} text-[0.5rem] leading-[0.5rem] my-[2px]`}>
             {value}
           </p>
 
-          <SuitIcon />
+          <div className="scale-75 fill-current mt-1">
+            <SuitIcon />
+          </div>
         </div>
       </div>
     );
   } else {
-    return (
+    body = (
       <div
-        className={`${
-          opacity ? "opacity-40" : ""
-        } ${style} relative w-10 h-16 md:w-14 md:h-24 1920:w-16 1920:h-26 border-[1.5px] border-[#3A3A3A] bg-[#303030] rounded-md overflow-hidden`}
+        className={`${style} relative w-10 h-16 md:w-14 md:h-24 1920:w-16 1920:h-26 border-[1.5px] border-[#3A3A3A] bg-[#303030] rounded-md overflow-hidden`}
       >
-        <div className="absolute top-[2px] left-[2px] flex flex-col items-center">
-          <p className={`${color} text-[0.5rem] leading-[0.5rem] mb-[2px]`}>
+        <div className="absolute top-[2px] left-[2px] flex flex-col items-center h-[50%] w-[30%]">
+          <p
+            className={`${color} font-semibold text-xl leading-[0.5rem] mt-2 mb-1`}
+          >
             {value}
           </p>
 
-          <SuitIcon />
+          <div className="scale-75 fill-current mt-1">
+            <SuitIcon />
+          </div>
         </div>
       </div>
     );
   }
+
+  return body;
 };

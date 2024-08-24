@@ -9,10 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { RoomService } from './room.service';
-import { RequestInterface, RoomInterface } from 'src/models';
-import { Room } from 'src/schemas/room.schema';
-import { Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
+import { RequestInterface } from 'src/models';
 import { CreateRoomDto } from 'src/dto';
 import { AdminGuard } from 'src/guards/adminGuard';
 import { Request } from 'express';
@@ -41,6 +38,7 @@ export class RoomController {
   }
 
   @Post()
+  @UseGuards(AdminGuard)
   c(@Body() values: CreateRoomDto) {
     try {
       return this.roomService.createRoom(values);
@@ -60,6 +58,7 @@ export class RoomController {
   }
 
   @Delete()
+  @UseGuards(CreatorGuard)
   e() {
     try {
       return this.roomService.deleteAllRooms();

@@ -1,10 +1,11 @@
 import * as React from "react";
-const HeartsIcon = (props) => (
+const HeartsIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width={4}
-    height={5}
-    fill="none"
+    width="100%"
+    height="100%"
+    fill="fill-current"
+    viewBox="0 0 4 4"
     {...props}
   >
     <path

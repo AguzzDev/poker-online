@@ -1,8 +1,8 @@
 import { Container } from "components/Container/Container";
 import { Layout } from "components/Layout/Layout";
-import withGame from "hoc/withGame";
 import { LayoutTypeEnum, NavbarTypeEnum } from "models";
-import { NextPage } from "next";
+import { GetServerSideProps, NextPage } from "next";
+import { checkNoAuth } from "utils/checkNoAuth";
 
 const Leaderboard: NextPage = () => {
   return (
@@ -12,4 +12,10 @@ const Leaderboard: NextPage = () => {
   );
 };
 
-export default withGame(Leaderboard);
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const isLogged = !!context.req.cookies.user;
+
+  return await checkNoAuth(isLogged, "/");
+};
+
+export default Leaderboard

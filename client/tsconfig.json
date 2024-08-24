@@ -7,7 +7,7 @@
     "strict": true,  // Desactiva todas las opciones estrictas
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,  // Asegúrate de que no se genere salida durante el build
-    "noEmitOnError": false,  // Ignora errores de compilación
+    "noEmitOnError": true,  // Ignora errores de compilación
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "node",

@@ -1,15 +1,13 @@
-import { RegisterInput, UserInterface } from "models";
+import { RegisterInput } from "models";
 import { fetchRegister } from "services";
-import { userValues } from "./userValues";
 import { AxiosError } from "axios";
 
 const fetchRegisterAdapter = async (
   values: RegisterInput
-): Promise<UserInterface | AxiosError> => {
+): Promise<string | AxiosError> => {
   try {
-    const user = await fetchRegister(values);
-
-    return userValues(user.data);
+    const { data } = await fetchRegister(values);
+    return data.message;
   } catch (error) {
     throw error;
   }

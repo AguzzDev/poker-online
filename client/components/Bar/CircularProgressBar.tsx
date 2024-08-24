@@ -1,4 +1,4 @@
-export const CircularProgressBar = ({ percentage }) => {
+export const CircularProgressBar = ({ percentage }: { percentage: number }) => {
   const radius = 40;
   const strokeWidth = 10;
   const viewBoxSize = radius * 2 + strokeWidth * 2;
@@ -7,7 +7,10 @@ export const CircularProgressBar = ({ percentage }) => {
   const dashOffset = dashArray - (percentage / 100) * dashArray;
 
   return (
-    <svg viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`} className="w-full h-full">
+    <svg
+      viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
+      className="w-full h-full"
+    >
       <circle
         r={radius}
         cx={50}

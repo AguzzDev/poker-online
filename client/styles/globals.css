@@ -130,8 +130,8 @@
   .appScreenWidth {
     @apply w-full max-w-screen-1920 mx-auto px-5 md:px-10 lg:px-20;
   }
-  .cardSize{
-    @apply w-8 h-12 sm:w-14 sm:h-20 lg:w-20 lg:h-24 1920:w-24 1920:h-28
+  .cardSize {
+    @apply w-8 h-12 sm:w-14 sm:h-20 lg:w-16 lg:h-20 1920:w-20 1920:h-24;
   }
   h1 {
     @apply font-outfitBold text-gradient1 leading-[.9] tracking-heading text-6xl md:text-7xl lg:text-8xl 1920:text-[7rem];
@@ -149,12 +149,14 @@
     @apply font-outfitMedium text-base md:text-lg lg:text-xl 1920:text-2xl;
   }
   h6 {
-    @apply font-outfitMedium text-base md:text-lg lg:text-xl;
+    @apply font-outfitMedium text-sm md:text-base lg:text-lg 1920:text-xl;
   }
   p {
     @apply font-workSans text-sm md:text-base;
   }
-  input {
+  input,
+  select,
+  option {
     @apply bg-transparent outline-none w-full text-base md:text-xl;
   }
 }

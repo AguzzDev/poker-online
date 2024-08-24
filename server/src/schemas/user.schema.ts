@@ -2,20 +2,23 @@ import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
 
 @Schema({ timestamps: true, _id: true })
 export class User {
-  @Prop({ required: true })
+  @Prop({ required: true, min: 3 })
   username: string;
 
-  @Prop({ required: false, default: '' })
+  @Prop({ required: false, default: 'default' })
   image: string;
 
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop({ required: true })
+  @Prop({ min: 6, default: '' })
   password: string;
 
   @Prop({ default: 100000 })
   chips: number;
+
+  @Prop({ default: '' })
+  provider: string;
 
   @Prop({ default: 'user' })
   role: string;
@@ -48,7 +51,13 @@ export class User {
   };
 
   @Prop()
-  lastRoomVisited: string;
+  verifyCode: string;
+
+  @Prop({ default: false })
+  verify: boolean;
+
+  @Prop({ default: '' })
+  accessToken: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

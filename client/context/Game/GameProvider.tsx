@@ -1,82 +1,96 @@
 import { useState, useContext } from "react";
-import { Socket, io } from "socket.io-client";
+import { io } from "socket.io-client";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
-import { parseCookies, setCookie } from "nookies";
-
 import EVENTS from "utils/events";
+import { toast } from "react-toastify";
 import { useUser } from "context/User/UserProvider";
 import {
-  RoomInterface,
   PlayerInterface,
   SoundsEnum,
   GameContextType,
+  Status,
+  CreateRoomInput,
+  NewMessageInput,
+  ErrorInterface,
+  RoomInterface,
+  UserInterface,
 } from "models";
 import { emitSound } from "utils/emitSound";
 import GameContext from "context/Game/GameContext";
 import getRoomsAdapter from "adapters/room/fetchRoomsAdapter";
 
 const GameProvider = ({ children }: any) => {
-  const [socket, setSocket] = useState<Socket>(null);
-  const [usersOnline, setUsersOnline] = useState<number>(0);
-  const [room, setRoom] = useState<RoomInterface | null>(null);
-  const [rooms, setRooms] = useState<GameContextType["rooms"] | null>(null);
-  const [roomMessage, setRoomMessage] = useState([]);
-  const [roomInfo, setRoomInfo] = useState<string>("");
-  const [turn, setTurn] = useState<string>("");
-  const [timer, setTimer] = useState<number>(100);
-  const [player, setPlayer] = useState<PlayerInterface | null>(null);
-  const [bid, setBid] = useState<number>(0);
-  const [showReBuyMenu, setShowReBuyMenu] = useState<boolean>(false);
-  const [reBuy, setReBuy] = useState<{ err: string; message: string }>({
-    err: null,
-    message: null,
-  });
+  const [socket, setSocket] = useState<GameContextType["socket"]>(null);
+  const [player, setPlayer] = useState<GameContextType["player"]>(null);
+  const [playersOnline, setPlayersOnline] =
+    useState<GameContextType["playersOnline"]>(null);
+  const [room, setRoom] = useState<GameContextType["room"]>(null);
+  const [rooms, setRooms] = useState<GameContextType["rooms"]>(null);
+  const [roomNotification, setRoomNotification] =
+    useState<GameContextType["roomNotification"]>(null);
+  const [usersOnline, setUsersOnline] =
+    useState<GameContextType["usersOnline"]>(0);
+  const [roomStatus, setRoomStatus] =
+    useState<GameContextType["roomStatus"]>(null);
+  const [turn, setTurn] = useState<GameContextType["turn"]>(null);
+  const [timer, setTimer] = useState<GameContextType["timer"]>(100);
+  const [bid, setBid] = useState<GameContextType["bid"]>(0);
+  const [showReBuyMenu, setShowReBuyMenu] =
+    useState<GameContextType["showReBuyMenu"]>(false);
+  const [reBuyMessage, setReBuyMessage] =
+    useState<GameContextType["reBuyMessage"]>(null);
 
+  const toastValues = { theme: "dark" };
   const router = useRouter();
-
-  const { lastRoomVisited } = parseCookies();
   const { user, updateUser } = useUser();
 
-  const createRoom = async (values) => {
-    socket.emit(EVENTS.CLIENT.CREATE_ROOM, values);
+  const createRoom = (values: CreateRoomInput) => {
+    const { global, ...rest } = values;
+    socket!.emit(EVENTS.CLIENT.CREATE_ROOM, rest);
   };
 
-  const deleteRoom = async (id) => {
-    socket.emit(EVENTS.CLIENT.DELETE_ROOM, id);
+  const deleteRoom = (id: string) => {
+    socket!.emit(EVENTS.CLIENT.DELETE_ROOM, id);
   };
 
-  const joinRoom = (values: string) => {
-    try {
-      socket.emit(EVENTS.CLIENT.CONNECT_ROOM, values, (res) => {
-        if (res.error) {
-          return alert(res.error);
+  const getPlayers = () => {
+    socket!.emit(EVENTS.CLIENT.GET_PLAYERS, (data: any) => {
+      setPlayersOnline(data);
+    });
+  };
+  const joinRoom = (values: { id: string }) => {
+    socket!.emit(
+      EVENTS.CLIENT.CONNECT_ROOM,
+      values,
+      (res: ErrorInterface | RoomInterface) => {
+        if ("error" in res) {
+          return toast.error(res.message, toastValues);
         }
 
-        setCookie(null, "lastRoomVisited", res.roomId);
-        setRoom(res.room);
-      });
-    } catch (error) {
-      console.log("error al conectar", error);
-    }
+        setRoom(res);
+      }
+    );
   };
 
-  const takeSit = (sit) => {
-    socket.emit(
+  const takeSit = (sit: number) => {
+    socket!.emit(
       EVENTS.CLIENT.TAKE_SIT,
       {
-        roomId: room._id,
+        roomId: room!._id,
         sit,
       },
-      (res) => {
-        if (res.error) {
-          return alert(res.error);
+      (
+        res: ErrorInterface | { room: RoomInterface; player: PlayerInterface }
+      ) => {
+        if ("error" in res) {
+          return toast.error(res.message, toastValues);
         }
 
         setRoom(res.room);
         setPlayer(res.player);
 
-        if (res.room.desk.players.length === 2) {
+        if (res.room.desk.players.length >= 2) {
           return startGame(res.room._id);
         }
       }
@@ -84,105 +98,112 @@ const GameProvider = ({ children }: any) => {
   };
 
   const leaveRoom = () => {
-    socket.emit(EVENTS.CLIENT.LEAVE_ROOM);
+    socket!.emit(EVENTS.CLIENT.LEAVE_ROOM);
     setRoom(null);
     setPlayer(null);
     router.push("/app");
   };
 
-  const newMessage = (values) => {
-    socket.emit(EVENTS.CLIENT.MESSAGE, { ...values, roomId: values.id });
+  const newMessage = (values: NewMessageInput) => {
+    socket!.emit(EVENTS.CLIENT.MESSAGE, values);
   };
 
-  const playMove = (action) => {
+  const playMove = (action: Status) => {
     let actionValue = action;
     let newBid = bid;
-    const { bidToPay } = room.desk;
 
-    if (action !== "allIn") {
-      if (action === "raise") {
-        newBid = bid <= bidToPay * 2 ? bidToPay * 2 : bid;
-      }
-      if (action === "call") {
-        newBid = bidToPay;
-      }
-      if (newBid > player.chips) {
-        setBid(player.chips);
-        actionValue = "allIn";
-        newBid = player.chips;
-      }
+    const { bidToPay, totalBid } = room!.desk;
+
+    if (action === "call") {
+      newBid = bidToPay - player!.bid;
     }
-
+    if (action === "bid") {
+      setBid(bid);
+      newBid = bid;
+    }
+    if (action === "raise") {
+      setBid((prev) => {
+        if (bid === prev) {
+          return bidToPay * 2;
+        } else {
+          return bid;
+        }
+      });
+    }
     if (action === "allIn") {
-      setBid((prev) => player.chips - prev);
-      newBid = player.chips - player.bid;
+      setBid((prev) => player!.chips - prev);
+      newBid = player!.chips;
     }
 
-    socket.emit(EVENTS.CLIENT.PLAYER_ACTION, {
-      roomId: room._id,
-      userId: user._id,
+    socket!.emit(EVENTS.CLIENT.PLAYER_ACTION, {
+      roomId: room!._id,
+      userId: user!._id,
       action: actionValue,
-      bid: Math.ceil(newBid),
+      bidToPay: newBid + player!.bid,
+      bid: newBid,
+      totalBid: totalBid + newBid,
     });
   };
 
-  const startGame = (id) => {
-    socket.emit(EVENTS.CLIENT.START_GAME, id);
+  const startGame = (id: string) => {
+    socket!.emit(EVENTS.CLIENT.START_GAME, id);
   };
 
-  const rebuyChips = () => {
+  const reBuyChips = () => {
     try {
-      socket.emit(
+      socket!.emit(
         EVENTS.CLIENT.PLAYER_REBUY,
         {
-          roomId: room._id,
-          userId: player.userId,
-          chips: room.buyIn,
+          roomId: room!._id,
+          userId: player!.userId,
+          chips: room!.buyIn,
         },
-        () => {
-          setReBuy("todo ok");
+        (res: ErrorInterface) => {
+          if (res.error) {
+            setReBuyMessage(res.message);
+          }
+
+          setShowReBuyMenu(false);
         }
       );
-    } catch (error) {
-      setReBuy(error.message);
-    }
+    } catch (error: unknown) {}
   };
 
   useEffect(() => {
-    if (!socket && user) {
-      const newSocket = io(process.env.NEXT_PUBLIC_API_URL!, {
-        reconnection: false,
-        auth: {
-          token: user!.accessToken || "",
-          lastRoomVisited: lastRoomVisited,
-        },
-      });
+    if (socket || !user) return;
+    const newSocket = io(process.env.NEXT_PUBLIC_API_URL!, {
+      reconnection: false,
+      auth: {
+        token: user!.accessToken,
+      },
+    });
 
-      setSocket(newSocket);
-    }
-  }, [socket, user]);
+    setSocket(newSocket);
+  }, [user]);
 
   useEffect(() => {
     if (!socket) return;
-
-    socket.on(EVENTS.SERVER.PLAYER_CHIPS, (playerChips) => {
-      updateUser({ chips: playerChips });
-    });
-    socket.emit(EVENTS.CLIENT.PLAYER_CHIPS);
 
     socket.on(EVENTS.SERVER.ALL_PLAYERS, (users) => {
       setUsersOnline(users);
     });
 
-    if (router.pathname === "/app") {
+    if (router.pathname !== "/app/room/[id]") {
+      socket!.emit(EVENTS.CLIENT.LEAVE_ROOM);
+
+      socket.emit(EVENTS.CLIENT.UPDATE_USER, (data: Partial<UserInterface>) => {
+        updateUser(data);
+      });
+
       const getRooms = async () => {
         try {
-          let timeout;
+          let timeout: NodeJS.Timeout;
+          const time = 4000;
           const res = await getRoomsAdapter();
 
           timeout = setTimeout(() => {
             setRooms(res);
-          }, 4000);
+          }, time);
 
           return () => clearInterval(timeout);
         } catch (error) {
@@ -194,19 +215,15 @@ const GameProvider = ({ children }: any) => {
 
       socket.on(EVENTS.SERVER.ROOMS, ({ type, room }) => {
         setRooms((prevRooms) => {
-          if (type === "create") {
-            if (!Array.isArray(prevRooms)) return;
+          if (!Array.isArray(prevRooms)) return prevRooms;
 
+          if (type === "create") {
             return [...prevRooms, room];
           } else if (type === "update") {
-            if (!Array.isArray(prevRooms)) return;
-
             return prevRooms.map((data) =>
               data._id === room._id ? room : data
             );
           } else if (type === "delete") {
-            if (!Array.isArray(prevRooms)) return;
-
             return prevRooms.filter(({ _id }) => _id != room._id);
           }
           return prevRooms;
@@ -218,6 +235,9 @@ const GameProvider = ({ children }: any) => {
         socket.removeAllListeners();
       };
     } else {
+      socket.on(EVENTS.SERVER.UPDATE_USER, (data: Partial<UserInterface>) => {
+        updateUser(data);
+      });
       socket.on(EVENTS.SERVER.GAME_SOUND, (type: SoundsEnum) => {
         emitSound(SoundsEnum[type]);
       });
@@ -227,21 +247,24 @@ const GameProvider = ({ children }: any) => {
         }
       });
       socket.on(EVENTS.SERVER.ROOM_INFO, ({ message, by }) => {
-        if (by === user._id) {
-          setRoomInfo("Tu turno");
+        if (by === user!._id) {
+          setRoomStatus("Your turn");
           return;
         }
-        console.log(message);
-        setRoomInfo(message);
+        setRoomStatus(message);
       });
       socket.on(EVENTS.SERVER.MESSAGE_SEND, (res) => {
-        setRoom((prev) => ({
-          ...prev,
-          messages: prev.messages.concat(res),
-        }));
+        setRoom((prev) => {
+          if (!prev) return null;
+
+          return {
+            ...prev,
+            messages: [...prev.messages, res],
+          };
+        });
       });
-      socket.on(EVENTS.SERVER.PLAYER_REBUY, async (data) => {
-        const itsMe = data.some(({ userId }) => userId === user._id);
+      socket.on(EVENTS.SERVER.PLAYER_REBUY, async (data: PlayerInterface[]) => {
+        const itsMe = data.some(({ userId }) => userId === user!._id);
         if (itsMe) {
           setShowReBuyMenu(true);
           await new Promise((resolve) => setTimeout(resolve, 15000));
@@ -249,24 +272,45 @@ const GameProvider = ({ children }: any) => {
         }
       });
       socket.on(EVENTS.SERVER.UPDATE_GAME, (data) => {
-        console.log("updategame", data);
-        setRoom((prev) => ({ ...prev, desk: data }));
-        setBid(data.bidToPay ? data.bidToPay : (25 * data.totalBid) / 100);
+        setRoom((prev) => {
+          if (!prev) return null;
 
-        const me = data.players.filter((v) => v.userId == user._id)[0];
+          return {
+            ...prev,
+            desk: data,
+          };
+        });
+        setBid(data.totalBid);
+
+        const me = data.players.filter(
+          (p: PlayerInterface) => p.userId == user!._id
+        )[0];
+
         setPlayer(me);
       });
-      socket.on(EVENTS.SERVER.ROOM_MESSAGES, (data: any) => {
-        setRoomMessage(data);
+      socket.on(EVENTS.SERVER.ROOM_NOTIFICATIONS, (data) => {
+        setRoomNotification(data);
       });
-      socket.on(EVENTS.SERVER.PLAYERS_IN_ROOM, (data: any) => {
-        setRoom((prev) => ({ ...prev, desk: { ...prev.desk, players: data } }));
+      socket.on(EVENTS.SERVER.PLAYERS_IN_ROOM, (data) => {
+        setRoom((prev) => {
+          if (!prev) return null;
+
+          return {
+            ...prev,
+            players: data.length,
+            desk: { ...prev.desk, players: data },
+          };
+        });
       });
       socket.on(EVENTS.SERVER.DEAL_CARDS, (data) => {
-        setRoom((prev) => ({
-          ...prev,
-          desk: { ...prev.desk, dealer: prev.desk.dealer.concat(data) },
-        }));
+        setRoom((prev) => {
+          if (!prev) return null;
+
+          return {
+            ...prev,
+            desk: { ...prev.desk, dealer: prev.desk.dealer.concat(data) },
+          };
+        });
       });
       socket.on(EVENTS.SERVER.PLAYER_TURN, (player) => {
         setTurn(player);
@@ -286,33 +330,30 @@ const GameProvider = ({ children }: any) => {
         socket,
         showReBuyMenu,
         bid,
-        roomInfo,
+        roomStatus,
         usersOnline,
         player,
         room,
-        roomMessage,
+        roomNotification,
         rooms,
         timer,
+        playersOnline,
         turn,
-        reBuy,
-        setSocket,
-        setPlayer,
-        setShowReBuyMenu,
-        setRoomMessage,
-        setRoom,
-        setTimer,
-        setRooms,
-        setTurn,
+        reBuyMessage,
         setBid,
+        setShowReBuyMenu,
+        setRoomNotification,
+        setRoom,
         createRoom,
         deleteRoom,
         leaveRoom,
-        rebuyChips,
+        reBuyChips,
         newMessage,
         joinRoom,
         takeSit,
         startGame,
         playMove,
+        getPlayers,
       }}
     >
       {children}

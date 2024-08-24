@@ -3,8 +3,11 @@ import {
   Delete,
   Get,
   InternalServerErrorException,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
+import { Request } from 'express';
+import { UserRoleEnum } from 'src/models';
 
 @Controller('user')
 export class UserController {
@@ -19,8 +22,18 @@ export class UserController {
     }
   }
 
+  @Get('/dashboard/:id')
+  async b(@Req() req: Request) {
+    try {
+      const user = await this.userService.getUserById(req.params.id);
+      return user.role === UserRoleEnum.creator;
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+  }
+
   @Delete()
-  b() {
+  c() {
     try {
       return this.userService.removeUser();
     } catch (error) {

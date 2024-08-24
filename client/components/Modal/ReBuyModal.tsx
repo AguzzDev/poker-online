@@ -1,6 +1,4 @@
 import { useGame } from "context/Game/GameProvider";
-import { Modal } from "./Modal";
-import EVENTS from "utils/events";
 import { useState } from "react";
 import { ButtonOne } from "components/Button/ButtonOne";
 import { ButtonTwo } from "components/Button/ButtonTwo";
@@ -10,39 +8,42 @@ export const ReBuyModal = () => {
   const [disabled, setDisabled] = useState<boolean>(false);
   const router = useRouter();
 
-  const { setShowReBuyMenu, rebuyChips, reBuy } = useGame();
+  const { setShowReBuyMenu, reBuyChips, reBuyMessage } = useGame();
 
   return (
-    <div className="absolute top-0 left-0 w-screen h-screen flex justify-center items-center">
-      <div className="min-w-[40vw] h-[40vh] flex-col py-3 px-5 bg-background z-50">
-        <h1>Do you wanna keep playing?</h1>
-        <p>Buy more chips...</p>
+    <div className="absolute inset-0 w-screen h-screen flex justify-center items-center bg-black bg-opacity-20">
+      <div className="flex-col py-5 px-5 bg-secondary rounded-md z-50">
+        <h3>Do you wanna keep playing?</h3>
+        <p className="mt-1">Buy more chips...</p>
 
-        <p className="text-xs text-red-500 my-5">{reBuy.message}</p>
+        <p className="text-xs text-red-500 my-5">{reBuyMessage}</p>
 
-        <div className="flex items-end h-full">
-          {reBuy.error ? (
-            <div className="flex justify-between space-x-5">
-              <ButtonOne onClick={() => router.push("/")}>
-                Back to lobby
-              </ButtonOne>
-              <ButtonTwo onClick={() => setShowReBuyMenu(false)}>
-                Stay as a spectator
-              </ButtonTwo>
-            </div>
-          ) : (
+        {reBuyMessage ? (
+          <div className="flex justify-between space-x-5">
             <ButtonOne
-              style="w-full"
-              disabled={disabled}
               onClick={() => {
-                setDisabled(!disabled);
-                rebuyChips();
+                setShowReBuyMenu(false);
+                router.push("/");
               }}
             >
-              Rebuy
+              Back to lobby
             </ButtonOne>
-          )}
-        </div>
+            <ButtonTwo onClick={() => setShowReBuyMenu(false)}>
+              Stay as a spectator
+            </ButtonTwo>
+          </div>
+        ) : (
+          <ButtonOne
+            style="w-full"
+            disabled={disabled}
+            onClick={() => {
+              setDisabled(!disabled);
+              reBuyChips();
+            }}
+          >
+            Rebuy
+          </ButtonOne>
+        )}
       </div>
     </div>
   );

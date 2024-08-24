@@ -8,6 +8,10 @@ import {
   NavbarTypeEnum,
 } from "models";
 import { Footer } from "components/Footer/Footer";
+import Image from "next/image";
+import Logo from "public/Logo";
+import Link from "next/link";
+import LogoMobile from "public/LogoMobile";
 
 export const Layout = ({
   title,
@@ -43,7 +47,7 @@ export const Layout = ({
 
         <section className="flex flex-col w-full h-full absolute inset-0 z-10 overflow-hidden">
           <section className="appScreenWidth">
-            <Navbar type={navType} />
+            <Navbar type={NavbarTypeEnum.app} />
           </section>
           <section className="flex-1 overflow-hidden appScreenWidth mb-5">
             {children}
@@ -63,6 +67,44 @@ export const Layout = ({
           <section className="flex-1 overflow-hidden mb-5">{children}</section>
         </section>
       </section>
+    );
+  } else if (type === LayoutTypeEnum.form) {
+    body = (
+      <Layout type={LayoutTypeEnum.empty}>
+        <section className="flex flex-col-reverse lg:flex-row h-full">
+          <section className="flex-col flex-1 lg:w-[50vw] py-5 px-5 sm:px-10">
+            <div className="h-[95%]">
+              <Logo className="hidden sm:block" />
+              <LogoMobile className="block sm:hidden" />
+
+              <div className="mt-3 sm:mt-5">{children}</div>
+            </div>
+
+            <div className="flex items-end h-[5%]">Develop By AguzzDev</div>
+          </section>
+
+          <section className="h-1/4 lg:h-full lg:flex-1 relative rounded-b-[5%] md:rounded-l-[5%] overflow-hidden">
+            <div className="absolute bottom-4 left-5 z-50">
+              <p>
+                Image by
+                <span className="ml-1 text-accent">
+                  <Link href="https://www.freepik.com/" passHref>
+                    <a target="_blank" rel="noopener noreferrer">
+                      Freepik
+                    </a>
+                  </Link>
+                </span>
+              </p>
+            </div>
+            <Image
+              src="/authImage.jpg"
+              layout="fill"
+              alt="Auth Image"
+              objectFit="cover"
+            />
+          </section>
+        </section>
+      </Layout>
     );
   } else {
     body = (

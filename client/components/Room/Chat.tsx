@@ -1,9 +1,8 @@
 import { useRouter } from "next/router";
 import { useEffect, FormEvent, useRef } from "react";
-
 import { useGame } from "context/Game/GameProvider";
 import { useUser } from "context/User/UserProvider";
-import Image from "next/image";
+import { UserImage } from "utils/userImage";
 
 export const Chat = () => {
   const router = useRouter();
@@ -21,11 +20,9 @@ export const Chat = () => {
 
     if (value) {
       newMessage({
-        image: user?.image,
-        username: user?.username,
+        id: id as string,
+        userId: user!._id,
         message: value,
-        id,
-        userId: user?._id,
       });
       messageRef.current.value = "";
     }
@@ -33,7 +30,7 @@ export const Chat = () => {
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [room.messages]);
+  }, [room!.messages]);
 
   return (
     <section className="flex flex-col h-full border-2 border-border rounded-b-md md:rounded-md">
@@ -41,22 +38,25 @@ export const Chat = () => {
         <h3 className="font-bold">Chat</h3>
       </div>
 
-      <div className="flex-col space-y-3 px-5 py-2 flex-1 overflow-y-scroll">
-        {room.messages.length > 0
-          ? room.messages.map(({ image, message, username, time }, i) => (
+      <div className="flex-col space-y-5 px-5 py-2 flex-1 overflow-y-scroll">
+        {Array.isArray(room!.messages)
+          ? room!.messages.map(({ image, message, username }, i) => (
               <div
                 key={i}
                 ref={scrollRef}
                 className={`${
-                  user.username === username ? "flex-row-reverse" : "flex-row"
-                } flex space-x-3 items-start relative w-full`}
+                  user!.username === username ? "flex-row-reverse" : "flex-row"
+                } flex items-start relative w-full gap-3`}
               >
-                <div className="relative w-12 h-12 md:w-14 md:h-14 bg-primary rounded-full">
-                  <Image src={image ? image : "/noImage.png"} layout="fill" />
-                </div>
+                {image ? (
+                  <div className="relative w-12 h-12 bg-primary rounded-full">
+                    <UserImage image={image} className="scale-50"/>
+                  </div>
+                ) : null}
 
                 <div className="flex-1 min-h-20 px-3 pt-1 pb-3 rounded-lg border-borderWidth bg-purple1 border-border break-words">
-                  <p className="text-base md:text-xl">{message}</p>
+                  <p className="font-medium text-lg">{username}</p>
+                  <p>{message}</p>
                 </div>
               </div>
             ))

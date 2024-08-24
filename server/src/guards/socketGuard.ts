@@ -12,22 +12,17 @@ export class SocketGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    try {
-      const socket: SocketCustom = context
-        .switchToWs()
-        .getClient<SocketCustom>();
-      const token = context.switchToWs().getClient().handshake.auth.token;
-      if (!token) throw new WsException('no token');
+    const socket: SocketCustom = context.switchToWs().getClient<SocketCustom>();
+    const token = context.switchToWs().getClient().handshake.auth.token;
 
-      const decodedToken = this.jwtService.verify(token);
-      const user = await this.userService.getUserById(decodedToken.id);
-      if (!user) throw new WsException('no user');
+    if (!token) throw new WsException('no token');
 
-      socket.user = user;
+    const decodedToken = this.jwtService.verify(token);
+    const user = await this.userService.getUserById(decodedToken.id);
+    if (!user) throw new WsException('no user');
 
-      return true;
-    } catch (error) {
-      throw new WsException('Error');
-    }
+    socket.user = user;
+
+    return true;
   }
 }

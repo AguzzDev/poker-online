@@ -8,6 +8,7 @@ export interface RequestInterface extends Request {
 }
 export interface SocketCustom extends Socket {
   user: Partial<UserInterface>;
+  users: any[]
 }
 export interface CardInterface {
   id: number;
@@ -17,10 +18,12 @@ export interface CardInterface {
 export interface PlayerInterface {
   _id?: string;
   userId?: string;
-  name?: string;
+  username?: string;
+  image?: string;
   chips?: number;
   sit?: number;
   cards?: CardInterface[];
+  winningPot?: number;
   bid?: number;
   hand?: {
     heirarchy: string;
@@ -42,8 +45,13 @@ export interface DeskInterface {
   blind?: number;
 }
 export interface MessageInterface {
-  userId: string;
-  message: string;
+  userId?: string;
+  username?: string;
+  message?: string;
+  image?: string;
+  role?: UserRoleEnum;
+  timestamp?: Date;
+  cards?: CardInterface[];
 }
 export interface RoomInterface {
   _id?: mongoose.Types.ObjectId;
@@ -63,10 +71,12 @@ export interface UserInterface {
   email: string;
   password: string;
   chips: number;
+  provider: string;
   createdAt: Date;
   updatedAt: Date;
   __v: number;
-  lastRoomVisited: string;
+  verifyCode: string;
+  verify: boolean;
   role: string;
   matches: {
     wins: number;
@@ -84,6 +94,10 @@ export interface UserInterface {
 }
 export interface UserWithTokenInterface extends UserInterface {
   accessToken: string;
+}
+export interface ErrorInterface {
+  error: boolean;
+  message: string;
 }
 
 //args
@@ -121,7 +135,6 @@ export interface ClearPlayerMoveArgs {
 }
 export interface AdvancedRoundArgs {
   roomId: string;
-  type: ContinueGameTypeEnum;
   server: Server;
 }
 export interface SetAutoBlindArgs {
@@ -146,7 +159,7 @@ export interface UpdateInMessagesArgs {
 }
 export interface UpdateInDeskArgs {
   id: string;
-  values?: DeskInterface;
+  values?: any;
   type?: DeskTypesEnum;
 }
 export interface UpdateInPlayerArgs {
@@ -169,12 +182,16 @@ export interface ContinueGameArgs {
   player?: any;
   round?: number;
 }
+export interface sendMailArgs {
+  type: MailTypeEnum;
+  email: string;
+}
 export interface SetMessageArgs {
   roomId: string;
   message: MessageInterface;
 }
 export interface NewMessageArgs {
-  values: { roomId?: string; message: string };
+  values: { id: string; userId?: string; message: string };
   server: Server;
   socket?: SocketCustom;
 }
@@ -184,6 +201,7 @@ export interface findPlayerMoveArgs {
 }
 export interface UpdatePlayerChipsArgs extends findPlayerMoveArgs {
   chips: number;
+  winningPot?: number;
 }
 export interface UpdateChipsArgs {
   id: string;
@@ -232,6 +250,7 @@ export enum UpdatePlayerOptionsEnum {
   showAction = 'showAction',
   cards = 'cards',
   blind = 'blind',
+  winningPot = 'winningPot',
 }
 export enum UpdateDeskOptionsEnum {
   players = 'players',
@@ -241,11 +260,13 @@ export enum PlayerTypesEnum {
   add = 'add',
   delete = 'delete',
   reset = 'reset',
-  stop = 'stop',
-  endRound = 'endRound',
+  clearShowAction = 'clearShowAction',
   clearActions = 'clearActions',
+  clearWinningPot = 'clearWinningPot',
 }
 export enum DeskTypesEnum {
+  addPlayer = 'addPlayer',
+  removePlayer = 'removePlayer',
   dealer = 'dealer',
   stop = 'stop',
   takeCard = 'takeCard',
@@ -255,19 +276,26 @@ export enum GameSoundTypesEnum {
   shuffle = 'shuffle',
   deal = 'deal',
   check = 'check',
+  call = 'bid',
   bid = 'bid',
   allIn = 'allIn',
 }
-export enum ContinueGameTypeEnum {
+export enum GameStatusEnum {
   continue = 'continue',
-  break = 'break',
-  desk = 'desk',
+  stopGame = 'stopGame',
+  endGame = 'endGame',
+  fold = 'fold',
   allIn = 'allIn',
-  player = 'player',
 }
 export enum UserRoleEnum {
   user = 'user',
   vip = 'vip',
   admin = 'admin',
   creator = 'creator',
+}
+export enum MailTypeEnum {
+  welcome = 'welcome',
+  verifyEmail = 'verifyEmail',
+  resetPassword = 'resetPassword',
+  resetPasswordSuccesful = 'resetPasswordSuccesful',
 }

@@ -1,12 +1,9 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateRoomDto {
-  @IsNotEmpty({ message: 'Name is required' })
+  @IsNotEmpty({ message: 'Required' })
   name: string;
 
-  own: string;
-  withPass: boolean;
-
-  @IsOptional()
-  password?: string;
+  @IsNotEmpty({ message: 'Required' })
+  buyIn: string;
 }

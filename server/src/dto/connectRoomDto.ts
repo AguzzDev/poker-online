@@ -1,9 +1,6 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 
 export class ConnectRoomDto {
   @IsNotEmpty()
   id: string;
-
-  @IsOptional()
-  password?: string;
 }

@@ -1,43 +1,43 @@
 import { AxiosError } from "axios";
-import { Dispatch, SetStateAction } from "react";
+import { FormikErrors } from "formik";
 
-/**
- * @param {ApiCallFunction} apiCall - Función adaptadora para la llamada a la API.
- * @param {Record<string, unknown>} values - Valores de entrada para la llamada a la API.
- * @param {(data: unknown) => void} [updateState] - Función para actualizar el estado con los datos de la respuesta.
- * @param {Dispatch<SetStateAction<Record<string, unknown>>>} [setErrors] - Función para establecer errores en el estado.
- */
 export const handleApiCall = async (
   apiCall: Function,
-  values: Record<string, unknown>,
-  updateState?: (data: unknown) => void,
-  setErrors?: Dispatch<SetStateAction<Record<string, unknown>>>
+  setErrors: (errors: FormikErrors<{ global: string }>) => void
 ) => {
   try {
-    const fetch = await apiCall(values);
+    const res = await apiCall();
 
-    if (updateState) {
-      updateState(fetch);
-    }
+    return res;
   } catch (error: unknown) {
     const err = error as AxiosError;
 
     if (!setErrors) return;
-    if (err.status === 500) return setErrors({ global: err.message });
-
-    if (Array.isArray(err.response.data.message)) {
-      const errors = {};
-      err.response.data.message.forEach((err: Record<string, any>) => {
-        const fieldName = Object.keys(err)[0];
-        err[fieldName] = Object.values(err)[0];
-      });
-
-      setErrors(errors);
-    } else {
-      const fieldName = err.response.data.message;
+    if (err.status === 500) {
       setErrors({
-        [Object.keys(fieldName)[0]]: [Object.values(fieldName)[0]],
+        global: err.message,
       });
+
+      return;
+    }
+    const data = err.response?.data;
+
+    if (data && typeof data === "object" && "message" in data) {
+      if (Array.isArray(data.message)) {
+        const errors = {};
+        data.message.forEach((err: Record<string, any>) => {
+          const fieldName = Object.keys(err)[0];
+          err[fieldName] = Object.values(err)[0];
+        });
+
+        setErrors(errors);
+      } else {
+        const fieldName = data.message as Record<string, string>;
+
+        setErrors({
+          [Object.keys(fieldName)[0]]: [Object.values(fieldName)[0]],
+        });
+      }
     }
   }
 };
