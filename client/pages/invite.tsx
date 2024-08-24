@@ -1,3 +1,4 @@
+import { Metatags } from "components/Metatags";
 import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 
@@ -8,6 +9,7 @@ const Invite: NextPage<{ params: { ref: string; id: string } }> = ({
     <>
       <Head>
         <title>{params.ref} invited you to a room</title>
+        <Metatags />
       </Head>
 
       <></>
