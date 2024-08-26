@@ -1,6 +1,6 @@
 import { UserPlusIcon } from "@heroicons/react/20/solid";
 import { CircularProgressBar } from "components/Bar/CircularProgressBar";
-import { IconMd, IconSm } from "components/Icon";
+import { IconSm } from "components/Icon";
 import { useGame } from "context/Game/GameProvider";
 import { PlayerInTableProps, PlayerInterface } from "models";
 import Image from "next/image";

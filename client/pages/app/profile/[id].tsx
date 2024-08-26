@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 import { parseCookies } from "nookies";
 import { useEffect } from "react";
 
-const Profile: NextPage = ({ data }) => {
+const Profile: NextPage<{ data: UserInterface }> = ({ data }) => {
   const router = useRouter();
 
   useEffect(() => {

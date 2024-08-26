@@ -16,7 +16,6 @@ export class UserController {
   @Get()
   a() {
     try {
-      console.log("get users")
       return this.userService.getUsers();
     } catch (error) {
       throw new InternalServerErrorException();
@@ -26,7 +25,6 @@ export class UserController {
   @Get(':id')
   b(@Req() req: Request) {
     try {
-      console.log(req.params.id)
       return this.userService.getUserById(req.params.id);
     } catch (error) {
       throw new InternalServerErrorException();

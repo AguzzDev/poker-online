@@ -8,7 +8,6 @@ import Image from "next/image";
 import { formatChips } from "utils/formatChips";
 
 export const ProfilePage = ({ user }: { user: UserInterface }) => {
-  if (!user) return;
   return (
     <Layout type={LayoutTypeEnum.app}>
       <section className="flex space-x-5 h-full">
@@ -34,7 +33,7 @@ export const ProfilePage = ({ user }: { user: UserInterface }) => {
           </section>
         </Container>
         <Container style="flex-1">
-          <TextUnderline text=":v" />
+          <TextUnderline text="Soon" />
         </Container>
         <Container style="w-[30vw]">
           <Stadistics data={user.matches} />
