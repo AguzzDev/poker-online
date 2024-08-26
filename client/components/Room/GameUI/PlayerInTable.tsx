@@ -1,6 +1,6 @@
 import { UserPlusIcon } from "@heroicons/react/20/solid";
 import { CircularProgressBar } from "components/Bar/CircularProgressBar";
-import { IconMd } from "components/Icon";
+import { IconMd, IconSm } from "components/Icon";
 import { useGame } from "context/Game/GameProvider";
 import { PlayerInTableProps, PlayerInterface } from "models";
 import Image from "next/image";
@@ -31,7 +31,7 @@ const PlayerView = ({
           }`}
         >
           {cards.map(({ id }) => (
-            <div key={id} className="relative cardSize">
+            <div key={id} className="relative cardSize scale-90">
               <Image
                 src={`${
                   showCards ? `/cards/${id}.svg` : "/cards/cardBackside.png"
@@ -43,57 +43,58 @@ const PlayerView = ({
           ))}
         </div>
 
-        {blind ? (
-          <div className="absolute -top-10 left-0 p-2 rounded-full bg-red-300">
-            <p className="text-xs">Blind</p>
-          </div>
-        ) : null}
-        {bid > 0 || winningPot > 0 ? (
-          <div
-            className={`absolute ${
-              y === "bottom"
-                ? "-top-12 md:top-6 lg:-top-3"
-                : "-bottom-12 md:top-0 lg:-bottom-3"
-            } ${
-              x === "right"
-                ? "left-6 md:-left-8 lg:-left-14"
-                : "right-6 md:-right-8 lg:-right-14"
-            } w-6 h-6 lg:w-8 lg:h-8`}
-          >
-            <div className="relative w-full h-full">
-              <Image src="/chips/red.svg" alt="Chips image" layout="fill" />
+        <div
+          className={`flex flex-row sm:flex-col
+              absolute ${
+                y === "bottom" ? "-top-10 sm:top-5" : "-bottom-10 sm:bottom-5"
+              } ${
+            x === "right"
+              ? "flex-row-reverse -left-2 sm:-left-20"
+              : "-right-2 sm:-right-20"
+          }`}
+        >
+          {blind ? (
+            <div className="mx-2 sm:mx-0 rounded-full bg-primary">
+              <p className="text-xs text-center px-2 py-1">B</p>
             </div>
+          ) : null}
 
-            <h6 className="text-xs md:text-lg">{showChips}</h6>
-          </div>
-        ) : null}
+          {bid > 0 || winningPot > 0 ? (
+            <div className="flex items-center">
+              <div className="w-6 h-6">
+                <div className="relative w-full h-full">
+                  <Image src="/chips/red.svg" alt="Chips image" layout="fill" />
+                </div>
+              </div>
+              <h6 className="text-xs md:text-base">{showChips}</h6>
+            </div>
+          ) : null}
+        </div>
 
         <div
           className={`${
             x === "left" && "flex-row-reverse"
           } flex justify-between bg-black1 border-borderWidth border-borderColor1 rounded-full w-full h-full absolute z-40`}
         >
-          <div
-            className={`${
-              x === "left" ? "mr-1 lg:mr-3" : "ml-1 lg:ml-3"
-            } w-[60%] flex-col px-4 py-1 overflow-clip`}
-          >
+          <div className={`${x==="right" ? "pl-4 lg:pl-7" : "pr-4 lg:pr-7"} w-[60%] flex-col py-1 overflow-clip`}>
             <p
               className={`${
-                username.length > 10 ? "text-lg" : "text-xl"
+                username.length > 10 ? "text-sm sm:text-lg" : "text-base sm:text-xl"
               } truncate w-32`}
             >
               {username}
             </p>
-            <h6 className="text-sm sm:text-xl text-stone-400">
+            <h6 className="text-sm sm:text-base text-stone-400">
               {formatChips(chips)}
             </h6>
-            <h6 className="text-sm sm:text-xl text-stone-400">{showAction}</h6>
+            <h6 className="text-xs md:text-base text-stone-400">
+              {showAction}
+            </h6>
           </div>
 
           <div className="relative flex-1">
             <div
-              className={`absolute z-50 top-0 w-full h-full scale-160 lg:scale-150 1920:scale-125 ${
+              className={`absolute z-50 top-0 w-full h-full scale-125 ${
                 x === "left" ? "-left-[0.05%]" : "-right-[0.05%]"
               }`}
             >
@@ -124,10 +125,10 @@ export const PlayerInTable = ({
       ) : !isSitTaken && !player ? (
         <button onClick={() => takeSit(sit)}>
           <div className="flex justify-center">
-            <IconMd Icon={UserPlusIcon} />
+            <IconSm Icon={UserPlusIcon} />
           </div>
 
-          <h5>Sit here</h5>
+          <h6>Sit here</h6>
         </button>
       ) : isSitTaken?.userId === player!.userId ? (
         <PlayerView

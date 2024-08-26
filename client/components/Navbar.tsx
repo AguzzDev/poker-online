@@ -18,7 +18,7 @@ const LogoIcon = () => (
 const NavLink = ({ href, text }: { href: string; text: string }) => {
   const { pathname } = useRouter();
 
-  const condition = pathname === `/app/${text.toLowerCase()}`;
+  const condition = pathname.includes(text.toLowerCase());
 
   return (
     <Link href={`/app${href}`} passHref>
@@ -55,7 +55,7 @@ export const Navbar = ({ type = NavbarTypeEnum.default }: NavbarProps) => {
           </Link>
 
           <div className="hidden sm:flex space-x-3 mt-1">
-            <NavLink text="Profile" href="/profile" />
+            <NavLink text="Profile" href={`/profile/${user?._id}`} />
             <NavLink text="Leaderboard" href="/leaderboard" />
           </div>
         </div>

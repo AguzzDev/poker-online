@@ -16,14 +16,25 @@ export class UserController {
   @Get()
   a() {
     try {
+      console.log("get users")
       return this.userService.getUsers();
     } catch (error) {
       throw new InternalServerErrorException();
     }
   }
 
+  @Get(':id')
+  b(@Req() req: Request) {
+    try {
+      console.log(req.params.id)
+      return this.userService.getUserById(req.params.id);
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
+  }
+
   @Get('/dashboard/:id')
-  async b(@Req() req: Request) {
+  async c(@Req() req: Request) {
     try {
       const user = await this.userService.getUserById(req.params.id);
       return user.role === UserRoleEnum.creator;
@@ -33,7 +44,7 @@ export class UserController {
   }
 
   @Delete()
-  c() {
+  d() {
     try {
       return this.userService.removeUser();
     } catch (error) {
