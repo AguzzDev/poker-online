@@ -1,12 +1,7 @@
 import axios from "axios";
 import { ProfilePage } from "components/Pages/ProfilePage";
 import { UserInterface } from "models";
-import {
-  GetStaticProps,
-  GetStaticPaths,
-  NextPage,
-  GetServerSideProps,
-} from "next";
+import { NextPage, GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { parseCookies } from "nookies";
 import { useEffect } from "react";

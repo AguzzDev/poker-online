@@ -121,8 +121,6 @@ export const MenuBottom = () => {
   const { room, player, bid, setBid } = useGame();
   const { players, maxPlayerRoom, blind } = room!.desk;
 
-  if (!player) return;
-
   return (
     <section className="flex justify-between w-full">
       <div className="hidden md:flex flex-1 flex-col justify-end">
