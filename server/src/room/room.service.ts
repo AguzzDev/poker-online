@@ -40,7 +40,6 @@ export class RoomService {
   async findRooms(): Promise<RoomInterface[]> {
     if (this.rooms.length === 0) {
       const getRooms = (await this.roomModel.find({})).flat();
-
       this.rooms = getRooms;
     }
 
@@ -80,14 +79,7 @@ export class RoomService {
     type,
   }: UpdateInDeskArgs): Promise<RoomInterface> {
     try {
-      let updateRoom;
-      const resetValues = {
-        status: null,
-        totalBid: 0,
-        bidToPay: 0,
-        cards: [],
-        dealer: [],
-      };
+      let updateRoom: RoomInterface;
 
       this.rooms.map(async (room, i) => {
         if (room._id.toString() != id) return room;
@@ -97,7 +89,7 @@ export class RoomService {
           updateRoom.desk.players = [...room.desk.players, values].sort(
             (a, b) => (a.sit > b.sit ? 1 : -1),
           );
-          updateRoom.players = updateRoom.desk.players.length;
+          updateRoom.players = updateRoom.players + 1;
 
           this.rooms[i] = updateRoom;
           return updateRoom;
@@ -106,7 +98,7 @@ export class RoomService {
           updateRoom.desk.players = updateRoom.desk.players
             .filter((player) => player.userId != values.userId.toString())
             .sort((a, b) => (a.sit > b.sit ? 1 : -1));
-          updateRoom.players = updateRoom.desk.players.length;
+          updateRoom.players = updateRoom.players - 1;
 
           this.rooms[i] = updateRoom;
           return updateRoom;
@@ -116,6 +108,13 @@ export class RoomService {
           updateRoom.desk.cards = [...updateRoom.desk.cards, ...values.cards];
         }
         if (type === DeskTypesEnum.stop || type === DeskTypesEnum.reset) {
+          const resetValues = {
+            status: null,
+            totalBid: 0,
+            bidToPay: 0,
+            cards: [],
+            dealer: [],
+          };
           updateRoom.desk = Object.assign(updateRoom.desk, resetValues);
         }
         if (type === DeskTypesEnum.takeCard) {
@@ -124,7 +123,7 @@ export class RoomService {
         if (type === DeskTypesEnum.dealer) {
           updateRoom.desk.dealer = updateRoom.desk.dealer.concat(values.cards);
         }
-        if (values?.status !== undefined) {
+        if (values?.status) {
           updateRoom.desk.status = values.status;
         }
         if (values?.totalBid) {
@@ -196,12 +195,6 @@ export class RoomService {
             return updateRoom;
           };
 
-          if (type === PlayerTypesEnum.clearWinningPot) {
-            return update({
-              winningPot: 0,
-            });
-          }
-
           if (
             type === PlayerTypesEnum.clearActions ||
             type === PlayerTypesEnum.clearShowAction
@@ -228,11 +221,16 @@ export class RoomService {
           }
           if (type === PlayerTypesEnum.reset) {
             return update({
-              cards: [],
               action: '',
               showAction: '',
-              bid: 0,
               blind: false,
+              winningPot: 0,
+              cards: [],
+            });
+          }
+          if (type === PlayerTypesEnum.clearBid) {
+            return update({
+              bid: 0,
             });
           }
 

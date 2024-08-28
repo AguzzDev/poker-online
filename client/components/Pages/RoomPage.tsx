@@ -3,23 +3,14 @@ import { Layout } from "components/Layout/Layout";
 import { Chat, Game } from "components/Room";
 import { useGame } from "context/Game/GameProvider";
 import { LayoutTypeEnum, NavbarTypeEnum } from "models";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export const RoomPage = () => {
   const [showChat, setShowChat] = useState<boolean>(true);
-  const router = useRouter();
 
   let body = <></>;
 
-  const { room, joinRoom, socket } = useGame();
-
-  useEffect(() => {
-    if (!socket) return;
-    if (!room) {
-      joinRoom({ id: router.query.id as string });
-    }
-  }, [socket, room]);
+  const { room } = useGame();
 
   if (room) {
     body = (

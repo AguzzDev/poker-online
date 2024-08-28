@@ -35,6 +35,7 @@ export class UserController {
   async c(@Req() req: Request) {
     try {
       const user = await this.userService.getUserById(req.params.id);
+      
       return user.role === UserRoleEnum.creator;
     } catch (error) {
       throw new InternalServerErrorException();

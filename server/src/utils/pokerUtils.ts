@@ -56,14 +56,14 @@ const checkDraw = (array, totalBid) => {
   if (cardDeciderIsUnique.length > 1) {
     return {
       usersId: orderByCardDecider.map(({ _id }) => _id),
-      message: `${orderByCardDecider.map(({ name }) => name).join(', ')} split ${totalBid} chips tied with ${orderByCardDecider[0].heirarchy}`,
+      message: `${orderByCardDecider.map(({ name }) => name).join(', ')} split ${totalBid} chips tied with ${orderByCardDecider[0].message}`,
     };
   }
 
   return {
     usersId: orderByCardDecider[0]._id,
     heirarchy: orderByCardDecider[0].heirarchy,
-    message: `${orderByCardDecider[0].name} won ${totalBid} chips with ${orderByCardDecider[0].heirarchy}`,
+    message: `${orderByCardDecider[0].name} won ${totalBid} chips with ${orderByCardDecider[0].message}`,
   };
 };
 
@@ -94,7 +94,7 @@ export const getWinner = (playerHands, totalBid) => {
     return {
       usersId: player._id,
       heirarchy: player.heirarchy,
-      message: `${player.name} won ${totalBid} chips with ${player.heirarchy}`,
+      message: `${player.name} won ${totalBid} chips with ${player.message}`,
     };
   } else {
     order = orderPlayersArray(playersFilter, 'string');
@@ -106,7 +106,7 @@ export const getWinner = (playerHands, totalBid) => {
     return {
       usersId: order[0]._id,
       heirarchy: order[0].heirarchy,
-      message: `${order[0].name} won ${totalBid} chips with ${order[0].heirarchy}`,
+      message: `${order[0].name} won ${totalBid} chips with ${order[0].message}`,
     };
   }
 };
@@ -124,6 +124,7 @@ export const getAllCards = (): CardInterface[] => {
 
 export const evaluateHand = ({ cards, player }) => {
   const allCards = [...cards, ...player.cards];
+
   const flush = isFlushHand(allCards, player.cards);
   if (flush) {
     return flush;
@@ -236,7 +237,7 @@ const isParTwoParOrThree = (cards: Card[], cardsPlayer: Card[]): HandResult => {
     return {
       heirarchy: 'High Card',
       heirarchyValue: heirarchyValues['High Card'],
-      message: 'High Card',
+      message: `High Card of ${cardNumberToText[highCard[0].value]}`,
       cardHigh: highCard[0].value,
     };
   } else if (matches.length === 1) {
@@ -247,7 +248,7 @@ const isParTwoParOrThree = (cards: Card[], cardsPlayer: Card[]): HandResult => {
       case 2:
         return {
           heirarchy: 'One Pair',
-          message: `One Pair de ${cardNumberToText[value]}`,
+          message: `One Pair of ${cardNumberToText[value]}`,
           heirarchyValue: heirarchyValues['One Pair'],
           cardHigh: value,
           cardDecider,
@@ -255,7 +256,7 @@ const isParTwoParOrThree = (cards: Card[], cardsPlayer: Card[]): HandResult => {
       case 3:
         return {
           heirarchy: 'Three of a Kind',
-          message: `Three of a Kind de ${cardNumberToText[value]}`,
+          message: `Three of a Kind of ${cardNumberToText[value]}`,
           heirarchyValue: heirarchyValues['Three of a Kind'],
           cardHigh: value,
           cardDecider,
@@ -263,7 +264,7 @@ const isParTwoParOrThree = (cards: Card[], cardsPlayer: Card[]): HandResult => {
       case 4:
         return {
           heirarchy: 'Poker',
-          message: `Poker de ${cardNumberToText[value]}`,
+          message: `Poker of ${cardNumberToText[value]}`,
           heirarchyValue: heirarchyValues['Poker'],
           cardHigh: value,
           cardDecider,
@@ -288,7 +289,7 @@ const isParTwoParOrThree = (cards: Card[], cardsPlayer: Card[]): HandResult => {
     } else {
       return {
         heirarchy: 'Two Pair',
-        message: 'Two Pair',
+        message: `Two Pair ${cardNumberToText[value1]} and ${cardNumberToText[value2]}`,
         heirarchyValue: heirarchyValues['Two Pair'],
         cards: [value1, value2],
         cardDecider,

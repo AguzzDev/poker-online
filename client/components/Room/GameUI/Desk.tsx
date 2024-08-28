@@ -10,8 +10,8 @@ interface RoomProps {
 }
 
 const DeskComponent = ({ room }: RoomProps) => (
-  <div className="relative w-full h-full border-[2rem] md:border-[2rem] 1920:border-[3rem] border-primary rounded-full">
-    <div className="relative w-full h-full shadow-xl rounded-full bg-secondary border-borderWidth border-accent">
+  <div className="relative w-full h-full border-[1rem] md:border-[2rem] 1920:border-[3rem] border-primary rounded-full">
+    <div className="relative w-full h-full shadow-xl rounded-full bg-secondary border-2 border-accent">
       <div className="absolute w-full -top-12 1920:-top-16">
         <div className="w-max lg:w-1/4 py-2 1920:py-4 mx-auto text-center text-black1 bg-accent rounded-2xl border-2 border-[#debcf6]">
           <h4>Total bet</h4>
@@ -20,7 +20,7 @@ const DeskComponent = ({ room }: RoomProps) => (
       </div>
 
       <div className="w-full flex justify-center items-center space-x-1 h-full">
-        {room?.desk?.dealer.map(({ id }, i) => (
+        {room?.desk?.dealer?.map(({ id }, i) => (
           <motion.div
             key={`${id}-${i}`}
             initial={{ opacity: 0 }}

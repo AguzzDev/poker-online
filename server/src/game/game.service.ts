@@ -85,12 +85,6 @@ export class GameService {
     socket.join(roomId);
 
     server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
-    server
-      .to(roomId)
-      .emit(
-        EVENTS.SERVER.ROOM_NOTIFICATIONS,
-        `${socket.user.username} entered the room!`,
-      );
 
     return room;
   }
@@ -118,6 +112,12 @@ export class GameService {
 
     server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
     server.to(roomId).emit(EVENTS.SERVER.PLAYERS_IN_ROOM, room.desk.players);
+    server
+      .to(roomId)
+      .emit(
+        EVENTS.SERVER.ROOM_NOTIFICATIONS,
+        `${socket.user.username} entered the table!`,
+      );
 
     return { room, player: findMe };
   }
@@ -146,15 +146,15 @@ export class GameService {
     const room = await this.roomService.removePlayer(
       socket.user._id.toString(),
     );
-
     if (!room) return;
 
-    if (room.desk.players.length === 1) {
-      await this.stopGame(room._id.toString());
+    if (room.start && room.desk.players.length === 1) {
+      const update = await this.stopGame(room._id.toString());
+
+      server.to(room._id.toString()).emit(EVENTS.SERVER.UPDATE_GAME, update);
     }
 
     server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
-    server.to(room._id.toString()).emit(EVENTS.SERVER.UPDATE_GAME, room.desk);
     server
       .to(room._id.toString())
       .emit(EVENTS.SERVER.PLAYERS_IN_ROOM, room.desk.players);
@@ -239,29 +239,59 @@ export class GameService {
   }
 
   async playersRebuyChips({ roomId, server, players }: PlayersRebuyChipsArgs) {
-    server.to(roomId).emit(EVENTS.SERVER.ROOM_INFO, {
-      message:
-        players.length === 1
-          ? `Waiting for ${players[0].username} Rebuy`
-          : `Waiting for ${players.length}-player Rebuy)`,
-      by: 'server',
+    const task = async () => {
+      const room = await this.roomService.findRoom(roomId);
+
+      const playersEmptyChips = this.roomService.findPlayersEmptyChips(room);
+      if (playersEmptyChips.length === 0) return;
+
+      for (const player of playersEmptyChips) {
+        await this.roomService.removePlayer(player.userId);
+      }
+
+      const updateRoom = await this.roomService.findRoom(roomId);
+      if (updateRoom.desk.players.length === 1) {
+        await this.stopGame(roomId);
+      }
+    };
+
+    return new Promise((resolve) => {
+      let rebuys = [];
+      let timer = 10;
+
+      server.to(roomId).emit(EVENTS.SERVER.ROOM_INFO, {
+        message:
+          players.length === 1
+            ? `Waiting for ${players[0].username} Rebuy`
+            : `Waiting for ${players.length}-player Rebuy)`,
+        by: 'server',
+      });
+      server.to(roomId).emit(EVENTS.SERVER.PLAYER_REBUY, players);
+
+      const interval = setInterval(async () => {
+        players.map(async ({ userId }) => {
+          const { player } = await this.roomService.findUserInRoom(userId);
+
+          if (player.chips > 0) {
+            rebuys.push(true);
+          }
+        });
+
+        if (rebuys.length > 0 && rebuys.every((values) => values === true)) {
+          clearInterval(interval);
+          task();
+          resolve(true);
+        }
+
+        if (timer <= 0) {
+          clearInterval(interval);
+          task();
+          resolve(true);
+        }
+
+        timer--;
+      }, 1000);
     });
-    server.to(roomId).emit(EVENTS.SERVER.PLAYER_REBUY, players);
-    await new Promise((resolve) => setTimeout(resolve, 15000));
-
-    const room = await this.roomService.findRoom(roomId);
-
-    const playersEmptyChips = this.roomService.findPlayersEmptyChips(room);
-    if (playersEmptyChips.length === 0) return;
-
-    for (const player of playersEmptyChips) {
-      await this.roomService.removePlayer(player.userId);
-    }
-
-    const updateRoom = await this.roomService.findRoom(roomId);
-    if (updateRoom.desk.players.length === 1) {
-      await this.stopGame(roomId);
-    }
   }
 
   async initialRound({ roomId, room, server, playerPos }: InitialRoundArgs) {
@@ -328,7 +358,10 @@ export class GameService {
         });
 
         resolve(await this.shouldContinueGame({ room, roomId, server }));
-      } else if (playersAllIn == room.desk.players.length) {
+      } else if (
+        playersAllIn == room.desk.players.length ||
+        room.desk.status === Status.allIn
+      ) {
         resolve(GameStatusEnum.allIn);
       } else if (playersInFold == room.desk.players.length - 1) {
         resolve(GameStatusEnum.endGame);
@@ -342,11 +375,12 @@ export class GameService {
     let roundNum = 1;
     let blindPos = 0;
     let stop = false;
-    let room = await this.roomService.findRoom(roomId);
     let gameStatus = GameStatusEnum.continue;
     let playersInGame;
 
     while (roundNum <= 3 && !stop) {
+      let room = await this.roomService.findRoom(roomId);
+
       const response = await this.shouldContinueGame({
         roomId,
         room,
@@ -380,6 +414,7 @@ export class GameService {
           ({ cards, action }) =>
             cards && action !== Status.fold && action !== Status.allIn,
         );
+
         playersInGame = playersInGame.length === 1 ? [] : playersInGame;
 
         if (blindPos !== room.desk.players.length - 1) {
@@ -408,6 +443,7 @@ export class GameService {
             bidToPay: room.desk.bidToPay,
           });
 
+          server.to(roomId).emit(EVENTS.SERVER.PLAYER_TURN, null);
           if (playerAction != Status.allIn && playerAction != Status.fold) {
             await this.clearPlayerMove({ roomId, userId: player.userId });
           }
@@ -443,7 +479,6 @@ export class GameService {
 
       if (roundNum === 3 || stop) {
         if (playersInGame) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
           const getWinner = await this.determinateWinner(roomId);
 
           if (!!getWinner) {
@@ -453,14 +488,15 @@ export class GameService {
             });
           }
 
-          const room = await this.endGame(roomId);
-          server.to(roomId).emit(EVENTS.SERVER.UPDATE_GAME, room.desk);
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-
-          await this.roomService.updateInPlayer({
+          room = await this.roomService.updateInPlayer({
             id: roomId,
-            type: PlayerTypesEnum.clearWinningPot,
+            type: PlayerTypesEnum.clearBid,
           });
+
+          server.to(roomId).emit(EVENTS.SERVER.UPDATE_GAME, room.desk);
+
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+          await this.endGame(roomId);
 
           if (blindPos < room.desk.players.length - 1) {
             blindPos++;
@@ -482,9 +518,9 @@ export class GameService {
           await new Promise((resolve) => setTimeout(resolve, 2000));
         } else {
           await new Promise((resolve) => setTimeout(resolve, 1500));
+          await this.endRound(room._id.toString());
         }
 
-        await this.endRound(room._id.toString());
         roundNum++;
       }
     }
@@ -590,14 +626,6 @@ export class GameService {
       case Status.bid:
       case Status.raise:
       case Status.allIn: {
-        await this.roomService.updateInDesk({
-          id: roomId,
-          values: {
-            status: Status[action],
-            bidToPay,
-            totalBid,
-          },
-        });
         await this.roomService.updateInPlayer({
           id: roomId,
           values: {
@@ -609,15 +637,30 @@ export class GameService {
           },
         });
 
-        break;
-      }
-      case Status.call:
+        const room = await this.roomService.findRoom(roomId);
+        const playersAllIn = room.desk.players.every(
+          (players) => players.action === Status.allIn,
+        );
+        const deskStatus = room.desk.status;
+
+        const newStatus = playersAllIn
+          ? Status.allIn
+          : !deskStatus
+            ? Status.bid
+            : Status.raise;
+
         await this.roomService.updateInDesk({
           id: roomId,
           values: {
+            status: newStatus,
+            bidToPay,
             totalBid,
           },
         });
+
+        break;
+      }
+      case Status.call:
         await this.roomService.updateInPlayer({
           id: roomId,
           values: {
@@ -626,6 +669,20 @@ export class GameService {
             showAction: Status[action],
             chips: -bid,
             bid: bid,
+          },
+        });
+
+        const room = await this.roomService.findRoom(roomId);
+        const playersAllIn = room.desk.players.some(
+          (players) => players.action === Status.allIn,
+        );
+
+        const condition = room.desk.players.length === 2 && playersAllIn;
+        await this.roomService.updateInDesk({
+          id: roomId,
+          values: {
+            totalBid,
+            status: condition ? Status.allIn : null,
           },
         });
     }
@@ -710,9 +767,7 @@ export class GameService {
     });
   }
 
-  async determinateWinner(
-    roomId: string,
-  ): Promise<{ usersId: string[] | string; message: string }> {
+  async determinateWinner(roomId: string): Promise<{ message: string }> {
     let playerHands = [];
     const room = await this.roomService.findRoom(roomId);
 
@@ -731,6 +786,7 @@ export class GameService {
       playerHands.push({
         _id: player.userId.toString(),
         name: player.username,
+        bid: player.bid,
         ...evaluate,
       });
     });
@@ -764,8 +820,10 @@ export class GameService {
     }
 
     return {
-      usersId: playerWinners.usersId,
-      message: playerWinners.message,
+      message:
+        playersInGame.length === 1
+          ? `${playersInGame[0].username} won ${room.desk.totalBid} chips`
+          : playerWinners.message,
     };
   }
 

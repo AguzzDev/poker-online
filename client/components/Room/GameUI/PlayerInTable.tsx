@@ -2,7 +2,7 @@ import { UserPlusIcon } from "@heroicons/react/20/solid";
 import { CircularProgressBar } from "components/Bar/CircularProgressBar";
 import { IconSm } from "components/Icon";
 import { useGame } from "context/Game/GameProvider";
-import { PlayerInTableProps, PlayerInterface } from "models";
+import { PlayerInTableProps, PlayerInterface, Status } from "models";
 import Image from "next/image";
 import { formatChips } from "utils/formatChips";
 import { UserImage } from "utils/userImage";
@@ -16,9 +16,8 @@ const PlayerView = ({
   showCards?: boolean;
   directions: { x: string; y: string };
 }) => {
-  const { timer, turn } = useGame();
-  const { bid, showAction, cards, userId, chips, username, blind, winningPot } =
-    player;
+  const { turn } = useGame();
+  const { bid, showAction, cards, chips, username, blind, winningPot } = player;
   const { x, y } = directions;
 
   const showChips = winningPot > 0 ? winningPot : bid;
@@ -74,31 +73,33 @@ const PlayerView = ({
         <div
           className={`${
             x === "left" && "flex-row-reverse"
-          } flex justify-between bg-black1 border-borderWidth border-borderColor1 rounded-full w-full h-full absolute z-40`}
+          } flex justify-between bg-black1 border-2 border-borderColor1 rounded-full w-full h-full absolute z-40`}
         >
-          <div className={`${x==="right" ? "pl-4 lg:pl-7" : "pr-4 lg:pr-7"} w-[60%] flex-col py-1 overflow-clip`}>
+          <div
+            className={`${
+              x === "right" ? "pl-4 lg:pl-7" : "pr-4 lg:pr-7"
+            } w-[60%] flex-col py-1 overflow-clip`}
+          >
             <p
               className={`${
-                username.length > 10 ? "text-sm sm:text-lg" : "text-base sm:text-xl"
+                username.length > 10
+                  ? "text-sm sm:text-lg"
+                  : "text-base sm:text-xl"
               } truncate w-32`}
             >
               {username}
             </p>
-            <h6 className="text-sm sm:text-base text-stone-400">
-              {formatChips(chips)}
-            </h6>
-            <h6 className="text-xs md:text-base text-stone-400">
-              {showAction}
-            </h6>
+            <p className="text-sm text-stone-400">{formatChips(chips)}</p>
+            <p className="text-sm text-stone-400">{showAction}</p>
           </div>
 
           <div className="relative flex-1">
             <div
-              className={`absolute z-50 top-0 w-full h-full scale-125 ${
-                x === "left" ? "-left-[0.05%]" : "-right-[0.05%]"
+              className={`absolute z-50 top-0 w-full h-full scale-110 ${
+                x === "left" ? "-left-[.05rem]" : "-right-[.05rem]"
               }`}
             >
-              <CircularProgressBar percentage={turn == userId ? timer : 0} />
+              {turn === player.userId ? <CircularProgressBar /> : null}
             </div>
 
             <UserImage image={player.image} />
@@ -116,12 +117,18 @@ export const PlayerInTable = ({
 }: PlayerInTableProps) => {
   const { room, takeSit, player } = useGame();
 
+  const { status } = room!.desk;
+  const allInStatus = status === Status.allIn;
   const isSitTaken = room!.desk.players.filter((v) => v!.sit === sit)[0];
 
   return (
     <div className={`absolute ${position}`}>
       {isSitTaken && !player ? (
-        <PlayerView player={isSitTaken} directions={directions} />
+        <PlayerView
+          showCards={allInStatus}
+          player={isSitTaken}
+          directions={directions}
+        />
       ) : !isSitTaken && !player ? (
         <button onClick={() => takeSit(sit)}>
           <div className="flex justify-center">
@@ -137,7 +144,11 @@ export const PlayerInTable = ({
           directions={directions}
         />
       ) : isSitTaken ? (
-        <PlayerView player={isSitTaken} directions={directions} />
+        <PlayerView
+          showCards={allInStatus}
+          player={isSitTaken}
+          directions={directions}
+        />
       ) : null}
     </div>
   );

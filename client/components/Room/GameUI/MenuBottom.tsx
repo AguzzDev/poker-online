@@ -1,6 +1,7 @@
 import { formatChips } from "utils/formatChips";
 import { useGame } from "context/Game/GameProvider";
 import { Status } from "models";
+import { roundNumber } from "utils/roundNumber";
 
 const ActionButtons = () => {
   const { player, turn, playMove, room, bid } = useGame();
@@ -8,7 +9,8 @@ const ActionButtons = () => {
   const { bidToPay } = room!.desk;
   const { userId, bid: playerBid, chips } = player!;
 
-  const playerBidToPay = bidToPay - playerBid;
+  const playerBidToPay = roundNumber(bidToPay - playerBid);
+
   const SecondButton = () => (
     <>
       {playerBid < bidToPay ? (
@@ -48,7 +50,7 @@ const ActionButtons = () => {
       type === "fold" ? "bg-red1" : "bg-green1"
     } py-2 1920:py-2 font-bold text-md lg:text-xl rounded-xl w-full flex flex-col justify-center items-center`;
 
-    const statusType = type as Status
+    const statusType = type as Status;
 
     if (userId == turn) {
       body = (
@@ -117,7 +119,9 @@ const PotButtons = () => {
 
 export const MenuBottom = () => {
   const { room, player, bid, setBid } = useGame();
-  const { players, maxPlayerRoom, blind, totalBid } = room!.desk;
+  const { players, maxPlayerRoom, blind } = room!.desk;
+
+  if (!player) return;
 
   return (
     <section className="flex justify-between w-full">
@@ -138,11 +142,12 @@ export const MenuBottom = () => {
             <h4 className="pb-1">{formatChips(bid)}</h4>
             <input
               type="range"
-              min={Math.round((totalBid * 100) / player.chips)}
+              min={roundNumber((blind * 100) / player.chips)}
               onChange={(e) =>
-                setBid((Number(e.target.value) * player.chips) / 100)
+                setBid(roundNumber(Number(e.target.value) * player.chips) / 100)
               }
-              value={Math.round((bid * 100) / player.chips)}
+              max={roundNumber((player.chips * 100) / player!.chips)}
+              value={roundNumber((bid * 100) / player.chips)}
               className="rangeInput"
             />
           </div>

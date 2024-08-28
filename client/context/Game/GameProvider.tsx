@@ -34,7 +34,6 @@ const GameProvider = ({ children }: any) => {
   const [roomStatus, setRoomStatus] =
     useState<GameContextType["roomStatus"]>(null);
   const [turn, setTurn] = useState<GameContextType["turn"]>(null);
-  const [timer, setTimer] = useState<GameContextType["timer"]>(100);
   const [bid, setBid] = useState<GameContextType["bid"]>(0);
   const [showReBuyMenu, setShowReBuyMenu] =
     useState<GameContextType["showReBuyMenu"]>(false);
@@ -67,7 +66,6 @@ const GameProvider = ({ children }: any) => {
         if ("error" in res) {
           return toast.error(res.message, toastValues);
         }
-
         setRoom(res);
       }
     );
@@ -88,6 +86,7 @@ const GameProvider = ({ children }: any) => {
         }
 
         setRoom(res.room);
+        setBid(res.room.desk.blind);
         setPlayer(res.player);
 
         if (res.room.desk.players.length >= 2) {
@@ -109,19 +108,20 @@ const GameProvider = ({ children }: any) => {
   };
 
   const playMove = (action: Status) => {
-    let actionValue = action;
     let newBid = bid;
 
     const { bidToPay, totalBid } = room!.desk;
 
-    if (action === "call") {
+    if (action === Status.call) {
       newBid = bidToPay - player!.bid;
     }
-    if (action === "bid") {
+    if (action === Status.bid) {
+      if (bid < bidToPay) return;
       setBid(bid);
       newBid = bid;
     }
-    if (action === "raise") {
+    if (action === Status.raise) {
+      if (bid < bidToPay) return;
       setBid((prev) => {
         if (bid === prev) {
           return bidToPay * 2;
@@ -130,7 +130,7 @@ const GameProvider = ({ children }: any) => {
         }
       });
     }
-    if (action === "allIn") {
+    if (action === Status.allIn) {
       setBid((prev) => player!.chips - prev);
       newBid = player!.chips;
     }
@@ -138,7 +138,7 @@ const GameProvider = ({ children }: any) => {
     socket!.emit(EVENTS.CLIENT.PLAYER_ACTION, {
       roomId: room!._id,
       userId: user!._id,
-      action: actionValue,
+      action,
       bidToPay: newBid + player!.bid,
       bid: newBid,
       totalBid: totalBid + newBid,
@@ -199,9 +199,9 @@ const GameProvider = ({ children }: any) => {
         try {
           let timeout: NodeJS.Timeout;
           const time = 4000;
-          const res = await getRoomsAdapter();
 
-          timeout = setTimeout(() => {
+          timeout = setTimeout(async () => {
+            const res = await getRoomsAdapter();
             setRooms(res);
           }, time);
 
@@ -228,6 +228,7 @@ const GameProvider = ({ children }: any) => {
           }
           return prevRooms;
         });
+
         socket.off(EVENTS.SERVER.UPDATE_ROOMS);
       });
 
@@ -280,7 +281,6 @@ const GameProvider = ({ children }: any) => {
             desk: data,
           };
         });
-        setBid(data.totalBid);
 
         const me = data.players.filter(
           (p: PlayerInterface) => p.userId == user!._id
@@ -312,14 +312,12 @@ const GameProvider = ({ children }: any) => {
           };
         });
       });
-      socket.on(EVENTS.SERVER.PLAYER_TURN, (player) => {
-        setTurn(player);
-      });
-      socket.on(EVENTS.SERVER.PLAYER_TIMER, (data) => {
-        setTimer((data * 100) / 10);
+      socket.on(EVENTS.SERVER.PLAYER_TURN, (playerTurnId) => {
+        setTurn(playerTurnId);
       });
       return () => {
         socket.removeAllListeners();
+        setRoom(null);
       };
     }
   }, [socket, router]);
@@ -336,7 +334,6 @@ const GameProvider = ({ children }: any) => {
         room,
         roomNotification,
         rooms,
-        timer,
         playersOnline,
         turn,
         reBuyMessage,

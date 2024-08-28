@@ -12,7 +12,6 @@ const GameContext = createContext<GameContextType>({
   bid: 0,
   roomStatus: null,
   usersOnline: 0,
-  timer: 0,
   turn: null,
   showReBuyMenu: false,
   setRoom: () => {},

@@ -8,7 +8,7 @@ export interface RequestInterface extends Request {
 }
 export interface SocketCustom extends Socket {
   user: Partial<UserInterface>;
-  users: any[]
+  users: any[];
 }
 export interface CardInterface {
   id: number;
@@ -262,7 +262,7 @@ export enum PlayerTypesEnum {
   reset = 'reset',
   clearShowAction = 'clearShowAction',
   clearActions = 'clearActions',
-  clearWinningPot = 'clearWinningPot',
+  clearBid = 'clearBid',
 }
 export enum DeskTypesEnum {
   addPlayer = 'addPlayer',

@@ -1,4 +1,21 @@
-export const CircularProgressBar = ({ percentage }: { percentage: number }) => {
+import { useState, useLayoutEffect } from "react";
+
+export const CircularProgressBar = () => {
+  const [percentage, setPercentage] = useState(0);
+
+  useLayoutEffect(() => {
+    let timer = 100;
+    const interval = setInterval(() => {
+      timer -= 1;
+      setPercentage(timer);
+
+      if (timer <= 0) {
+        clearInterval(interval);
+        setPercentage(0);
+      }
+    }, 100);
+  }, []);
+
   const radius = 40;
   const strokeWidth = 10;
   const viewBoxSize = radius * 2 + strokeWidth * 2;
@@ -16,7 +33,7 @@ export const CircularProgressBar = ({ percentage }: { percentage: number }) => {
         cx={50}
         cy={50}
         fill="transparent"
-        strokeWidth={14}
+        strokeWidth={8}
         stroke="#181927"
       />
       <circle
@@ -24,10 +41,10 @@ export const CircularProgressBar = ({ percentage }: { percentage: number }) => {
         cx={50}
         cy={50}
         fill="transparent"
-        strokeWidth={10}
+        strokeWidth={8}
         strokeDasharray={dashArray}
         strokeDashoffset={dashOffset}
-        stroke="#AB65ED"
+        stroke="#CC8DEF"
       />
     </svg>
   );

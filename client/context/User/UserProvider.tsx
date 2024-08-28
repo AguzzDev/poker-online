@@ -51,13 +51,14 @@ const UserProvider = ({ children }: { children: ChildrenType }) => {
     if (!user) return;
 
     const fetch = async () => {
-      const { data } = await API.fetchDashboard(user?._id);
+      const { data } = await API.fetchDashboard(user!._id);
+  
       setAdminRole(data);
     };
 
     fetch();
   }, [user]);
-  
+
   return (
     <UserContext.Provider
       value={{

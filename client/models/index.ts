@@ -96,7 +96,6 @@ export interface GameContextType {
   turn: string | null;
   bid: number;
   usersOnline: number;
-  timer: number;
   showReBuyMenu: boolean;
   setBid: Dispatch<SetStateAction<GameContextType["bid"]>>;
   setShowReBuyMenu: Dispatch<SetStateAction<GameContextType["showReBuyMenu"]>>;

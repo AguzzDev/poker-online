@@ -1,5 +1,5 @@
 import { UserIcon } from "@heroicons/react/20/solid";
-import { IconMd } from "components/Icon";
+import { IconSm } from "components/Icon";
 import Image from "next/image";
 
 export const UserImage = ({
@@ -14,7 +14,7 @@ export const UserImage = ({
       {image === "default" ? (
         <div className="flex items-center justify-center h-full">
           <div {...props}>
-            <IconMd Icon={UserIcon} />
+            <IconSm Icon={UserIcon} />
           </div>
         </div>
       ) : (
