@@ -16,8 +16,8 @@ export const AppPage = () => {
 
   return (
     <Layout type={LayoutTypeEnum.app}>
-      <section className="flex flex-col-reverse xl:flex-row xl:space-x-5 h-full">
-        <Container style="flex flex-col w-full xl:w-4/6 h-full md:h-full">
+      <section className="flex flex-col-reverse lg:flex-row lg:space-x-5 h-full">
+        <Container style="flex flex-col w-full lg:w-4/6 h-full md:h-full">
           <div className="flex items-center justify-between mb-3">
             <TextUnderline text="Rooms" />
 
@@ -33,7 +33,7 @@ export const AppPage = () => {
           <Rooms />
         </Container>
 
-        <Container style="flex flex-col h-80 xl:flex-1 xl:h-full mb-5 xl:mb-0">
+        <Container style="flex flex-col h-80 lg:flex-1 lg:h-full mb-5 lg:mb-0">
           <Stadistics />
         </Container>
       </section>

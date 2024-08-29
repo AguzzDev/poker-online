@@ -56,7 +56,7 @@ export const CardIcon = ({
   } else {
     body = (
       <div
-        className={`${style} relative w-10 h-16 md:w-14 md:h-24 1920:w-16 1920:h-26 border-[1.5px] border-[#3A3A3A] bg-[#303030] rounded-md overflow-hidden`}
+        className={`${style} relative w-10 h-16  xl:w-16 xl:h-24 border-[1.5px] border-[#3A3A3A] bg-[#303030] rounded-md overflow-hidden`}
       >
         <div className="absolute top-[2px] left-[2px] flex flex-col items-center h-[50%] w-[30%]">
           <p

@@ -12,7 +12,7 @@ export const Stadistics = ({ data }: { data?: UserInterface["matches"] }) => {
     <>
       <TextUnderline text="Statistics" />
 
-      <div className="flex flex-row lg:flex-col items-center lg:items-start h-full space-x-10 lg:space-x-0 lg:space-y-5 overflow-x-auto overflow-y-hidden lg:overflow-x-hidden lg:overflow-y-scroll lg:pb-2 pr-5 lg:pr-3 mt-3">
+      <div className="flex flex-row lg:flex-col items-center lg:items-start h-3/4 space-x-10 lg:space-x-0 lg:space-y-5 lg:h-full overflow-x-auto overflow-y-hidden lg:overflow-x-hidden lg:overflow-y-scroll lg:pb-2 pr-5 lg:pr-3 md:mt-3">
         {player ? (
           <>
             <Stats title={PokerHandsEnum["highCard"]} value={player.highCard} />
