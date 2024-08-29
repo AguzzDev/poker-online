@@ -44,7 +44,7 @@ const heirarchyValues = {
   'Royal Flush': 10,
 };
 
-const checkDraw = (array, totalBid) => {
+const checkDraw = (array) => {
   const orderByCardDecider = array.sort((a, b) =>
     a.cardDecider < b.cardDecider ? 1 : -1,
   );
@@ -56,18 +56,20 @@ const checkDraw = (array, totalBid) => {
   if (cardDeciderIsUnique.length > 1) {
     return {
       usersId: orderByCardDecider.map(({ _id }) => _id),
-      message: `${orderByCardDecider.map(({ name }) => name).join(', ')} split ${totalBid} chips tied with ${orderByCardDecider[0].message}`,
+      names: orderByCardDecider.map(({ name }) => name),
+      heirarchy: orderByCardDecider[0].heirarchy,
     };
   }
 
   return {
     usersId: orderByCardDecider[0]._id,
     heirarchy: orderByCardDecider[0].heirarchy,
-    message: `${orderByCardDecider[0].name} won ${totalBid} chips with ${orderByCardDecider[0].message}`,
   };
 };
 
-export const getWinner = (playerHands, totalBid) => {
+export const getWinner = (
+  playerHands,
+): { usersId: string | string[]; names?: string[]; heirarchy: string } => {
   const orderPlayersArray = (array, type) => {
     return type === 'array'
       ? array
@@ -94,19 +96,17 @@ export const getWinner = (playerHands, totalBid) => {
     return {
       usersId: player._id,
       heirarchy: player.heirarchy,
-      message: `${player.name} won ${totalBid} chips with ${player.message}`,
     };
   } else {
     order = orderPlayersArray(playersFilter, 'string');
 
     if (order.every(({ cardHigh }) => cardHigh === order[0].cardHigh)) {
-      return checkDraw(order, totalBid);
+      return checkDraw(order);
     }
 
     return {
       usersId: order[0]._id,
       heirarchy: order[0].heirarchy,
-      message: `${order[0].name} won ${totalBid} chips with ${order[0].message}`,
     };
   }
 };

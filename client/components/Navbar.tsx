@@ -7,6 +7,7 @@ import { UserNavbarDropdown } from "./Dropdown/UserNavbarDropdown";
 import LogoMobile from "public/LogoMobile";
 import { motion } from "framer-motion";
 import { useUser } from "context/User/UserProvider";
+import { links } from "utils/links";
 
 const LogoIcon = () => (
   <>
@@ -21,7 +22,7 @@ const NavLink = ({ href, text }: { href: string; text: string }) => {
   const condition = pathname.includes(text.toLowerCase());
 
   return (
-    <Link href={`/app${href}`} passHref>
+    <Link href={href} passHref>
       <a className={`w-max ${condition ? "text-accent" : null}`}>
         <h5 className="hover:text-accent">{text}</h5>
         {condition ? (
@@ -48,15 +49,15 @@ export const Navbar = ({ type = NavbarTypeEnum.default }: NavbarProps) => {
     body = (
       <section className="flex justify-between px-3 sm:px-10 py-2 border-2 border-border rounded-3xl bg-secondary my-5">
         <div className="flex space-x-5 items-center my-auto">
-          <Link href="/app" passHref>
+          <Link href={links.app} passHref>
             <a className="cursor-pointer">
               <LogoIcon />
             </a>
           </Link>
 
           <div className="hidden sm:flex space-x-3 mt-1">
-            <NavLink text="Profile" href={`/profile/${user?._id}`} />
-            <NavLink text="Leaderboard" href="/leaderboard" />
+            <NavLink text="Profile" href={`${links.profile}${user?._id}`} />
+            <NavLink text="Leaderboard" href={links.leaderboard} />
           </div>
         </div>
 
@@ -71,7 +72,7 @@ export const Navbar = ({ type = NavbarTypeEnum.default }: NavbarProps) => {
         </div>
 
         <div>
-          <Link href="/auth" passHref>
+          <Link href={links.auth} passHref>
             <a className="block">
               <ButtonOne>Play</ButtonOne>
             </a>

@@ -151,7 +151,9 @@ export class GameService {
     if (room.start && room.desk.players.length === 1) {
       const update = await this.stopGame(room._id.toString());
 
-      server.to(room._id.toString()).emit(EVENTS.SERVER.UPDATE_GAME, update);
+      server
+        .to(room._id.toString())
+        .emit(EVENTS.SERVER.UPDATE_GAME, update.desk);
     }
 
     server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
@@ -767,6 +769,28 @@ export class GameService {
     });
   }
 
+  async handOutChips({ roomId, playersArr, playerWinner, totalPot }) {
+    let total = totalPot;
+
+    const filterPlayersMoreChips = playersArr.filter(
+      ({ bid }) => bid > playerWinner.bid,
+    );
+
+    if (filterPlayersMoreChips) {
+      filterPlayersMoreChips.forEach(async (player) => {
+        const diff = player.bid - playerWinner.bid;
+        total -= diff;
+        await this.roomService.updatePlayerChips({
+          roomId,
+          userId: player.userId,
+          chips: diff,
+        });
+      });
+    }
+
+    return total;
+  }
+
   async determinateWinner(roomId: string): Promise<{ message: string }> {
     let playerHands = [];
     const room = await this.roomService.findRoom(roomId);
@@ -774,7 +798,6 @@ export class GameService {
     const playersInGame = room.desk.players.filter(
       ({ cards, action }) => cards.length > 0 && action !== Status.fold,
     );
-
     if (playersInGame.length === 0) return;
 
     playersInGame.forEach((player) => {
@@ -791,26 +814,55 @@ export class GameService {
       });
     });
 
-    const playerWinners = getWinner(playerHands, room.desk.totalBid);
+    const playerWinners = getWinner(playerHands);
+    let message;
+    let totalPot = room.desk.totalBid;
 
     if (!Array.isArray(playerWinners.usersId)) {
+      const playerWinner = playersInGame.find(
+        ({ userId }) => userId === playerWinners.usersId,
+      );
+
+      totalPot = await this.handOutChips({
+        roomId,
+        playerWinner,
+        playersArr: playersInGame,
+        totalPot,
+      });
+
+      message = `${playerWinner.username} won ${totalPot} chips with ${playerWinners.heirarchy}`;
       await this.roomService.updatePlayerChips({
         roomId,
         userId: playerWinners.usersId,
-        chips: room.desk.totalBid,
-        winningPot: room.desk.totalBid,
+        chips: totalPot,
+        winningPot: totalPot,
       });
       await this.userService.updateUserMatches({
         id: playerWinners.usersId,
         values: playerWinners.heirarchy,
       });
     } else {
+      const filterPlayers = playersInGame.filter(({ userId }) =>
+        playerWinners.usersId.includes(userId),
+      );
+      const playerLowerBid = filterPlayers.reduce((min, acc) =>
+        acc.bid < min.bid ? acc : min,
+      );
+
+      totalPot = await this.handOutChips({
+        roomId,
+        playerWinner: playerLowerBid,
+        playersArr: playersInGame,
+        totalPot,
+      });
+      message = `${playerWinners.names} split ${totalPot} chips tied with ${playerWinners.heirarchy}`;
+
       playerWinners.usersId.forEach(async (userId) => {
         await this.roomService.updatePlayerChips({
           roomId,
           userId,
-          chips: room.desk.totalBid / playerWinners.usersId.length,
-          winningPot: room.desk.totalBid / playerWinners.usersId.length,
+          chips: totalPot / playerWinners.usersId.length,
+          winningPot: totalPot / playerWinners.usersId.length,
         });
         await this.userService.updateUserMatches({
           id: userId,
@@ -823,7 +875,7 @@ export class GameService {
       message:
         playersInGame.length === 1
           ? `${playersInGame[0].username} won ${room.desk.totalBid} chips`
-          : playerWinners.message,
+          : message,
     };
   }
 

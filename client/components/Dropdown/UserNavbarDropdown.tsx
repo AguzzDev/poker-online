@@ -4,6 +4,7 @@ import { formatChips } from "utils/formatChips";
 import ChipsIcon from "public/icons/ChipsIcon";
 import { useUser } from "context/User/UserProvider";
 import { UserImage } from "utils/userImage";
+import { links } from "utils/links";
 
 export const UserNavbarDropdown = () => {
   const { user, removeAccount } = useUser();
@@ -64,8 +65,12 @@ export const UserNavbarDropdown = () => {
         <Dropdown
           trigger={<Trigger />}
           content={[
-            <Item key="2" title="Profile" href="/app/profile" />,
-            <Item key="3" title="Leaderboard" href="/app/leaderboard" />,
+            <Item
+              key="2"
+              title="Profile"
+              href={`${links.profile}${user?._id}`}
+            />,
+            <Item key="3" title="Leaderboard" href={links.leaderboard} />,
             <Item key="4" title="Logout" action={removeAccount} />,
           ]}
           size={40}
