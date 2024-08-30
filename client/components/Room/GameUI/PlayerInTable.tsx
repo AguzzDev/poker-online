@@ -27,11 +27,11 @@ const PlayerView = ({
       <>
         <div
           className={`flex space-x-2 lg:space-x-0 z-30 absolute -top-8 md:-top-10 ${
-            x === "left" ? "left-1" : "right-1"
+            x === "left" ? "left-2" : "right-2"
           }`}
         >
           {cards.map(({ id }) => (
-            <div key={id} className="relative cardSize scale-90">
+            <div key={id} className="relative cardSize">
               <Image
                 src={`${
                   showCards ? `/cards/${id}.svg` : "/cards/cardBackside.png"

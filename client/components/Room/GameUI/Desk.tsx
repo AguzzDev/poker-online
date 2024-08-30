@@ -39,22 +39,22 @@ const DeskComponent = ({ room }: { room: RoomInterface }) => (
       <div>
         <PlayerInTable
           sit={1}
-          position="bottom-5 md:-bottom-5 xl:-bottom-2 -left-16 md:-left-24 lg:-left-32"
+          position="bottom-8 md:-bottom-5 xl:-bottom-2 -left-14 md:-left-24 lg:-left-32"
           directions={{ x: "left", y: "bottom" }}
         />
         <PlayerInTable
           sit={2}
-          position="top-5 md:-top-5 xl:-top-2 -left-16 md:-left-24 lg:-left-32"
+          position="top-8 md:-top-5 xl:-top-2 -left-14 md:-left-24 lg:-left-32"
           directions={{ x: "left", y: "top" }}
         />
         <PlayerInTable
           sit={4}
-          position="bottom-5 md:-bottom-5 xl:-bottom-2 -right-16 md:-right-24 lg:-right-32"
+          position="bottom-8 md:-bottom-5 xl:-bottom-2 -right-14 md:-right-24 lg:-right-32"
           directions={{ x: "right", y: "bottom" }}
         />
         <PlayerInTable
           sit={3}
-          position="top-5 md:-top-5 xl:-top-2 -top-10 -right-16 md:-right-24 lg:-right-32"
+          position="top-8 md:-top-5 xl:-top-2 -top-10 -right-14 md:-right-24 lg:-right-32"
           directions={{ x: "right", y: "top" }}
         />
       </div>

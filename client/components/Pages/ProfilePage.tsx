@@ -12,7 +12,7 @@ export const ProfilePage = ({ user }: { user: UserInterface }) => {
     <Layout type={LayoutTypeEnum.app}>
       <section className="flex flex-col sm:flex-row h-full">
         <section className="sm:w-1/4">
-          <Container>
+          <Container style="h-full">
             <TextUnderline text="Profile" />
 
             <section className="mt-5 flex flex-col px-5 justify-center items-center mx-auto">
