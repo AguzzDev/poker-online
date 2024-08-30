@@ -32,6 +32,7 @@ import {
   UserInterface,
   ErrorInterface,
   UserRoleEnum,
+  SocketCustom,
 } from 'src/models';
 import { evaluateHand, getAllCards, getWinner } from 'src/utils/pokerUtils';
 
@@ -83,9 +84,7 @@ export class GameService {
 
     const roomId = room._id.toString();
     socket.join(roomId);
-
-    server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
-
+    
     return room;
   }
 
@@ -143,13 +142,28 @@ export class GameService {
     const user = socket.user as UserInterface;
     if (!user) return;
 
-    const room = await this.roomService.removePlayer(
-      socket.user._id.toString(),
-    );
+    const room = await this.roomService.removePlayer({
+      id: socket.user._id.toString(),
+      socket,
+    });
     if (!room) return;
 
     if (room.start && room.desk.players.length === 1) {
+      let targetSocket;
+
       const update = await this.stopGame(room._id.toString());
+      const player = room.desk.players[0];
+
+      server.sockets.sockets.forEach((socket: SocketCustom) => {
+        if (socket.user._id.toString() === player.userId) {
+          targetSocket = socket;
+        }
+      });
+      await this.userService.updateChips({
+        id: player.userId,
+        chips: player.bid + player.chips,
+        socket: targetSocket,
+      });
 
       server
         .to(room._id.toString())
@@ -248,7 +262,7 @@ export class GameService {
       if (playersEmptyChips.length === 0) return;
 
       for (const player of playersEmptyChips) {
-        await this.roomService.removePlayer(player.userId);
+        await this.roomService.removePlayer({ id: player.userId });
       }
 
       const updateRoom = await this.roomService.findRoom(roomId);
@@ -301,12 +315,14 @@ export class GameService {
     await this.shuffle({ roomId, cards });
     await this.dealCardsPlayer(roomId);
     await this.dealCardsDealer(roomId);
-    await this.setAutoBlind({
-      roomId,
-      x: playerPos,
-      blind: room.desk.blind,
-      players: room.desk.players,
-    });
+    if (room.desk.players.length > 2) {
+      await this.setAutoBlind({
+        roomId,
+        x: playerPos,
+        blind: room.desk.blind,
+        players: room.desk.players,
+      });
+    }
 
     server
       .to(roomId)
@@ -570,8 +586,6 @@ export class GameService {
       server.to(roomId).emit(EVENTS.SERVER.PLAYER_TURN, player.userId);
 
       const interval = setInterval(async () => {
-        server.to(roomId).emit(EVENTS.SERVER.PLAYER_TIMER, timer);
-
         const playerResult = await this.roomService.findPlayerMove({
           roomId,
           userId: player.userId,

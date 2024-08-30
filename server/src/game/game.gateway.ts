@@ -42,7 +42,6 @@ export class GameGateway implements OnModuleInit {
       const token = socket.handshake.auth.token;
 
       users.push(token);
-      socket.users = users;
 
       this.io.emit(EVENTS.SERVER.ALL_PLAYERS, users.length);
 
@@ -57,9 +56,8 @@ export class GameGateway implements OnModuleInit {
         if (index !== -1) {
           users.splice(index, 1);
         }
-        socket.users = users;
 
-        this.io.emit(EVENTS.SERVER.ALL_PLAYERS, socket.users.length);
+        this.io.emit(EVENTS.SERVER.ALL_PLAYERS, users.length);
       });
     });
   }

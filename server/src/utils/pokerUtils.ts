@@ -56,7 +56,7 @@ const checkDraw = (array) => {
   if (cardDeciderIsUnique.length > 1) {
     return {
       usersId: orderByCardDecider.map(({ _id }) => _id),
-      names: orderByCardDecider.map(({ name }) => name),
+      names: orderByCardDecider.map(({ name }) => name).join(", "),
       heirarchy: orderByCardDecider[0].heirarchy,
     };
   }

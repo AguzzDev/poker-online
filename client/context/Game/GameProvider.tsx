@@ -112,23 +112,19 @@ const GameProvider = ({ children }: any) => {
 
     const { bidToPay, totalBid } = room!.desk;
 
+    let newBidToPay = bidToPay - player!.bid;
     if (action === Status.call) {
-      newBid = bidToPay - player!.bid;
+      newBid = newBidToPay;
     }
     if (action === Status.bid) {
-      if (bid < bidToPay) return;
+      if (bid < newBidToPay || player!.chips <= bid) return;
       setBid(bid);
       newBid = bid;
     }
     if (action === Status.raise) {
-      if (bid < bidToPay) return;
-      setBid((prev) => {
-        if (bid === prev) {
-          return bidToPay * 2;
-        } else {
-          return bid;
-        }
-      });
+      if (bid < newBidToPay || player!.chips <= bid) return;
+      setBid(bid);
+      newBid = bid;
     }
     if (action === Status.allIn) {
       setBid((prev) => player!.chips - prev);
@@ -187,13 +183,15 @@ const GameProvider = ({ children }: any) => {
     socket.on(EVENTS.SERVER.ALL_PLAYERS, (users) => {
       setUsersOnline(users);
     });
+    socket.on(EVENTS.SERVER.UPDATE_USER, (data: Partial<UserInterface>) => {
+      updateUser(data);
+    });
+    socket.emit(EVENTS.CLIENT.UPDATE_USER, (data: Partial<UserInterface>) => {
+      updateUser(data);
+    });
 
     if (router.pathname !== "/app/room/[id]") {
       socket!.emit(EVENTS.CLIENT.LEAVE_ROOM);
-
-      socket.emit(EVENTS.CLIENT.UPDATE_USER, (data: Partial<UserInterface>) => {
-        updateUser(data);
-      });
 
       const getRooms = async () => {
         try {
@@ -236,9 +234,6 @@ const GameProvider = ({ children }: any) => {
         socket.removeAllListeners();
       };
     } else {
-      socket.on(EVENTS.SERVER.UPDATE_USER, (data: Partial<UserInterface>) => {
-        updateUser(data);
-      });
       socket.on(EVENTS.SERVER.GAME_SOUND, (type: SoundsEnum) => {
         emitSound(SoundsEnum[type]);
       });

@@ -24,7 +24,11 @@ const LinkComponent = ({ link, title }: { link: string; title: string }) => {
 
 export const Footer = ({ type = FooterTypeEnum.default }: FooterProps) => {
   return (
-    <footer className="w-full border-t border-border bg-secondary">
+    <footer
+      className={`${
+        type === FooterTypeEnum.app ? "bg-secondary" : "bg-gray1"
+      } w-full border-t  border-border`}
+    >
       <div
         className={`${
           type === FooterTypeEnum.app ? "appScreenWidth" : "screenWidth"

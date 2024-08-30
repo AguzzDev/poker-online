@@ -5,6 +5,7 @@ import { useGame } from "context/Game/GameProvider";
 import { PlayerInTableProps, PlayerInterface, Status } from "models";
 import Image from "next/image";
 import { formatChips } from "utils/formatChips";
+import { roundNumber } from "utils/roundNumber";
 import { UserImage } from "utils/userImage";
 
 const PlayerView = ({
@@ -65,7 +66,7 @@ const PlayerView = ({
                   <Image src="/chips/red.svg" alt="Chips image" layout="fill" />
                 </div>
               </div>
-              <h6 className="text-xs md:text-base">{showChips}</h6>
+              <h6 className="text-xs md:text-base">{roundNumber(showChips)}</h6>
             </div>
           ) : null}
         </div>

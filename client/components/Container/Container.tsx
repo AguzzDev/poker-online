@@ -12,7 +12,7 @@ export const Container = ({
   } else {
     body = (
       <section
-        className={`${style} bg-secondary p-2 md:p-5 rounded-md overflow-hidden`}
+        className={`${style} h-full bg-secondary p-2 md:p-5 rounded-md overflow-hidden`}
       >
         {children}
       </section>

@@ -1,3 +1,3 @@
 export const roundNumber = (number: number) => {
-  return Math.round(number);
+  return number.toFixed(0);
 };

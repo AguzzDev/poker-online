@@ -5,15 +5,11 @@ import { PlayerInTable } from "./PlayerInTable";
 import { RoomInterface } from "models";
 import { motion } from "framer-motion";
 
-interface RoomProps {
-  room: RoomInterface;
-}
-
-const DeskComponent = ({ room }: RoomProps) => (
-  <div className="relative w-full h-full border-[1rem] md:border-[2rem] 1920:border-[3rem] border-primary rounded-full">
+const DeskComponent = ({ room }: { room: RoomInterface }) => (
+  <div className="relative w-full h-full border-[1.5rem] md:border-[2rem] 1920:border-[3rem] border-primary rounded-full">
     <div className="relative w-full h-full shadow-xl rounded-full bg-secondary border-2 border-accent">
       <div className="absolute w-full -top-12 1920:-top-16">
-        <div className="w-max lg:w-1/4 py-2 1920:py-4 mx-auto text-center text-black1 bg-accent rounded-2xl border-2 border-[#debcf6]">
+        <div className="w-max px-10 lg:px-0 lg:w-1/4 py-2 1920:py-4 mx-auto text-center text-black1 bg-accent rounded-2xl border-2 border-[#debcf6]">
           <h4>Total bet</h4>
           <h5>{formatChips(room?.desk?.totalBid)}</h5>
         </div>

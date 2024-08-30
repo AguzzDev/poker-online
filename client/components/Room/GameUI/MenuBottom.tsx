@@ -30,7 +30,7 @@ const ActionButtons = () => {
     ) {
       body = (
         <>
-          {bidToPay * 2 > chips || bidToPay >= chips + bid ? (
+          {bidToPay >= chips + bid ? (
             <Element type="allIn" text="All In" />
           ) : (
             <Element type="raise" text="Raise" />

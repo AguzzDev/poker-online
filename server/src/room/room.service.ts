@@ -25,6 +25,7 @@ import {
   ErrorInterface,
   MessageInterface,
   Status,
+  SocketCustom,
 } from 'src/models';
 import { CreateRoomDto } from 'src/dto';
 
@@ -346,21 +347,22 @@ export class RoomService {
     });
   }
 
-  async removePlayer(userId: string) {
-    const room = await this.findUserInRoom(userId);
+  async removePlayer({ id, socket }: { id: string; socket?: SocketCustom }) {
+    const room = await this.findUserInRoom(id);
     if (!room) return;
 
-    const { id, player } = room;
+    socket.leave(room.id);
 
     const roomUpdate = await this.updateInDesk({
-      id,
-      values: player,
+      id: room.id,
+      values: room.player,
       type: DeskTypesEnum.removePlayer,
     });
 
     await this.userService.updateChips({
-      id: userId,
-      chips: player.chips,
+      id,
+      chips: room.player.chips,
+      socket,
     });
 
     return roomUpdate;

@@ -40,6 +40,7 @@ module.exports = {
         accent: "#CC8DEF",
         border: "hsl(277,96%,80%,40%)",
         black1: "#222222",
+        gray1: "#2C2C2C",
         purple1: "#674B7B",
         red1: "#c12d2e",
         green1: "#1b513c",

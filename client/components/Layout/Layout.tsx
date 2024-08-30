@@ -47,7 +47,7 @@ export const Layout = ({
           <section className="appScreenWidth">
             <Navbar type={NavbarTypeEnum.app} />
           </section>
-          <section className="flex-1 overflow-y-hidden appScreenWidth mb-5">
+          <section className="flex-1 overflow-y-auto appScreenWidth mb-5">
             {children}
           </section>
           <Footer type={FooterTypeEnum.app} />
