@@ -19,7 +19,7 @@ export const Modal = ({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[999] bg-black bg-opacity-20" />
         <Dialog.Content
-          className={`fixed ${elementPosition} rounded-${rounded} z-[1000] bg-secondary p-5 overflow-y-scroll`}
+          className={`fixed ${elementPosition} rounded-${rounded} z-[1000] bg-secondary`}
         >
           {content}
         </Dialog.Content>

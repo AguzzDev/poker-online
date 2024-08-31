@@ -24,7 +24,7 @@ export const CardIcon = ({
   }
 
   const SuitIcon = () => {
-    switch (suit) {
+    switch (suit!) {
       case CardSuitEnum.clubs:
         return <ClubsIcon className={color} />;
       case CardSuitEnum.diamonds:
@@ -36,11 +36,15 @@ export const CardIcon = ({
     }
   };
 
-  if (type === CardIconTypeEnum.loading) {
+  if (type === CardIconTypeEnum.back) {
+    return (body = (
+      <div className="cardSize border-[1.5px] border-[#3A3A3A] bg-white rounded-md"></div>
+    ));
+  } else if (type === CardIconTypeEnum.loading) {
     body = (
       <div
         style={{ animationDelay: `${delay}ms` }}
-        className={`${style} card-animation invisible relative w-10 h-14 border-[1.5px] border-[#3A3A3A] bg-[#303030] rounded-md overflow-hidden`}
+        className={`${style} card-animation invisible relative w-10 h-14 border-[1.5px] border-[#3A3A3A] bg-gray1 rounded-md overflow-hidden`}
       >
         <div className="absolute top-[2px] left-[2px] flex flex-col items-center h-[50%] w-[30%]">
           <p className={`${color} text-[0.5rem] leading-[0.5rem] my-[2px]`}>
@@ -56,16 +60,20 @@ export const CardIcon = ({
   } else {
     body = (
       <div
-        className={`${style} relative w-10 h-16  xl:w-16 xl:h-24 border-[1.5px] border-[#3A3A3A] bg-[#303030] rounded-md overflow-hidden`}
+        className={`${style} ${
+          type === CardIconTypeEnum.room
+            ? "border-[#3A3A3A] bg-white cardSize"
+            : "border-[#3A3A3A] bg-gray1 w-10 h-16 xl:w-16 xl:h-24"
+        } relative border-[1.5px] rounded-md overflow-hidden `}
       >
-        <div className="absolute top-[2px] left-[2px] flex flex-col items-center h-[50%] w-[30%]">
+        <div className="ml-1 mt-1 xl:mt-0 flex flex-col items-center w-[30%]">
           <p
-            className={`${color} font-semibold text-xl leading-[0.5rem] mt-2 mb-1`}
+            className={`${color} font-semibold text-lg xl:text-lg leading-[0.5rem] p-1 xl:px-0`}
           >
             {value}
           </p>
 
-          <div className="scale-75 fill-current mt-1">
+          <div className="scale-75 fill-current transform xl:-translate-y-2">
             <SuitIcon />
           </div>
         </div>

@@ -49,8 +49,8 @@ export interface HistoryBidProps {
   player: string;
 }
 export interface CardIconProps {
-  value: string;
-  suit: CardSuitEnum;
+  value?: string;
+  suit?: CardSuitEnum;
   opacity?: boolean;
   style?: string;
   delay?: string;
@@ -314,4 +314,6 @@ export enum LoginScreenTypeEnum {
 export enum CardIconTypeEnum {
   default = "default",
   loading = "loading",
+  back = "back",
+  room = "room",
 }

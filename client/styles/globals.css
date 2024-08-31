@@ -135,7 +135,7 @@
     @apply w-full max-w-screen-1920 mx-auto px-5 md:px-10 lg:px-20;
   }
   .cardSize {
-    @apply w-8 h-12 sm:w-[3.2rem] sm:h-20  1920:w-20 1920:h-24;
+    @apply w-8 h-12 sm:w-[2.5rem] sm:h-[3.7rem] xl:w-[3.2rem] xl:h-20 1920:w-20 1920:h-24;
   }
   h1 {
     @apply font-outfitBold text-gradient1 leading-[.9] tracking-heading text-6xl md:text-7xl lg:text-8xl 1920:text-[7rem];

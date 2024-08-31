@@ -3,6 +3,8 @@ import { useEffect, FormEvent, useRef } from "react";
 import { useGame } from "context/Game/GameProvider";
 import { useUser } from "context/User/UserProvider";
 import { UserImage } from "utils/userImage";
+import Image from "next/image";
+import { getCard } from "utils/getCard";
 
 export const Chat = () => {
   const router = useRouter();
@@ -40,23 +42,27 @@ export const Chat = () => {
 
       <div className="flex-col space-y-5 px-5 py-2 flex-1 overflow-y-scroll">
         {Array.isArray(room!.messages)
-          ? room!.messages.map(({ image, message, username }, i) => (
+          ? room!.messages.map(({ image, message, username, cards }, i) => (
               <div
                 key={i}
                 ref={scrollRef}
                 className={`${
                   user!.username === username ? "flex-row-reverse" : "flex-row"
-                } flex items-start relative w-full gap-3`}
+                } flex items-start relative w-full gap-3 overflow-hidden`}
               >
                 {image ? (
                   <div className="relative w-12 h-12 bg-primary rounded-full">
-                    <UserImage image={image} className="scale-50"/>
+                    <UserImage image={image} className="scale-50" />
                   </div>
                 ) : null}
 
                 <div className="flex-1 min-h-20 px-3 pt-1 pb-3 rounded-lg border-borderWidth bg-purple1 border-border break-words">
                   <p className="font-medium text-lg">{username}</p>
                   <p>{message}</p>
+
+                  <div className="flex space-x-1 mt-2">
+                    {cards?.map(({ id }) => getCard(id))}
+                  </div>
                 </div>
               </div>
             ))

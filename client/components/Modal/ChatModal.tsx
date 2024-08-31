@@ -1,4 +1,4 @@
-import { IconXs } from "components/Icon";
+import { IconSm, IconXs } from "components/Icon";
 import { Modal } from "./Modal";
 import { FaComments, FaCommentSlash } from "react-icons/fa";
 import { PositionsEnum } from "models";
@@ -10,7 +10,7 @@ export const ChatModal = ({ showChat, setShowChat }: any) => {
       position={PositionsEnum.top}
       trigger={
         <button onClick={() => setShowChat(!showChat)}>
-          <IconXs Icon={showChat ? FaComments : FaCommentSlash} />
+          <IconSm Icon={showChat ? FaComments : FaCommentSlash} />
         </button>
       }
       content={<Chat />}

@@ -12,7 +12,7 @@ export const ReBuyModal = () => {
 
   return (
     <div className="absolute inset-0 w-screen h-screen flex justify-center items-center bg-black bg-opacity-20">
-      <div className="flex-col py-5 px-5 bg-secondary rounded-md z-50">
+      <div className="flex-col py-5 px-5 bg-secondary rounded-md z-50 p-5">
         <h3>Do you wanna keep playing?</h3>
         <p className="mt-1">Buy more chips...</p>
 

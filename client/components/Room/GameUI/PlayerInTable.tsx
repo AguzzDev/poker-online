@@ -5,6 +5,7 @@ import { useGame } from "context/Game/GameProvider";
 import { PlayerInTableProps, PlayerInterface, Status } from "models";
 import Image from "next/image";
 import { formatChips } from "utils/formatChips";
+import { getCard } from "utils/getCard";
 import { roundNumber } from "utils/roundNumber";
 import { UserImage } from "utils/userImage";
 
@@ -31,15 +32,7 @@ const PlayerView = ({
           }`}
         >
           {cards.map(({ id }) => (
-            <div key={id} className="relative cardSize">
-              <Image
-                src={`${
-                  showCards ? `/cards/${id}.svg` : "/cards/cardBackside.png"
-                }`}
-                layout="fill"
-                alt="Card image"
-              />
-            </div>
+            <div key={id}>{showCards ? getCard(id) : getCard("back")}</div>
           ))}
         </div>
 
@@ -74,7 +67,7 @@ const PlayerView = ({
         <div
           className={`${
             x === "left" && "flex-row-reverse"
-          } flex justify-between bg-black1 border-2 border-borderColor1 rounded-full w-full h-full absolute z-40`}
+          } flex justify-between bg-black1 border-2 border-borderColor1 rounded-full w-full h-full absolute z-40 overflow-hidden`}
         >
           <div
             className={`${

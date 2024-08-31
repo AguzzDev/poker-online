@@ -54,12 +54,12 @@ export const TopComponent = ({ showChat, setShowChat }: ShowChatProps) => {
             <IconSm Icon={!sound ? SpeakerXMarkIcon : SpeakerWaveIcon} />
           </button>
           <button
-            className="hidden md:block"
+            className="hidden lg:flex"
             onClick={() => setShowChat(!showChat)}
           >
             <IconSm Icon={showChat ? FaComments : FaCommentSlash} />
           </button>
-          <div className="block md:hidden">
+          <div className="flex lg:hidden">
             <ChatModal showChat={showChat} setShowChat={setShowChat} />
           </div>
         </div>
