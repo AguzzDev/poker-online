@@ -1,16 +1,12 @@
 import { CardInterface, PlayerInterface } from 'src/models';
 
-interface Card {
-  value: number;
-}
-
 interface HandResult {
   heirarchy: string;
   heirarchyValue: string | number;
   message: string;
-  cards?: string | number | number[];
+  cards?: CardInterface[];
   cardHigh?: number;
-  cardDecider?: number;
+  cardDecider?: CardInterface | number;
 }
 
 const cardsValues = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
@@ -46,30 +42,37 @@ const heirarchyValues = {
 
 const checkDraw = (array) => {
   const orderByCardDecider = array.sort((a, b) =>
-    a.cardDecider < b.cardDecider ? 1 : -1,
+    a.cardDecider.value < b.cardDecider.value ? 1 : -1,
   );
-
   const cardDeciderIsUnique = orderByCardDecider.filter(
-    ({ cardDecider }) => cardDecider === orderByCardDecider[0].cardDecider,
+    ({ cardDecider }) =>
+      cardDecider.value === orderByCardDecider[0].cardDecider.value,
   );
 
   if (cardDeciderIsUnique.length > 1) {
     return {
       usersId: orderByCardDecider.map(({ _id }) => _id),
-      names: orderByCardDecider.map(({ name }) => name).join(", "),
+      names: orderByCardDecider.map(({ name }) => name).join(', '),
       heirarchy: orderByCardDecider[0].heirarchy,
+      cards: orderByCardDecider[0].cards,
     };
   }
 
   return {
     usersId: orderByCardDecider[0]._id,
     heirarchy: orderByCardDecider[0].heirarchy,
+    cards: orderByCardDecider[0].cards,
   };
 };
 
 export const getWinner = (
   playerHands,
-): { usersId: string | string[]; names?: string[]; heirarchy: string } => {
+): {
+  usersId: string | string[];
+  names?: string[];
+  heirarchy: string;
+  cards: CardInterface[];
+} => {
   const orderPlayersArray = (array, type) => {
     return type === 'array'
       ? array
@@ -96,6 +99,7 @@ export const getWinner = (
     return {
       usersId: player._id,
       heirarchy: player.heirarchy,
+      cards: player.cards,
     };
   } else {
     order = orderPlayersArray(playersFilter, 'string');
@@ -107,6 +111,7 @@ export const getWinner = (
     return {
       usersId: order[0]._id,
       heirarchy: order[0].heirarchy,
+      cards: order[0].cards,
     };
   }
 };
@@ -122,18 +127,21 @@ export const getAllCards = (): CardInterface[] => {
   );
 };
 
-export const evaluateHand = ({ cards, player }) => {
-  const allCards = [...cards, ...player.cards];
+export const evaluateHand = ({ cards, playerCards }) => {
+  const allCards = [...cards, ...playerCards];
+  const playerCardsSort = playerCards.sort((a, b) =>
+    a.value < b.value ? 1 : -1,
+  ) as CardInterface[];
 
-  const flush = isFlushHand(allCards, player.cards);
+  const flush = isFlushHand(allCards, playerCardsSort);
   if (flush) {
     return flush;
   }
-  const straight = isStraightHand(allCards, player.cards);
+  const straight = isStraightHand(allCards, playerCardsSort);
   if (straight) {
     return straight;
   }
-  const parTwoParOrThree = isParTwoParOrThree(allCards, player.cards);
+  const parTwoParOrThree = isParTwoParOrThree(allCards, playerCardsSort);
   if (parTwoParOrThree) {
     return parTwoParOrThree;
   }
@@ -141,11 +149,6 @@ export const evaluateHand = ({ cards, player }) => {
 
 const isStraightHand = (cards, cardsPlayer): HandResult => {
   cards.sort((a, b) => a.value - b.value);
-
-  const cardDecider =
-    cardsPlayer.filter(
-      (cardPlayer) => !cards.some((card) => card.value == cardPlayer.value),
-    )[0] || 0;
 
   for (let i = 0; i <= cards.length - 5; i++) {
     if (
@@ -159,7 +162,7 @@ const isStraightHand = (cards, cardsPlayer): HandResult => {
         heirarchyValue: heirarchyValues['Straight'],
         message: `Straight of ${cardNumberToText[cards[i].value]}-${cardNumberToText[cards[i + 4].value]}`,
         cards: cards.slice(i, i + 5),
-        cardDecider,
+        cardDecider: cardsPlayer[0],
       };
     }
   }
@@ -167,7 +170,10 @@ const isStraightHand = (cards, cardsPlayer): HandResult => {
   return null;
 };
 
-const isFlushHand = (cards, cardsPlayer) => {
+const isFlushHand = (
+  cards: CardInterface[],
+  cardsPlayer: CardInterface[],
+): HandResult => {
   const suits = {
     spades: 0,
     hearts: 0,
@@ -179,11 +185,10 @@ const isFlushHand = (cards, cardsPlayer) => {
     suits[suit]++;
   });
   const matchingSuit = Object.entries(suits).find(([, count]) => count === 5);
-
   if (!matchingSuit) return null;
 
   const cardsFilterSuit = cards
-    .filter(({ suit }) => suit >= matchingSuit[0])
+    .filter(({ suit }) => suit === matchingSuit[0])
     .sort((a, b) => a.id - b.id);
   const isPossibleRoyalFlush = cardsFilterSuit[0].id >= 32;
 
@@ -193,6 +198,8 @@ const isFlushHand = (cards, cardsPlayer) => {
       ...isRoyalFlush,
       heirarchyValue: heirarchyValues['Royal Flush'],
       heirarchy: 'Royal Flush',
+      cards: isRoyalFlush.cards,
+      cardDecider: cardsPlayer[0],
     };
   }
 
@@ -202,6 +209,8 @@ const isFlushHand = (cards, cardsPlayer) => {
       ...isStraight,
       heirarchyValue: heirarchyValues['Straight Flush'],
       heirarchy: 'Straight Flush',
+      cards: isStraight.cards,
+      cardDecider: cardsPlayer[0],
     };
   }
 
@@ -209,10 +218,15 @@ const isFlushHand = (cards, cardsPlayer) => {
     heirarchy: 'Flush',
     heirarchyValue: heirarchyValues['Flush'],
     message: `Flush of ${matchingSuit[0]}`,
+    cards: cardsFilterSuit,
+    cardDecider: cardsPlayer[0],
   };
 };
 
-const isParTwoParOrThree = (cards: Card[], cardsPlayer: Card[]): HandResult => {
+const isParTwoParOrThree = (
+  cards: CardInterface[],
+  cardsPlayer: CardInterface[],
+): HandResult => {
   const values: number[] = cards.map((card) => card.value);
 
   const counts: { [value: number]: number } = values.reduce((acc, value) => {
@@ -231,6 +245,9 @@ const isParTwoParOrThree = (cards: Card[], cardsPlayer: Card[]): HandResult => {
     })
     .filter(([_, count]) => count >= 2);
 
+  let winningCards: CardInterface[] = [];
+  const arrCombined = [...cards, ...cardsPlayer];
+
   if (matches.length === 0) {
     const highCard = cardsPlayer.sort((a, b) => b.value - a.value);
 
@@ -239,11 +256,15 @@ const isParTwoParOrThree = (cards: Card[], cardsPlayer: Card[]): HandResult => {
       heirarchyValue: heirarchyValues['High Card'],
       message: `High Card of ${cardNumberToText[highCard[0].value]}`,
       cardHigh: highCard[0].value,
+      cards: [highCard[0]],
+      cardDecider: highCard[1],
     };
   } else if (matches.length === 1) {
     const [value, count] = matches[0];
-    const cardDecider = cardsPlayer.filter((card) => card.value != value)[0]
-      ?.value;
+    const cardDecider = cardsPlayer.filter((card) => card.value != value)[0];
+
+    winningCards.push(...arrCombined.filter((card) => card.value === value));
+
     switch (count) {
       case 2:
         return {
@@ -252,6 +273,7 @@ const isParTwoParOrThree = (cards: Card[], cardsPlayer: Card[]): HandResult => {
           heirarchyValue: heirarchyValues['One Pair'],
           cardHigh: value,
           cardDecider,
+          cards: Array.from(new Set(winningCards)),
         };
       case 3:
         return {
@@ -260,6 +282,7 @@ const isParTwoParOrThree = (cards: Card[], cardsPlayer: Card[]): HandResult => {
           heirarchyValue: heirarchyValues['Three of a Kind'],
           cardHigh: value,
           cardDecider,
+          cards: Array.from(new Set(winningCards)),
         };
       case 4:
         return {
@@ -268,22 +291,30 @@ const isParTwoParOrThree = (cards: Card[], cardsPlayer: Card[]): HandResult => {
           heirarchyValue: heirarchyValues['Poker'],
           cardHigh: value,
           cardDecider,
+          cards: Array.from(new Set(winningCards)),
         };
     }
   } else {
     const [value1, count1] = matches[0];
     const [value2, count2] = matches[1];
 
-    const cardDecider = cardsPlayer.filter(
-      (card) => card.value != value1 && card.value != value2,
-    )[0]?.value;
+    const cardDecider =
+      cardsPlayer.filter(
+        (card) => card.value != value1 && card.value != value2,
+      )[0] || cardsPlayer[0];
+
+    winningCards.push(
+      ...arrCombined.filter(
+        (card) => card.value === value1 || card.value === value2,
+      ),
+    );
 
     if (count1 === 3 && count2 === 2) {
       return {
         heirarchy: 'Full House',
         message: 'Full House',
         heirarchyValue: heirarchyValues['Full House'],
-        cards: [value1, value2],
+        cards: Array.from(new Set(winningCards)),
         cardDecider,
       };
     } else {
@@ -291,7 +322,7 @@ const isParTwoParOrThree = (cards: Card[], cardsPlayer: Card[]): HandResult => {
         heirarchy: 'Two Pair',
         message: `Two Pair ${cardNumberToText[value1]} and ${cardNumberToText[value2]}`,
         heirarchyValue: heirarchyValues['Two Pair'],
-        cards: [value1, value2],
+        cards: Array.from(new Set(winningCards)),
         cardDecider,
       };
     }
