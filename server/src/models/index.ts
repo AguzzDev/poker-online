@@ -155,7 +155,8 @@ export interface updateInRoomArgs {
 }
 export interface UpdateInMessagesArgs {
   id: string;
-  values: MessageInterface;
+  values?: MessageInterface;
+  type: MessageTypeEnum;
 }
 export interface UpdateInDeskArgs {
   id: string;
@@ -191,7 +192,12 @@ export interface SetMessageArgs {
   message: MessageInterface;
 }
 export interface NewMessageArgs {
-  values: { id: string; userId?: string; message: string };
+  values: {
+    id: string;
+    userId?: string;
+    message: string;
+    cards?: CardInterface[];
+  };
   server: Server;
   socket?: SocketCustom;
 }
@@ -271,6 +277,10 @@ export enum DeskTypesEnum {
   stop = 'stop',
   takeCard = 'takeCard',
   reset = 'reset',
+}
+export enum MessageTypeEnum {
+  setMessage = 'setMessage',
+  deleteAll = 'deleteAll',
 }
 export enum GameSoundTypesEnum {
   shuffle = 'shuffle',

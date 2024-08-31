@@ -26,6 +26,7 @@ import {
   MessageInterface,
   Status,
   SocketCustom,
+  MessageTypeEnum,
 } from 'src/models';
 import { CreateRoomDto } from 'src/dto';
 
@@ -104,7 +105,6 @@ export class RoomService {
           this.rooms[i] = updateRoom;
           return updateRoom;
         }
-
         if (type !== DeskTypesEnum.dealer && values?.cards) {
           updateRoom.desk.cards = [...updateRoom.desk.cards, ...values.cards];
         }
@@ -130,7 +130,6 @@ export class RoomService {
         if (values?.totalBid) {
           updateRoom.desk.totalBid = values.totalBid;
         }
-
         if (values) {
           Object.keys(values).forEach((key) => {
             const valueKey =
@@ -155,15 +154,46 @@ export class RoomService {
   async updateInMessages({
     id,
     values,
+    type,
   }: UpdateInMessagesArgs): Promise<RoomInterface> {
     try {
       let updateRoom;
 
-      this.rooms.map((room, i) => {
+      this.rooms.map(async (room, i) => {
         if (room._id.toString() === id) {
           updateRoom = room;
-          (updateRoom.messages = updateRoom.messages.concat(values)),
-            (this.rooms[i] = updateRoom);
+
+          if (type === MessageTypeEnum.setMessage) {
+            updateRoom.messages = updateRoom.messages.concat(values);
+
+            await this.roomModel.updateOne(
+              { _id: id },
+              {
+                $push: {
+                  messages: {
+                    $each: [values],
+                    $slice: -50,
+                  },
+                },
+              },
+            );
+
+            this.rooms[i] = updateRoom;
+            return updateRoom;
+          }
+          if (type === MessageTypeEnum.deleteAll) {
+            updateRoom.messages = [];
+
+            await this.roomModel.updateOne(
+              { _id: id },
+              {
+                $set: { messages: [] },
+              },
+            );
+          }
+
+          this.rooms[i] = updateRoom;
+          return updateRoom;
         }
 
         return room;
@@ -351,19 +381,28 @@ export class RoomService {
     const room = await this.findUserInRoom(id);
     if (!room) return;
 
-    socket.leave(room.id);
-
     const roomUpdate = await this.updateInDesk({
       id: room.id,
       values: room.player,
       type: DeskTypesEnum.removePlayer,
     });
 
+    if (roomUpdate.players === 0) {
+      await this.updateInMessages({
+        id: room.id,
+        type: MessageTypeEnum.deleteAll,
+      });
+    }
+
     await this.userService.updateChips({
       id,
       chips: room.player.chips,
       socket,
     });
+
+    if (socket) {
+      socket.leave(room.id);
+    }
 
     return roomUpdate;
   }
@@ -382,27 +421,6 @@ export class RoomService {
       id: roomId,
       values: rest,
     });
-  }
-
-  async setMessage({
-    roomId,
-    message,
-  }: SetMessageArgs): Promise<MessageInterface> {
-    await this.roomModel.updateOne(
-      { _id: roomId },
-      {
-        $push: {
-          messages: {
-            $each: [message],
-            $slice: -50,
-          },
-        },
-      },
-    );
-
-    const room = await this.updateInMessages({ id: roomId, values: message });
-
-    return room.messages[room.messages.length - 1];
   }
 
   async deleteRoom(id: string): Promise<RoomInterface> {

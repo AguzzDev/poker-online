@@ -14,7 +14,6 @@ import {
   DeskTypesEnum,
   GameSoundTypesEnum,
   GameStatusEnum,
-  GetMyChipsArgs,
   InitialRoundArgs,
   LeaveRoomOrDisconnectArgs,
   NewMessageArgs,
@@ -33,6 +32,8 @@ import {
   ErrorInterface,
   UserRoleEnum,
   SocketCustom,
+  CardInterface,
+  MessageTypeEnum,
 } from 'src/models';
 import { evaluateHand, getAllCards, getWinner } from 'src/utils/pokerUtils';
 
@@ -84,7 +85,7 @@ export class GameService {
 
     const roomId = room._id.toString();
     socket.join(roomId);
-    
+
     return room;
   }
 
@@ -123,19 +124,27 @@ export class GameService {
 
   async newMessage({ values, server, socket }: NewMessageArgs) {
     const roomId = values.id;
-    const message = await this.roomService.setMessage({
-      roomId,
-      message: {
+
+    const room = await this.roomService.updateInMessages({
+      id: roomId,
+      values: {
         userId: socket ? socket.user._id : 'System',
         username: socket ? socket.user.username : 'System',
         message: values.message,
         image: socket ? socket.user.image : '',
         role: socket ? UserRoleEnum[socket.user.role] : '',
         timestamp: new Date(),
+        cards: values.cards,
       },
+      type: MessageTypeEnum.setMessage,
     });
 
-    server.to(roomId).emit(EVENTS.SERVER.MESSAGE_SEND, message);
+    server
+      .to(roomId)
+      .emit(
+        EVENTS.SERVER.MESSAGE_SEND,
+        room.messages[room.messages.length - 1],
+      );
   }
 
   async leaveRoomOrDisconnect({ server, socket }: LeaveRoomOrDisconnectArgs) {
@@ -147,6 +156,8 @@ export class GameService {
       socket,
     });
     if (!room) return;
+
+    server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
 
     if (room.start && room.desk.players.length === 1) {
       let targetSocket;
@@ -426,8 +437,6 @@ export class GameService {
           await this.advancedRound({ roomId, server });
         }
 
-        room = await this.roomService.findRoom(roomId);
-
         playersInGame = room.desk.players.filter(
           ({ cards, action }) =>
             cards && action !== Status.fold && action !== Status.allIn,
@@ -489,8 +498,6 @@ export class GameService {
           server
             .to(roomId)
             .emit(EVENTS.SERVER.GAME_SOUND, GameSoundTypesEnum[playerAction]);
-
-          room = await this.roomService.findRoom(roomId);
           server.to(roomId).emit(EVENTS.SERVER.UPDATE_GAME, room.desk);
         }
       }
@@ -501,12 +508,16 @@ export class GameService {
 
           if (!!getWinner) {
             await this.newMessage({
-              values: { id: roomId, message: getWinner.message },
+              values: {
+                id: roomId,
+                message: getWinner.message,
+                cards: getWinner.cards,
+              },
               server,
             });
           }
 
-          room = await this.roomService.updateInPlayer({
+          await this.roomService.updateInPlayer({
             id: roomId,
             type: PlayerTypesEnum.clearBid,
           });
@@ -805,7 +816,9 @@ export class GameService {
     return total;
   }
 
-  async determinateWinner(roomId: string): Promise<{ message: string }> {
+  async determinateWinner(
+    roomId: string,
+  ): Promise<{ message: string; cards: CardInterface[] | null }> {
     let playerHands = [];
     const room = await this.roomService.findRoom(roomId);
 
@@ -817,7 +830,7 @@ export class GameService {
     playersInGame.forEach((player) => {
       const evaluate = evaluateHand({
         cards: room.desk.dealer,
-        player,
+        playerCards: player.cards,
       });
 
       playerHands.push({
@@ -890,6 +903,7 @@ export class GameService {
         playersInGame.length === 1
           ? `${playersInGame[0].username} won ${room.desk.totalBid} chips`
           : message,
+      cards: playerWinners.cards || null,
     };
   }
 
