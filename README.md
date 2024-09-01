@@ -27,7 +27,6 @@ Estoy trabajando en varias mejoras y nuevas funcionalidades para la aplicación.
 
 - **Sistema de Fichas Cada Cierto Tiempo**:
 - **Traducir la Página**
-- **Devolver el Sobrante de Fichas en el Win**
 
 ## Contribuir
 
