@@ -1,9 +1,11 @@
 import { useState, useLayoutEffect } from "react";
 
-export const CircularProgressBar = () => {
+export const CircularProgressBar = ({ turn }: { turn: boolean }) => {
   const [percentage, setPercentage] = useState(0);
 
   useLayoutEffect(() => {
+    if (!turn) return;
+
     let timer = 100;
     const interval = setInterval(() => {
       timer -= 1;
@@ -14,7 +16,7 @@ export const CircularProgressBar = () => {
         setPercentage(0);
       }
     }, 100);
-  }, []);
+  }, [turn]);
 
   const radius = 40;
   const strokeWidth = 10;
@@ -33,7 +35,7 @@ export const CircularProgressBar = () => {
         cx={50}
         cy={50}
         fill="transparent"
-        strokeWidth={8}
+        strokeWidth={12}
         stroke="#181927"
       />
       <circle

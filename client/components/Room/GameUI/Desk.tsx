@@ -25,7 +25,7 @@ const DeskComponent = ({ room }: { room: RoomInterface }) => (
               delay: i < 3 ? i / 3 + 0.1 : 0,
             }}
           >
-            {getCard(i)}
+            {getCard(id)}
           </motion.div>
         ))}
       </div>

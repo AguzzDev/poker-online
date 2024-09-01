@@ -87,13 +87,13 @@ const PlayerView = ({
             <p className="text-sm text-stone-400">{showAction}</p>
           </div>
 
-          <div className="relative flex-1">
-            <div
-              className={`absolute z-50 top-0 w-full h-full scale-110 ${
-                x === "left" ? "-left-[.05rem]" : "-right-[.05rem]"
-              }`}
-            >
-              {turn === player.userId ? <CircularProgressBar /> : null}
+          <div
+            className={`${
+              x === "right" ? "translate-x-[.1rem] 1920:translate-x-[.2rem]" : "-translate-x-[.1rem] 1920:-translate-x-[.2rem]"
+            } relative flex-1`}
+          >
+            <div className="absolute z-50 top-0 w-full h-full scale-110">
+              <CircularProgressBar turn={turn === player.userId} />
             </div>
 
             <UserImage image={player.image} />
