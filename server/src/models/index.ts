@@ -266,6 +266,7 @@ export enum PlayerTypesEnum {
   add = 'add',
   delete = 'delete',
   reset = 'reset',
+  stop = 'stop',
   clearShowAction = 'clearShowAction',
   clearActions = 'clearActions',
   clearBid = 'clearBid',

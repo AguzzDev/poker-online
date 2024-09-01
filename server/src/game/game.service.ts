@@ -36,6 +36,7 @@ import {
   MessageTypeEnum,
 } from 'src/models';
 import { evaluateHand, getAllCards, getWinner } from 'src/utils/pokerUtils';
+import { findUserSocket } from 'src/utils/findPlayerSocket';
 
 @Injectable()
 export class GameService {
@@ -160,25 +161,21 @@ export class GameService {
     server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
 
     if (room.start && room.desk.players.length === 1) {
-      let targetSocket;
-
-      const update = await this.stopGame(room._id.toString());
       const player = room.desk.players[0];
 
-      server.sockets.sockets.forEach((socket: SocketCustom) => {
-        if (socket.user._id.toString() === player.userId) {
-          targetSocket = socket;
-        }
+      const targetSocket = await findUserSocket({
+        sockets: server.sockets,
+        userId: player.userId,
       });
+
       await this.userService.updateChips({
         id: player.userId,
         chips: player.bid + player.chips,
         socket: targetSocket,
       });
 
-      server
-        .to(room._id.toString())
-        .emit(EVENTS.SERVER.UPDATE_GAME, update.desk);
+      await this.stopGame(room._id.toString());
+      server.to(room._id.toString()).emit(EVENTS.SERVER.UPDATE_GAME, room.desk);
     }
 
     server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
@@ -726,7 +723,7 @@ export class GameService {
   async stopGame(roomId: string) {
     await this.roomService.updateInRoom({
       id: roomId,
-      values: { start: false },
+      values: { start: false, players: 0 },
     });
     await this.roomService.updateInDesk({
       id: roomId,
@@ -734,7 +731,7 @@ export class GameService {
     });
     const room = await this.roomService.updateInPlayer({
       id: roomId,
-      type: PlayerTypesEnum.reset,
+      type: PlayerTypesEnum.stop,
     });
     return room;
   }

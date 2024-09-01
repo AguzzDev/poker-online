@@ -108,13 +108,24 @@ export class RoomService {
         if (type !== DeskTypesEnum.dealer && values?.cards) {
           updateRoom.desk.cards = [...updateRoom.desk.cards, ...values.cards];
         }
-        if (type === DeskTypesEnum.stop || type === DeskTypesEnum.reset) {
+        if (type === DeskTypesEnum.reset) {
           const resetValues = {
             status: null,
             totalBid: 0,
             bidToPay: 0,
             cards: [],
             dealer: [],
+          };
+          updateRoom.desk = Object.assign(updateRoom.desk, resetValues);
+        }
+        if (type === DeskTypesEnum.stop) {
+          const resetValues = {
+            status: null,
+            totalBid: 0,
+            bidToPay: 0,
+            cards: [],
+            dealer: [],
+            players: [],
           };
           updateRoom.desk = Object.assign(updateRoom.desk, resetValues);
         }
@@ -257,6 +268,17 @@ export class RoomService {
               blind: false,
               winningPot: 0,
               cards: [],
+            });
+          }
+          if (type === PlayerTypesEnum.stop) {
+            return update({
+              action: '',
+              showAction: '',
+              blind: false,
+              winningPot: 0,
+              cards: [],
+              bid: 0,
+              chips: 0,
             });
           }
           if (type === PlayerTypesEnum.clearBid) {
