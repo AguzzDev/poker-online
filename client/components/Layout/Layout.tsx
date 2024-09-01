@@ -62,7 +62,7 @@ export const Layout = ({
         <section className="flex flex-col w-full h-full absolute inset-0 z-10 overflow-hidden appScreenWidth">
           <Navbar type={navType} />
 
-          <section className="flex-1 overflow-hidden mb-5">{children}</section>
+          <section className="flex-1 overflow-hidden mb-2 sm:mb-5">{children}</section>
         </section>
       </section>
     );

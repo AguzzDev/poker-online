@@ -132,7 +132,7 @@
     @apply w-full max-w-screen-xl mx-auto px-5 sm:px-10 xl:px-0;
   }
   .appScreenWidth {
-    @apply w-full max-w-screen-1920 mx-auto px-5 md:px-10 lg:px-20;
+    @apply w-full max-w-screen-1920 mx-auto px-2 md:px-10 lg:px-20;
   }
   .cardSize {
     @apply w-8 h-12 sm:w-[2.5rem] sm:h-[3.7rem] xl:w-[3.2rem] xl:h-20 1920:w-20 1920:h-24;
