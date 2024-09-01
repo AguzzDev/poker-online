@@ -38,7 +38,7 @@ export const CardIcon = ({
 
   if (type === CardIconTypeEnum.back) {
     return (body = (
-      <div className="cardSize border-[1.5px] border-[#3A3A3A] bg-white rounded-md"></div>
+      <div className="relative cardSizeRoom border-[1.5px] border-[#3A3A3A] bg-white rounded-md p-1"></div>
     ));
   } else if (type === CardIconTypeEnum.loading) {
     body = (
@@ -62,18 +62,18 @@ export const CardIcon = ({
       <div
         className={`${style} ${
           type === CardIconTypeEnum.room
-            ? "border-[#3A3A3A] bg-white cardSize"
+            ? "border-[#3A3A3A] bg-white cardSizeRoom"
             : "border-[#3A3A3A] bg-gray1 w-10 h-16 xl:w-16 xl:h-24"
         } relative border-[1.5px] rounded-md overflow-hidden `}
       >
-        <div className="ml-1 mt-1 xl:mt-0 flex flex-col items-center w-[30%]">
+        <div className="ml-1 mt-1 flex flex-col items-center w-[30%]">
           <p
-            className={`${color} font-semibold text-lg xl:text-lg leading-[0.5rem] p-1 xl:px-0`}
+            className={`${color} font-semibold text-base leading-[0.5rem] p-1 xl:px-0`}
           >
             {value}
           </p>
 
-          <div className="scale-75 fill-current transform xl:-translate-y-2">
+          <div className="scale-75 fill-current">
             <SuitIcon />
           </div>
         </div>

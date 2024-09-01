@@ -25,6 +25,7 @@ module.exports = {
       },
       backgroundSize: {
         patternSize: "1%",
+        patternSize2: "10.5px"
       },
       borderRadius: {
         ellipse: "50%",

@@ -2,7 +2,7 @@ import { CardIconTypeEnum, CardSuitEnum } from "models";
 import { CardIcon } from "public/icons/CardIcon";
 
 export const getCard = (i: number | string) => {
-  const dictionary = {
+  const dictionary: Record<string | number, JSX.Element> = {
     0: (
       <CardIcon
         type={CardIconTypeEnum.room}

@@ -1,5 +1,4 @@
 import { useGame } from "context/Game/GameProvider";
-import Image from "next/image";
 import { formatChips } from "utils/formatChips";
 import { PlayerInTable } from "./PlayerInTable";
 import { RoomInterface } from "models";

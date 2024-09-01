@@ -3,7 +3,6 @@ import { useEffect, FormEvent, useRef } from "react";
 import { useGame } from "context/Game/GameProvider";
 import { useUser } from "context/User/UserProvider";
 import { UserImage } from "utils/userImage";
-import Image from "next/image";
 import { getCard } from "utils/getCard";
 
 export const Chat = () => {

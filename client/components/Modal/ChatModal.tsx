@@ -1,4 +1,4 @@
-import { IconSm, IconXs } from "components/Icon";
+import { IconSm } from "components/Icon";
 import { Modal } from "./Modal";
 import { FaComments, FaCommentSlash } from "react-icons/fa";
 import { PositionsEnum } from "models";
