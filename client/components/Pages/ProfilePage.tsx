@@ -4,8 +4,8 @@ import { Layout } from "components/Layout/Layout";
 import { Stadistics } from "components/Stats/Stadistics";
 import { TextUnderline } from "components/Text/TextUnderline";
 import { LayoutTypeEnum, UserInterface } from "models";
-import Image from "next/image";
 import { formatChips } from "utils/formatChips";
+import { UserImage } from "utils/userImage";
 
 export const ProfilePage = ({ user }: { user: UserInterface }) => {
   return (
@@ -20,7 +20,7 @@ export const ProfilePage = ({ user }: { user: UserInterface }) => {
                 <div className="absolute inset-0 m-auto profileShape bg-secondary w-[90%] h-[90%]">
                   <div className="absolute inset-0 m-auto profileShape w-[80%] h-[80%]">
                     <div className="relative w-full h-full">
-                      <Image src="/authImage.jpg" layout="fill" />
+                      <UserImage image={user.image} />
                     </div>
                   </div>
                 </div>

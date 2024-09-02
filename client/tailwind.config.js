@@ -40,7 +40,7 @@ module.exports = {
         secondary: "#1C1625",
         accent: "#CC8DEF",
         border: "hsl(277,96%,80%,40%)",
-        black1: "#222222",
+        black1: "#212121",
         gray1: "#2C2C2C",
         purple1: "#674B7B",
         red1: "#c12d2e",

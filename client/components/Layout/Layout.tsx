@@ -69,8 +69,8 @@ export const Layout = ({
   } else if (type === LayoutTypeEnum.form) {
     body = (
       <Layout type={LayoutTypeEnum.empty}>
-        <section className="flex flex-col-reverse lg:flex-row h-full">
-          <section className="flex-col flex-1 lg:w-[50vw] py-5 px-5 sm:px-10">
+        <section className="flex flex-col-reverse md:flex-row h-full md:space-x-10 lg:space-x-20">
+          <section className="flex-col flex-1 py-5 px-5 sm:px-10">
             <div className="h-[95%]">
               <Logo className="hidden sm:block" />
               <LogoMobile className="block sm:hidden" />
@@ -78,10 +78,10 @@ export const Layout = ({
               <div className="mt-3 sm:mt-5">{children}</div>
             </div>
 
-            <div className="flex items-end h-[5%]">Develop By AguzzDev</div>
+            <div className="flex flex-1 items-end h-[5%]">Develop By AguzzDev</div>
           </section>
 
-          <section className="h-1/4 lg:h-full lg:flex-1 relative rounded-b-[5%] md:rounded-l-[5%] overflow-hidden">
+          <section className="h-1/4 md:h-full md:flex-1 relative rounded-b-[5%] md:rounded-tl-[5%] md:rounded-bl-[5%] md:rounded-b-[0%] overflow-hidden">
             <div className="absolute bottom-4 left-5 z-50">
               <p>
                 Image by
