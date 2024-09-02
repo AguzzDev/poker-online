@@ -14,7 +14,7 @@ export class User {
   @Prop({ min: 6, default: '' })
   password: string;
 
-  @Prop({ default: 100000 })
+  @Prop({ default: 1000000 })
   chips: number;
 
   @Prop({ default: '' })
