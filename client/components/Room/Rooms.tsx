@@ -23,7 +23,7 @@ export const Rooms = () => {
   return (
     <>
       {!rooms ? (
-        <div className="flex items-center justify-center h-3/4">
+        <div className="flex items-center justify-center h-3/4 1920:scale-110">
           <LoadingSpinner />
         </div>
       ) : (
