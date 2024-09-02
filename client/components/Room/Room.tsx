@@ -35,9 +35,9 @@ export const Room = ({ data }: { data: RoomInterface }) => {
             animate={hover ? { width: "100%" } : { width: "70%" }}
           >
             <motion.h3
-              initial={{ x: -80 }}
-              animate={{ x: hover ? 30 : -80 }}
-              transition={{ duration: .6 }}
+              initial={{ x: "-100%" }}
+              animate={{ x: hover ? "30%" : "-100%" }}
+              transition={{ duration: 0.6 }}
             >
               Join
             </motion.h3>
