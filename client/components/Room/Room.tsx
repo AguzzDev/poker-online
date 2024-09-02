@@ -1,5 +1,7 @@
 import { RoomInterface } from "models";
 import { formatBuyIn } from "utils/buyInOptions";
+import { motion } from "framer-motion";
+import { useState } from "react";
 
 const Item = ({ title, data }: { title: string; data: number | string }) => (
   <div className="text-center">
@@ -9,13 +11,37 @@ const Item = ({ title, data }: { title: string; data: number | string }) => (
 );
 
 export const Room = ({ data }: { data: RoomInterface }) => {
+  const [hover, setHover] = useState(false);
+
   const { name, players, buyIn } = data;
+
+  const handleHover = () => {
+    if (hover) return;
+
+    setHover(true);
+  };
 
   return (
     <article>
-      <div className="flex py-3 border-2 border-white rounded-md overflow-hidden cursor-pointer">
-        <div className="w-[15%] relative">
-          <div className="absolute top-0 -left-1 w-full h-full bg-primary rounded-r-[100%] border-2 border-white"></div>
+      <motion.div
+        onHoverStart={() => handleHover()}
+        onHoverEnd={() => setHover(false)}
+        className="flex py-3 border-2 bg-[#241C30] border-[#31283E] rounded-md overflow-hidden cursor-pointer"
+      >
+        <div className="relative w-[25%]">
+          <motion.div
+            className="absolute top-0 -left-1 flex items-center w-full h-full bg-primary rounded-r-[100%] border-2 border-[#31283E]"
+            initial={{ width: "70%" }}
+            animate={hover ? { width: "100%" } : { width: "70%" }}
+          >
+            <motion.h3
+              initial={{ x: -80 }}
+              animate={{ x: hover ? 30 : -80 }}
+              transition={{ duration: .6 }}
+            >
+              Join
+            </motion.h3>
+          </motion.div>
         </div>
 
         <div className="flex-1 flex flex-col items-center">
@@ -27,7 +53,7 @@ export const Room = ({ data }: { data: RoomInterface }) => {
             <Item title="Players" data={players} />
           </div>
         </div>
-      </div>
+      </motion.div>
     </article>
   );
 };
