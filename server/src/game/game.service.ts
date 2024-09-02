@@ -904,15 +904,24 @@ export class GameService {
     };
   }
 
-  async playerRebuyChips(
-    values: PlayerRebuyChipsArgs,
-  ): Promise<ErrorInterface> {
+  async playerRebuyChips({
+    values,
+    sockets,
+  }: PlayerRebuyChipsArgs): Promise<ErrorInterface> {
     const findPlayer = await this.userService.getUserById(values.userId);
+    const findRoom = await this.roomService.findRoom(values.roomId);
 
-    if (!findPlayer) return { error: true, message: 'Player not found' };
+    if (!findPlayer || !findRoom)
+      return { error: true, message: 'Player not found' };
     if (findPlayer.chips < values.chips)
       return { error: true, message: "You don't have enough chips" };
 
+    const socket = await findUserSocket({ sockets, userId: values.userId });
+    await this.userService.updateChips({
+      id: values.userId,
+      chips: -findRoom.buyIn,
+      socket,
+    });
     await this.roomService.updatePlayerChips(values);
     return { error: false, message: 'Done' };
   }

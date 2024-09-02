@@ -125,7 +125,10 @@ export class GameGateway implements OnModuleInit {
   @SubscribeMessage(EVENTS.CLIENT.PLAYER_REBUY)
   @UseGuards(SocketGuard)
   i(@MessageBody() values: PlayerAddChipsDto) {
-    return this.gameService.playerRebuyChips(values);
+    return this.gameService.playerRebuyChips({
+      values,
+      sockets: this.io.sockets,
+    });
   }
 
   @SubscribeMessage(EVENTS.CLIENT.UPDATE_USER)

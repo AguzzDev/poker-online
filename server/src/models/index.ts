@@ -102,9 +102,8 @@ export interface ErrorInterface {
 
 //args
 export interface PlayerRebuyChipsArgs {
-  roomId: string;
-  userId: string;
-  chips: number;
+  values: { roomId: string; userId: string; chips: number };
+  sockets: Server['sockets'];
 }
 export interface GetMyChipsArgs {
   id: string;
