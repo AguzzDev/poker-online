@@ -16,6 +16,11 @@ export const CircularProgressBar = ({ turn }: { turn: boolean }) => {
         setPercentage(0);
       }
     }, 100);
+
+    return () => {
+      clearInterval(interval);
+      setPercentage(0);
+    };
   }, [turn]);
 
   const radius = 40;

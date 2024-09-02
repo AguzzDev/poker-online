@@ -24,11 +24,11 @@ export const AppPage = () => {
             <h4>Players online: {usersOnline}</h4>
           </div>
 
-          {adminRole ? (
+          {/* {adminRole ? (
             <ButtonOne onClick={() => router.push("/dashboard")}>
               Dashboard
             </ButtonOne>
-          ) : null}
+          ) : null} */}
 
           <Rooms />
         </Container>
