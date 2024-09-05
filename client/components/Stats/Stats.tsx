@@ -24,11 +24,11 @@ export const Stats = ({
   const lastItem = title === PokerHandsEnum["royalFlush"];
 
   return (
-    <div className="flex items-center justify-between w-full">
+    <div className="flex justify-between w-full">
       <div
         className={`${
           !lastItem ? "border-r-borderWidth border-border md:border-hidden" : ""
-        } flex flex-col pr-5 md:pr-0 flex-1`}
+        } flex flex-col pr-5 md:pr-0 flex-1 `}
       >
         <div className="flex items-center justify-between mb-1">
           <h4 className="font-workSansSBI">{statsTextDictionary[title]}</h4>
@@ -39,7 +39,7 @@ export const Stats = ({
         <PokerHandsIcon type={title} />
       </div>
 
-      <h5 className="hidden lg:block px-2 font-bold">{value}</h5>
+      <h5 className="hidden lg:flex px-2 font-bold mt-1">{value}</h5>
     </div>
   );
 };
