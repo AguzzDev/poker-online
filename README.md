@@ -1,37 +1,39 @@
 # Poker Online App
 
-## Descripción
+## Description
 
-Bienvenido a **Poker Online App**, mi plataforma para jugar al póker con amigos y jugadores de todo el mundo. He diseñado esta aplicación para ofrecer una experiencia de juego fluida y emocionante, utilizando las últimas tecnologías web para garantizar un rendimiento óptimo y una interfaz de usuario atractiva.
+Welcome to **Poker Online App**, my platform for playing poker with friends and players from around the world. I have designed this application to offer a smooth and exciting gaming experience, using the latest web technologies to ensure optimal performance and an attractive user interface.
 
-## Tecnologías Utilizadas
+## Technologies Used
 
-- **TypeScript**: Para un desarrollo seguro y eficiente, con tipado estático.
-- **NestJS**: Para el backend, proporcionando un robusto framework de Node.js con soporte para aplicaciones escalables.
-- **NextJS**: Para el frontend, permitiendo una renderización rápida del lado del servidor y una experiencia de usuario dinámica.
+- **TypeScript**: For safe and efficient development, with static typing.
+- NestJS**: For the backend, providing a robust Node.js framework with support for scalable applications.
+- NextJS**: For the frontend, enabling fast server-side rendering and dynamic user experience.
 
-## Funcionalidades
+## Functionalities
 
-### Juego en Línea
+### Online Gaming
 
-- **Mesas de Juego**: Crea o únete a mesas de póker en línea y compite contra otros jugadores.
-- **Modos de Juego**: Texas Hold'em.
+- Game Tables**: Create or join online poker tables and compete against other players.
+- Game Modes**: Texas Hold'em.
 
-### Gestión de Usuarios
+### User Management
 
-- **Registro y Autenticación**: Regístrate fácilmente y accede con tu cuenta de usuario.
+- Registration and Authentication**: Easily register and login with your user account.
 
-## Próximos Updates
+## Upcoming Updates
 
-Estoy trabajando en varias mejoras y nuevas funcionalidades para la aplicación. Aquí tienes un vistazo a lo que está por venir:
+I'm working on several improvements and new features for the application. Here's a sneak peek at what's coming soon:
 
-- **Sistema de Fichas Cada Cierto Tiempo**:
-- **Traducir la Página**
+- **System of Tokens Every So Often**:
+- **Translate Page**.
 
-## Contribuir
+## Contribute
 
-Estoy abierto a contribuciones de la comunidad.
+I am open to contributions from the community.
 
 ![Screenshot 1](./client/public/screenshots/1.png)
 ![Screenshot 2](./client/public/screenshots/2.png)
+
+
 
