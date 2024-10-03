@@ -14,12 +14,12 @@ Welcome to **Poker Online App**, my platform for playing poker with friends and 
 
 ### Online Gaming
 
-- Game Tables**: Create or join online poker tables and compete against other players.
-- Game Modes**: Texas Hold'em.
+- **Game Tables**: Create or join online poker tables and compete against other players.
+- **Game Modes**: Texas Hold'em.
 
 ### User Management
 
-- Registration and Authentication**: Easily register and login with your user account.
+- **Registration and Authentication**: Easily register and login with your user account.
 
 ## Upcoming Updates
 
