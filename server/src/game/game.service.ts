@@ -157,6 +157,7 @@ export class GameService {
       socket,
     });
     if (!room) return;
+    const roomId = room._id.toString();
 
     server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
 
@@ -174,8 +175,13 @@ export class GameService {
         socket: targetSocket,
       });
 
-      await this.stopGame(room._id.toString());
-      server.to(room._id.toString()).emit(EVENTS.SERVER.UPDATE_GAME, room.desk);
+      await this.roomService.updateInMessages({
+        id: roomId,
+        type: MessageTypeEnum.deleteAll,
+      });
+      await this.stopGame(roomId);
+
+      server.to(roomId).emit(EVENTS.SERVER.UPDATE_GAME, room.desk);
     }
 
     server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
