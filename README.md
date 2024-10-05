@@ -7,8 +7,8 @@ Welcome to **Poker Online App**, my platform for playing poker with friends and 
 ## Technologies Used
 
 - **TypeScript**: For safe and efficient development, with static typing.
-- NestJS**: For the backend, providing a robust Node.js framework with support for scalable applications.
-- NextJS**: For the frontend, enabling fast server-side rendering and dynamic user experience.
+- **NestJS**: For the backend, providing a robust Node.js framework with support for scalable applications.
+- **NextJS**: For the frontend, enabling fast server-side rendering and dynamic user experience.
 
 ## Functionalities
 
@@ -25,7 +25,7 @@ Welcome to **Poker Online App**, my platform for playing poker with friends and 
 
 I'm working on several improvements and new features for the application. Here's a sneak peek at what's coming soon:
 
-- **System of Tokens Every So Often**:
+- **System of Tokens Every So Often**
 - **Translate Page**.
 
 ## Contribute
