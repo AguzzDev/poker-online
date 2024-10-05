@@ -11,6 +11,7 @@ Welcome to **Poker Online App**, my platform for playing poker with friends and 
 - **NextJS**: Enhances the frontend with server-side rendering and a dynamic user experience.
 - **Socket.IO**: Manages real-time communication for smooth interaction between players.
 - **TailwindCSS**: Simplifies styling with utility-first classes, creating a responsive and visually appealing interface.
+- **MongoDB**: A NoSQL database used for storing user data and game information efficiently.
 
 ## Functionalities
 
@@ -42,7 +43,9 @@ To set up the project locally, please follow these steps:
 2. **Install dependencies:**
    - Run `npm install` in the `client` folder.
    - Run `pnpm install` in the `server` folder.
-3. **Add environment variables:**
+3. **Create a MongoDB database:**
+   - Set up a MongoDB database either locally or on a cloud service like MongoDB Atlas.
+4. **Add environment variables:**
    - Create a file named `.env.local` in the `client` folder with the following variables:
      ```
      NEXT_PUBLIC_API_URL
@@ -57,7 +60,7 @@ To set up the project locally, please follow these steps:
      APP_URL
      EMAIL_PASS
      ```
-4. **Run the development server:**
+5. **Run the development server:**
    - Execute `npm run dev` in both the `client` and `server` folders.
 
 ![Screenshot 1](./client/public/screenshots/1.png)
