@@ -5,12 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Room } from 'src/schemas/room.schema';
-import { UserService } from 'src/user/user.service';
+import { Room } from 'src/modules/common/schemas';
+import { UserService } from 'src/modules/user/user.service';
 import {
   AddPlayerArgs,
   RoomInterface,
-  SetMessageArgs,
   UpdateDeskOptionsEnum,
   UpdateInDeskArgs,
   UpdateInMessagesArgs,
@@ -23,12 +22,11 @@ import {
   PlayerInterface,
   updateInRoomArgs,
   ErrorInterface,
-  MessageInterface,
   Status,
   SocketCustom,
   MessageTypeEnum,
 } from 'src/models';
-import { CreateRoomDto } from 'src/dto';
+import { CreateRoomDto } from 'src/modules/common/dto';
 
 @Injectable()
 export class RoomService {
@@ -225,92 +223,90 @@ export class RoomService {
       let updateRoom: RoomInterface;
 
       this.rooms.map(async (room, i) => {
-        if (room._id.toString() === id) {
-          updateRoom = room;
+        if (room._id.toString() !== id) return room;
 
-          const update = (values) => {
-            updateRoom.desk.players = updateRoom.desk.players.map((player) => {
-              return { ...player, ...values };
-            });
+        updateRoom = room;
 
-            this.rooms[i] = updateRoom;
-            return updateRoom;
-          };
-
-          if (
-            type === PlayerTypesEnum.clearActions ||
-            type === PlayerTypesEnum.clearShowAction
-          ) {
-            updateRoom.desk.players = updateRoom.desk.players.map((player) => {
-              if (type === PlayerTypesEnum.clearActions) {
-                if (player.userId !== values.userId) return player;
-
-                return { ...player, action: null };
-              } else {
-                if (
-                  player.action == Status.fold ||
-                  player.action == Status.allIn
-                ) {
-                  return player;
-                }
-
-                return { ...player, showAction: '' };
-              }
-            });
-
-            this.rooms[i] = updateRoom;
-            return updateRoom;
-          }
-          if (type === PlayerTypesEnum.reset) {
-            return update({
-              action: '',
-              showAction: '',
-              blind: false,
-              winningPot: 0,
-              cards: [],
-            });
-          }
-          if (type === PlayerTypesEnum.stop) {
-            return update({
-              action: '',
-              showAction: '',
-              blind: false,
-              winningPot: 0,
-              cards: [],
-              bid: 0,
-              chips: 0,
-            });
-          }
-          if (type === PlayerTypesEnum.clearBid) {
-            return update({
-              bid: 0,
-            });
-          }
-
+        const update = (values) => {
           updateRoom.desk.players = updateRoom.desk.players.map((player) => {
-            if (player.userId !== values.userId) return player;
+            return { ...player, ...values };
+          });
 
-            if (values.bid) {
-              player.bid += values.bid;
-            }
-            if (values.chips) {
-              player.chips += values.chips;
-            }
+          this.rooms[i] = updateRoom;
+          return updateRoom;
+        };
 
-            Object.keys(values).forEach((key) => {
-              if (key in UpdatePlayerOptionsEnum) {
-                player[key] = values[key];
+        if (
+          type === PlayerTypesEnum.clearActions ||
+          type === PlayerTypesEnum.clearShowAction
+        ) {
+          updateRoom.desk.players = updateRoom.desk.players.map((player) => {
+            if (type === PlayerTypesEnum.clearActions) {
+              if (player.userId !== values.userId) return player;
+
+              return { ...player, action: null };
+            } else {
+              if (
+                player.action == Status.fold ||
+                player.action == Status.allIn
+              ) {
+                return player;
               }
-            });
 
-            return player;
+              return { ...player, showAction: '' };
+            }
           });
 
           this.rooms[i] = updateRoom;
           return updateRoom;
         }
+        if (type === PlayerTypesEnum.reset) {
+          return update({
+            action: '',
+            showAction: '',
+            blind: false,
+            winningPot: 0,
+            cards: [],
+          });
+        }
+        if (type === PlayerTypesEnum.stop) {
+          return update({
+            action: '',
+            showAction: '',
+            blind: false,
+            winningPot: 0,
+            cards: [],
+            bid: 0,
+            chips: 0,
+          });
+        }
+        if (type === PlayerTypesEnum.clearBid) {
+          return update({
+            bid: 0,
+          });
+        }
 
-        return room;
+        updateRoom.desk.players = updateRoom.desk.players.map((player) => {
+          if (player.userId !== values.userId) return player;
+
+          if (values.bid) {
+            player.bid += values.bid;
+          }
+          if (values.chips) {
+            player.chips += values.chips;
+          }
+
+          Object.keys(values).forEach((key) => {
+            if (key in UpdatePlayerOptionsEnum) {
+              player[key] = values[key];
+            }
+          });
+
+          return player;
+        });
+
+        this.rooms[i] = updateRoom;
+        return updateRoom;
       });
 
       return updateRoom;
@@ -421,10 +417,6 @@ export class RoomService {
       chips: room.player.chips,
       socket,
     });
-
-    if (socket) {
-      socket.leave(room.id);
-    }
 
     return roomUpdate;
   }

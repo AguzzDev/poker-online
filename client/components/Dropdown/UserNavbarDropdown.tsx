@@ -39,14 +39,14 @@ export const UserNavbarDropdown = () => {
   const Trigger = () => (
     <>
       <div className="flex-col text-end">
-        <h5 className="font-bold">{username}</h5>
+        <h6 className="font-bold">{username}</h6>
         <div className="flex items-center space-x-0 md:space-x-1">
           <ChipsIcon className="scale-50 sm:scale-75" />
           <h6>{formatChips(chips)}</h6>
         </div>
       </div>
 
-      <div className="hidden sm:block relative w-16 h-16 bg-black1 rounded-md overflow-hidden">
+      <div className="hidden sm:block relative w-12 h-12 md:w-14 md:h-14 bg-black1 rounded-md overflow-hidden">
         <UserImage image={image} />
       </div>
     </>

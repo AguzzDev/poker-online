@@ -47,7 +47,7 @@ export const Navbar = ({ type = NavbarTypeEnum.default }: NavbarProps) => {
 
   if (type === NavbarTypeEnum.app) {
     body = (
-      <section className="flex justify-between px-3 md:px-5 py-2 border-2 border-border rounded-3xl bg-secondary my-5">
+      <section className="flex justify-between px-3 md:px-5 py-2 border-2 border-border rounded-3xl bg-secondary my-3 md:my-5">
         <div className="flex space-x-5 items-center my-auto">
           <Link href={links.app} passHref>
             <a className="cursor-pointer">

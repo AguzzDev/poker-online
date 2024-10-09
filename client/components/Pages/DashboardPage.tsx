@@ -21,11 +21,11 @@ export const DashboardPage = () => {
     body = (
       <section>
         <div className="flex justify-between gap-10">
-          <ButtonOne style="w-full" onClick={() => setScreen(1)}>
+          <ButtonOne className="w-full" onClick={() => setScreen(1)}>
             Create Room
           </ButtonOne>
           <ButtonOne
-            style="w-full"
+            className="w-full"
             onClick={() => {
               getPlayers();
               setScreen(2);

@@ -6,12 +6,11 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-
-import { UserService } from 'src/user/user.service';
-import { LoginInputDto } from 'src/dto/loginInputDto';
-import { RegisterInputDto } from 'src/dto/registerInputDto';
+import { UserService } from 'src/modules/user/user.service';
+import { LoginInputDto, RegisterInputDto } from 'src/modules/common/dto';
 import { MailTypeEnum, UserInterface } from 'src/models';
 import sendMail from 'src/utils/sendMail';
+import { userResponseWithAccessToken } from 'src/utils/userResponse';
 
 @Injectable()
 export class AuthService {
@@ -30,17 +29,7 @@ export class AuthService {
       values: { accessToken },
     });
 
-    return {
-      _id: res._id,
-      username: res.username,
-      image: res.image,
-      chips: res.chips,
-      provider: res.provider,
-      matches: res.matches,
-      accessToken,
-      createdAt: res.createdAt,
-      role: res.role,
-    };
+    return userResponseWithAccessToken(res);
   }
 
   async login(body: LoginInputDto) {

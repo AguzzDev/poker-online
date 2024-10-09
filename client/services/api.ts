@@ -17,12 +17,12 @@ API_DEFAULT.interceptors.response.use(
   (err) => errInterceptor(err)
 );
 
-const API_TOKEN = (): AxiosInstance => {
+const API_TOKEN = (id?: string): AxiosInstance => {
   const { user } = parseCookies();
 
   const API = axios.create({
     baseURL: URL,
-    headers: { token: JSON.parse(user).accessToken },
+    headers: { token: id ? id : JSON.parse(user).accessToken },
   });
   API.interceptors.response.use(
     (response) => response,
@@ -34,7 +34,7 @@ const API_TOKEN = (): AxiosInstance => {
 
 //DASHBOARD
 export const fetchDashboard = (id: string) =>
-  API_DEFAULT.get(`/user/dashboard/${id}`);
+  API_TOKEN(id).get(`/user/dashboard/${id}`);
 //ROOMS
 export const fetchRooms = () => API_TOKEN().get("/room");
 export const fetchRoom = (id: string) => API_TOKEN().get(`/room/${id}`);
@@ -58,3 +58,6 @@ export const resetPassword = ({
 }) => API_DEFAULT.post(`/auth/resetPassword?token=${token}`, { password });
 export const changePassword = (email: { email: string }) =>
   API_DEFAULT.post(`/auth/changePassword`, email);
+//MISSIONS
+export const getRewards = ({ id, type }: { id: string; type: string }) =>
+  API_TOKEN().post(`/user/rewards/${id}`, { type });

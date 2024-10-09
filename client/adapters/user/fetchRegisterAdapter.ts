@@ -7,6 +7,7 @@ const fetchRegisterAdapter = async (
 ): Promise<string | AxiosError> => {
   try {
     const { data } = await fetchRegister(values);
+
     return data.message;
   } catch (error) {
     throw error;

@@ -10,22 +10,31 @@ const UserProvider = ({ children }: { children: ChildrenType }) => {
   const router = useRouter();
   const [user, setUser] = useState<UserInterface | null>(null);
   const [adminRole, setAdminRole] = useState<boolean>(false);
+  const cookies = parseCookies();
 
   const setAccount = (data: UserInterface) => {
+    if (cookies.user) return;
+
     setCookie(null, "user", JSON.stringify(data), {
       maxAge: 30 * 24 * 60 * 60 * 3,
+      path: "/",
     });
-    router.reload();
+    router.replace(router.asPath);
   };
 
   const removeAccount = () => {
-    if (user!.provider) {
-      signOut();
-    }
-    destroyCookie(null, "user");
+    document.cookie.split(";").forEach((cookie) => {
+      const cookieName = cookie.split("=")[0].trim();
+      document.cookie = `${cookieName}=; max-age=0; path=/; domain=localhost`;
+    });
+
     setTimeout(() => {
-      router.reload();
-    }, 100);
+      if (user?.provider) {
+        signOut({ callbackUrl: "/" });
+      } else {
+        router.reload();
+      }
+    }, 500);
   };
 
   const updateUser = (values: Partial<UserInterface>) => {
@@ -38,6 +47,7 @@ const UserProvider = ({ children }: { children: ChildrenType }) => {
     destroyCookie(null, "user");
     setCookie(null, "user", JSON.stringify(update), {
       maxAge: 30 * 24 * 60 * 60 * 3,
+      path: "/",
     });
   };
 
@@ -51,9 +61,13 @@ const UserProvider = ({ children }: { children: ChildrenType }) => {
     if (!user) return;
 
     const fetch = async () => {
-      const { data } = await API.fetchDashboard(user!._id);
-  
-      setAdminRole(data);
+      try {
+        const { data } = await API.fetchDashboard(user!._id);
+
+        setAdminRole(data);
+      } catch (error) {
+        setAdminRole(false);
+      }
     };
 
     fetch();

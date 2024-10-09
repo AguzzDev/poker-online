@@ -6,8 +6,32 @@ import { TextUnderline } from "components/Text/TextUnderline";
 import { LayoutTypeEnum, UserInterface } from "models";
 import { formatChips } from "utils/formatChips";
 import { UserImage } from "utils/userImage";
+import { Missions } from "components/Missions";
+import { useUser } from "context/User/UserProvider";
+import { useEffect, useState } from "react";
 
-export const ProfilePage = ({ user }: { user: UserInterface }) => {
+export const ProfilePage = ({
+  data,
+  itsMyProfile,
+}: {
+  itsMyProfile: boolean;
+  data: UserInterface | null;
+}) => {
+  const { user } = useUser();
+  const [userData, setUserData] = useState<UserInterface | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+
+    if (itsMyProfile) {
+      setUserData(user);
+    } else {
+      setUserData(data);
+    }
+  }, [user]);
+
+  if (!user || !userData) return <></>;
+
   return (
     <Layout type={LayoutTypeEnum.app}>
       <section className="flex flex-col sm:flex-row h-full">
@@ -20,27 +44,29 @@ export const ProfilePage = ({ user }: { user: UserInterface }) => {
                 <div className="absolute inset-0 m-auto profileShape bg-secondary w-[90%] h-[90%]">
                   <div className="absolute inset-0 m-auto profileShape w-[80%] h-[80%]">
                     <div className="relative w-full h-full">
-                      <UserImage image={user.image} />
+                      <UserImage image={userData.image} />
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="flex flex-col text-center items-center my-2">
-                <h4>{user?.username}</h4>
-                <h5>{formatChips(user!.chips)}</h5>
-                <ButtonOne style="mt-2">Editar perfil</ButtonOne>
+                <h4>{userData.username}</h4>
+                <h5>{formatChips(userData.chips)}</h5>
+                {itsMyProfile ? (
+                  <ButtonOne className="mt-2">Editar perfil</ButtonOne>
+                ) : null}
               </div>
             </section>
           </Container>
         </section>
 
         <section className="flex flex-col-reverse lg:flex-row sm:w-3/4 lg:space-x-5 sm:pl-5">
-          <Container style="sm:mt-5 lg:mt-0 sm:flex-1 h-40 sm:h-full">
-            <TextUnderline text="Soon" />
+          <Container style="flex flex-col sm:mt-5 lg:mt-0 sm:flex-1 h-40 sm:h-full">
+            {itsMyProfile ? <Missions /> : null}
           </Container>
           <Container style="my-5 sm:my-0 h-56 w-full lg:w-[30vw] lg:h-full">
-            <Stadistics data={user.matches} />
+            <Stadistics data={userData.matches} />
           </Container>
         </section>
       </section>

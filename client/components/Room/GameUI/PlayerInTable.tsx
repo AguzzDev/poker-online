@@ -6,7 +6,6 @@ import { PlayerInTableProps, PlayerInterface, Status } from "models";
 import Image from "next/image";
 import { formatChips } from "utils/formatChips";
 import { getCard } from "utils/getCard";
-import { roundNumber } from "utils/roundNumber";
 import { UserImage } from "utils/userImage";
 
 const PlayerView = ({
@@ -59,7 +58,7 @@ const PlayerView = ({
                   <Image src="/chips/red.svg" alt="Chips image" layout="fill" />
                 </div>
               </div>
-              <h6 className="text-xs md:text-base">{roundNumber(showChips)}</h6>
+              <h6 className="text-xs md:text-base">{formatChips(showChips)}</h6>
             </div>
           ) : null}
         </div>
@@ -89,7 +88,9 @@ const PlayerView = ({
 
           <div
             className={`${
-              x === "right" ? "translate-x-[.1rem] 1920:translate-x-[.2rem]" : "-translate-x-[.1rem] 1920:-translate-x-[.2rem]"
+              x === "right"
+                ? "translate-x-[.1rem] 1920:translate-x-[.2rem]"
+                : "-translate-x-[.1rem] 1920:-translate-x-[.2rem]"
             } relative flex-1`}
           >
             <div className="absolute z-50 top-0 w-full h-full scale-110">
@@ -114,7 +115,7 @@ export const PlayerInTable = ({
   const { status } = room!.desk;
   const allInStatus = status === Status.allIn;
   const isSitTaken = room!.desk.players.filter((v) => v!.sit === sit)[0];
-
+  
   return (
     <div className={`absolute ${position}`}>
       {isSitTaken && !player ? (

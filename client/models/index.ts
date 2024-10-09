@@ -8,7 +8,7 @@ export interface RFCProps
   children: ChildrenType | string;
 }
 export interface RFCButtonProps extends Omit<RFCProps, "style"> {
-  style?: string;
+  className?: string;
 }
 
 //props
@@ -113,6 +113,8 @@ export interface GameContextType {
   playMove: (action: Status) => void;
   reBuyChips: () => void;
   getPlayers: () => void;
+  staySpectator: () => void;
+  backToLobby: () => void;
 }
 export interface UserContextType {
   user: UserInterface | null;
@@ -123,6 +125,18 @@ export interface UserContextType {
 }
 
 //interfaces
+export interface MissionResponse {
+  name: string;
+  value: string;
+}
+export interface MissionInterface {
+  name: string;
+  requirement: number;
+  progress: number;
+  type: MissionTypeEnum;
+  value?: HandEnum;
+  completed: boolean;
+}
 export interface ErrorInterface {
   error: boolean;
   message: string;
@@ -202,6 +216,16 @@ export interface UserInterface {
   };
   createdAt: Date;
   accessToken: string;
+  missions: {
+    daily: MissionItemInterface;
+    weekly: MissionItemInterface;
+    monthly: MissionItemInterface;
+    master: MissionItemInterface;
+  };
+}
+export interface MissionItemInterface {
+  missions: MissionInterface[];
+  redeemed: boolean;
 }
 
 //inputs
@@ -316,4 +340,33 @@ export enum CardIconTypeEnum {
   loading = "loading",
   back = "back",
   room = "room",
+}
+export enum MissionTypeEnum {
+  "Rounds" = "Rounds",
+  "Chips" = "Chips",
+  "Hand" = "Hand",
+}
+export enum HandEnum {
+  "High Card" = "High Card",
+  "One Pair" = "One Pair",
+  "Two Pair" = "Two Pair",
+  "Three of a Kind" = "Three of a Kind",
+  "Straight" = "Straight",
+  "Flush" = "Flush",
+  "Full House" = "Full House",
+  "Poker" = "Poker",
+  "Straight Flush" = "Straight Flush",
+  "Royal Flush" = "Royal Flush",
+}
+export enum MissionCategoryTitleEnum {
+  daily = "Daily",
+  weekly = "Weekly",
+  monthly = "Monthly",
+  master = "Master",
+}
+export enum MissionCategoryEnum {
+  daily = "daily",
+  weekly = "weekly",
+  monthly = "monthly",
+  master = "master",
 }

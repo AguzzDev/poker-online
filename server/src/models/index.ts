@@ -1,8 +1,28 @@
 import { Request } from 'express';
 import * as mongoose from 'mongoose';
 import { Server, Socket } from 'socket.io';
-import { ConnectRoomDto, CreateRoomDto, TakeSitDto } from 'src/dto';
+import {
+  ConnectRoomDto,
+  CreateRoomDto,
+  TakeSitDto,
+} from 'src/modules/common/dto';
 
+export interface HandInterface {
+  heirarchy: HandEnum;
+  heirarchyValue: string | number;
+  message: string;
+  cards?: CardInterface[];
+  cardHigh?: number;
+  cardDecider?: CardInterface | number;
+}
+export interface MissionInterface {
+  name: string;
+  requirement: number;
+  progress: number;
+  type: MissionTypeEnum;
+  value?: HandEnum;
+  completed?: boolean;
+}
 export interface RequestInterface extends Request {
   user: string;
 }
@@ -25,11 +45,7 @@ export interface PlayerInterface {
   cards?: CardInterface[];
   winningPot?: number;
   bid?: number;
-  hand?: {
-    heirarchy: string;
-    message: string;
-    cards: CardInterface[];
-  };
+  hand?: HandInterface;
   action?: Status | '';
   showAction?: string;
   blind?: boolean;
@@ -90,7 +106,17 @@ export interface UserInterface {
     straightFlush: number;
     straightFlushReal: number;
   };
+  missions: {
+    daily: MissionItemInterface;
+    weekly: MissionItemInterface;
+    monthly: MissionItemInterface;
+    master: MissionItemInterface;
+  };
   accessToken: string;
+}
+export interface MissionItemInterface {
+  missions: MissionInterface[];
+  redeemed: boolean;
 }
 export interface UserWithTokenInterface extends UserInterface {
   accessToken: string;
@@ -213,6 +239,10 @@ export interface UpdateChipsArgs {
   chips: number;
   socket?: SocketCustom;
 }
+export interface UpdateMissionArgs {
+  id: string;
+  type: string;
+}
 export interface AddPlayerArgs {
   roomId: string;
   sit: number;
@@ -224,7 +254,6 @@ export interface CreateRoomArgs {
 }
 export interface ConnectRoomArgs {
   values: ConnectRoomDto;
-  server: Server;
   socket: SocketCustom;
 }
 export interface TakeSitArgs {
@@ -232,7 +261,10 @@ export interface TakeSitArgs {
   server: Server;
   socket: SocketCustom;
 }
-export interface LeaveRoomOrDisconnectArgs {
+export interface LeaveRoomOrDisconnectArgs extends ServerAndSocketArgs {
+  spectator?: boolean;
+}
+export interface ServerAndSocketArgs {
   server: Server;
   socket: SocketCustom;
 }
@@ -256,6 +288,7 @@ export enum UpdatePlayerOptionsEnum {
   cards = 'cards',
   blind = 'blind',
   winningPot = 'winningPot',
+  hand = 'hand',
 }
 export enum UpdateDeskOptionsEnum {
   players = 'players',
@@ -308,4 +341,27 @@ export enum MailTypeEnum {
   verifyEmail = 'verifyEmail',
   resetPassword = 'resetPassword',
   resetPasswordSuccesful = 'resetPasswordSuccesful',
+}
+export enum MissionTypeEnum {
+  'Rounds' = 'Rounds',
+  'Chips' = 'Chips',
+  'Hand' = 'Hand',
+}
+export enum HandEnum {
+  'High Card' = 'High Card',
+  'One Pair' = 'One Pair',
+  'Two Pair' = 'Two Pair',
+  'Three of a Kind' = 'Three of a Kind',
+  'Straight' = 'Straight',
+  'Flush' = 'Flush',
+  'Full House' = 'Full House',
+  'Poker' = 'Poker',
+  'Straight Flush' = 'Straight Flush',
+  'Royal Flush' = 'Royal Flush',
+}
+export enum MissionCategoryEnum {
+  daily = 'daily',
+  weekly = 'weekly',
+  monthly = 'monthly',
+  master = 'master',
 }

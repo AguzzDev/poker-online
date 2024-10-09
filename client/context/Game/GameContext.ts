@@ -28,6 +28,8 @@ const GameContext = createContext<GameContextType>({
   playMove: () => {},
   reBuyChips: () => {},
   getPlayers: () => {},
+  staySpectator: () => {},
+  backToLobby: () => {},
 });
 
 export default GameContext;

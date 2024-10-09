@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PlayerActionDto } from 'src/dto';
-import { WsException } from '@nestjs/websockets';
-import { UserService } from 'src/user/user.service';
-import { RoomService } from 'src/room/room.service';
+import { PlayerActionDto } from 'src/modules/common/dto';
+import { UserService } from 'src/modules/user/user.service';
+import { RoomService } from 'src/modules/room/room.service';
 import { EVENTS } from 'const';
 import {
   AdvancedRoundArgs,
@@ -15,7 +14,6 @@ import {
   GameSoundTypesEnum,
   GameStatusEnum,
   InitialRoundArgs,
-  LeaveRoomOrDisconnectArgs,
   NewMessageArgs,
   PlayerInterface,
   PlayerRebuyChipsArgs,
@@ -31,18 +29,20 @@ import {
   UserInterface,
   ErrorInterface,
   UserRoleEnum,
-  SocketCustom,
+  LeaveRoomOrDisconnectArgs,
   CardInterface,
   MessageTypeEnum,
 } from 'src/models';
 import { evaluateHand, getAllCards, getWinner } from 'src/utils/pokerUtils';
 import { findUserSocket } from 'src/utils/findPlayerSocket';
+import { MissionService } from 'src/modules/mission/mission.service';
 
 @Injectable()
 export class GameService {
   constructor(
     private roomService: RoomService,
     private userService: UserService,
+    private missionService: MissionService,
   ) {}
 
   public players = [];
@@ -75,7 +75,6 @@ export class GameService {
   async connectRoom({
     values,
     socket,
-    server,
   }: ConnectRoomArgs): Promise<ErrorInterface | RoomInterface> {
     const { id } = values;
     const room = await this.roomService.findRoom(id);
@@ -112,7 +111,8 @@ export class GameService {
     )[0];
 
     server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
-    server.to(roomId).emit(EVENTS.SERVER.PLAYERS_IN_ROOM, room.desk.players);
+    server.to(roomId).emit(EVENTS.SERVER.UPDATE_GAME, room.desk);
+    server.to(roomId).emit(EVENTS.SERVER.PLAYERS_IN_ROOM, room.players);
     server
       .to(roomId)
       .emit(
@@ -148,7 +148,11 @@ export class GameService {
       );
   }
 
-  async leaveRoomOrDisconnect({ server, socket }: LeaveRoomOrDisconnectArgs) {
+  async leaveRoomOrDisconnect({
+    server,
+    socket,
+    spectator,
+  }: LeaveRoomOrDisconnectArgs) {
     const user = socket.user as UserInterface;
     if (!user) return;
 
@@ -157,9 +161,15 @@ export class GameService {
       socket,
     });
     if (!room) return;
+
     const roomId = room._id.toString();
 
-    server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
+    server
+      .to(roomId)
+      .emit(
+        EVENTS.SERVER.ROOM_NOTIFICATIONS,
+        `${user.username} ${spectator ? 'stay as spectator!' : 'left the room!'}`,
+      );
 
     if (room.start && room.desk.players.length === 1) {
       const player = room.desk.players[0];
@@ -179,21 +189,28 @@ export class GameService {
         id: roomId,
         type: MessageTypeEnum.deleteAll,
       });
-      await this.stopGame(roomId);
 
+      const roomUpdated = await this.stopGame(roomId);
+
+      server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room: roomUpdated });
+      server.to(roomId).emit(EVENTS.SERVER.UPDATE_GAME, roomUpdated.desk);
+      server
+        .to(roomId)
+        .emit(EVENTS.SERVER.PLAYERS_IN_ROOM, roomUpdated.players);
+      server.to(roomId).emit(EVENTS.SERVER.ROOM_INFO, {
+        message: 'Waiting players...',
+        by: 'server',
+      });
+    } else {
+      await this.roomService.updateInRoom({
+        id: roomId,
+        values: room,
+      });
+
+      server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
       server.to(roomId).emit(EVENTS.SERVER.UPDATE_GAME, room.desk);
+      server.to(roomId).emit(EVENTS.SERVER.PLAYERS_IN_ROOM, room.players);
     }
-
-    server.emit(EVENTS.SERVER.ROOMS, { type: 'update', room });
-    server
-      .to(room._id.toString())
-      .emit(EVENTS.SERVER.PLAYERS_IN_ROOM, room.desk.players);
-    server
-      .to(room._id.toString())
-      .emit(
-        EVENTS.SERVER.ROOM_NOTIFICATIONS,
-        `${user.username} left the room!`,
-      );
   }
 
   async shuffle({ roomId, cards }: ShuffleArgs) {
@@ -300,9 +317,16 @@ export class GameService {
 
       const interval = setInterval(async () => {
         players.map(async ({ userId }) => {
-          const { player } = await this.roomService.findUserInRoom(userId);
+          const room = await this.roomService.findUserInRoom(userId);
 
-          if (player.chips > 0) {
+          if (!room?.player) {
+            clearInterval(interval);
+            task();
+            resolve(true);
+            return;
+          }
+
+          if (room.player.chips > 0) {
             rebuys.push(true);
           }
         });
@@ -507,7 +531,10 @@ export class GameService {
 
       if (roundNum === 3 || stop) {
         if (playersInGame) {
-          const getWinner = await this.determinateWinner(roomId);
+          const getWinner = await this.determinateWinner(
+            roomId,
+            server.sockets,
+          );
 
           if (!!getWinner) {
             await this.newMessage({
@@ -821,30 +848,48 @@ export class GameService {
 
   async determinateWinner(
     roomId: string,
+    sockets: any,
   ): Promise<{ message: string; cards: CardInterface[] | null }> {
-    let playerHands = [];
     const room = await this.roomService.findRoom(roomId);
 
-    const playersInGame = room.desk.players.filter(
-      ({ cards, action }) => cards.length > 0 && action !== Status.fold,
-    );
-    if (playersInGame.length === 0) return;
+    let players = room.desk.players.filter(({ cards }) => cards.length > 0);
+    if (players.length === 0) return;
 
-    playersInGame.forEach((player) => {
+    for (const player of players) {
       const evaluate = evaluateHand({
         cards: room.desk.dealer,
         playerCards: player.cards,
       });
 
-      playerHands.push({
-        _id: player.userId.toString(),
-        name: player.username,
-        bid: player.bid,
-        ...evaluate,
+      await this.roomService.updateInPlayer({
+        id: roomId,
+        values: { userId: player.userId, hand: evaluate },
       });
-    });
+    }
 
-    const playerWinners = getWinner(playerHands);
+    const roomUpdated = await this.roomService.findRoom(roomId);
+
+    const playersInGame = roomUpdated.desk.players.filter(
+      ({ action }) => action !== Status.fold,
+    );
+
+    const playerR = playersInGame.map((player) => ({
+      _id: player.userId,
+      name: player.username,
+      bid: player.bid,
+      ...player.hand,
+    }));
+
+    const playerWinners = getWinner(playerR);
+
+    for (const player of roomUpdated.desk.players) {
+      await this.missionService.checkMissionProgress({
+        player,
+        room: { winner: playerWinners.usersId },
+        sockets,
+      });
+    }
+
     let message;
     let totalPot = room.desk.totalBid;
 

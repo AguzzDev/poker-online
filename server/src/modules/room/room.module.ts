@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { RoomService } from './room.service';
 import { RoomController } from './room.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Room, RoomSchema } from 'src/schemas/room.schema';
-import { UserModule } from 'src/user/user.module';
+import { Room, RoomSchema } from 'src/modules/common/schemas';
+import { UserModule } from 'src/modules/user/user.module';
 
 @Module({
   imports: [

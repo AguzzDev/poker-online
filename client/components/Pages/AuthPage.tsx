@@ -91,7 +91,7 @@ export const AuthPage = () => {
               () => fetchLoginAdapter(values),
               setErrors
             );
-
+        
             if (res) {
               setAccount(res);
             }

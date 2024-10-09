@@ -7,28 +7,29 @@ import {
   Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginInputDto, RegisterInputDto } from 'src/dto';
+import { LoginInputDto, RegisterInputDto } from 'src/modules/common/dto';
 import { Request } from 'express';
+import { handleError } from 'src/utils/errorHandler';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('login')
-  a(@Body() body: LoginInputDto) {
+  async a(@Body() body: LoginInputDto) {
     try {
-      return this.authService.login(body);
+      return await this.authService.login(body);
     } catch (error) {
-      throw new InternalServerErrorException();
+      handleError(error)
     }
   }
 
   @Post('register')
-  b(@Body() body: RegisterInputDto) {
+  async b(@Body() body: RegisterInputDto) {
     try {
-      return this.authService.register(body);
+      await this.authService.register(body);
     } catch (error) {
-      throw new InternalServerErrorException();
+      handleError(error)
     }
   }
 
@@ -39,7 +40,7 @@ export class AuthController {
 
       return this.authService.verify(token);
     } catch (error) {
-      throw new InternalServerErrorException();
+      handleError(error)
     }
   }
 
@@ -48,7 +49,7 @@ export class AuthController {
     try {
       return this.authService.changePassword(email);
     } catch (error) {
-      throw new InternalServerErrorException();
+      handleError(error)
     }
   }
 
@@ -59,16 +60,16 @@ export class AuthController {
 
       return this.authService.resetPassword(token, values.password);
     } catch (error) {
-      throw new InternalServerErrorException();
+      handleError(error)
     }
   }
 
   @Post('oauth')
-  f(@Body() values: any) {
+  async f(@Body() values: any) {
     try {
-      return this.authService.oAuth(values);
+      return await this.authService.oAuth(values);
     } catch (error) {
-      throw new InternalServerErrorException();
+      handleError(error)
     }
   }
 }

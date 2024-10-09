@@ -12,7 +12,7 @@ export const LandingPage = () => {
         <motion.div
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1, delay: .8}}
+          transition={{ duration: 1, delay: 0.8 }}
           className="flex justify-between relative"
         >
           <div className="flex-col space-y-8 w-full sm:w-[65%] md:w-[70%] lg:w-3/4">
@@ -28,7 +28,7 @@ export const LandingPage = () => {
             <div className="w-2/4 lg:w-1/4">
               <Link href={links.auth} passHref>
                 <a>
-                  <ButtonOne style="w-full">Play</ButtonOne>
+                  <ButtonOne className="w-full">Play</ButtonOne>
                 </a>
               </Link>
             </div>

@@ -2,9 +2,14 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-
-import { User } from 'src/schemas/user.schema';
-import { UpdateChipsArgs, UpdateUserArgs, UserInterface } from 'src/models';
+import { User } from 'src/modules/common/schemas';
+import {
+  HandEnum,
+  UpdateChipsArgs,
+  UpdateMissionArgs,
+  UpdateUserArgs,
+  UserInterface,
+} from 'src/models';
 import { EVENTS } from 'const';
 
 @Injectable()
@@ -66,8 +71,16 @@ export class UserService {
       { new: true },
     );
 
-    if (!socket) return;
+    if (!socket) return user;
     socket.emit(EVENTS.SERVER.UPDATE_USER, { chips: user.chips });
+  }
+
+  async updateMission({ id, type }: UpdateMissionArgs) {
+    return await this.userModel.findByIdAndUpdate(
+      id,
+      { $set: { [`missions.${type}.redeemed`]: true } },
+      { new: true },
+    );
   }
 
   async updateUser({ id, values }: UpdateUserArgs) {
@@ -88,7 +101,7 @@ export class UserService {
     }
   }
 
-  async updateUserMatches({ id, values }: { id: string; values: string }) {
+  async updateUserMatches({ id, values }: { id: string; values: HandEnum }) {
     const heirarchy = {
       'High Card': 'highCard',
       'One Pair': 'onePair',
@@ -115,5 +128,9 @@ export class UserService {
 
   async removeUser(): Promise<any> {
     return await this.userModel.deleteMany({});
+  }
+
+  async getUserMissions(id: string) {
+    return (await this.userModel.findById(id).lean()).missions;
   }
 }

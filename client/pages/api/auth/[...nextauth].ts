@@ -20,7 +20,7 @@ const authOptions = {
       } as oAuthInput;
       try {
         const { data } = await fetchOAuth(values);
-
+       
         user.customData = data;
         return true;
       } catch (error: unknown) {
@@ -46,6 +46,24 @@ const authOptions = {
     error: "/auth/error",
   },
   secret: process.env.NEXTAUTH_SECRET,
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: false,
+        sameSite: "lax",
+        path: "/",
+      },
+    },
+    csrfToken: {
+      name: `next-auth.csrf-token`,
+      options: {
+        httpOnly: false,
+        sameSite: "lax",
+        path: "/",
+      },
+    },
+  },
 };
 
 export default NextAuth(authOptions);

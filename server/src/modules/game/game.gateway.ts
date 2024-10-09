@@ -7,11 +7,10 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
-
 import { GameService } from './game.service';
 import { EVENTS } from 'const';
 import { SocketCustom } from 'src/models';
-import { SocketGuard } from 'src/guards/socketGuard';
+import { SocketGuard, CreatorGuard } from 'src/modules/common/guards';
 import {
   ConnectRoomDto,
   CreateRoomDto,
@@ -19,9 +18,8 @@ import {
   SendMessageDto,
   PlayerAddChipsDto,
   TakeSitDto,
-} from 'src/dto';
-import { CreatorGuard } from 'src/guards/creatorGuard';
-import { UserService } from 'src/user/user.service';
+} from 'src/modules/common/dto';
+import { UserService } from 'src/modules/user/user.service';
 
 @WebSocketGateway({
   cors: {
@@ -80,7 +78,7 @@ export class GameGateway implements OnModuleInit {
     @MessageBody() values: ConnectRoomDto,
     @ConnectedSocket() socket: SocketCustom,
   ) {
-    return this.gameService.connectRoom({ values, socket, server: this.io });
+    return this.gameService.connectRoom({ values, socket });
   }
 
   @SubscribeMessage(EVENTS.CLIENT.TAKE_SIT)
@@ -103,10 +101,14 @@ export class GameGateway implements OnModuleInit {
 
   @SubscribeMessage(EVENTS.CLIENT.LEAVE_ROOM)
   @UseGuards(SocketGuard)
-  f(@ConnectedSocket() socket: SocketCustom) {
+  f(
+    @ConnectedSocket() socket: SocketCustom,
+    @MessageBody() arg: { spectator: boolean },
+  ) {
     this.gameService.leaveRoomOrDisconnect({
       server: this.io,
       socket,
+      spectator: arg?.spectator,
     });
   }
 
@@ -134,11 +136,7 @@ export class GameGateway implements OnModuleInit {
   @SubscribeMessage(EVENTS.CLIENT.UPDATE_USER)
   @UseGuards(SocketGuard)
   async j(@ConnectedSocket() socket: SocketCustom) {
-    const user = await this.userService.getUserById(socket.user._id);
-    return {
-      chips: user.chips,
-      matches: user.matches,
-    };
+    return await this.userService.getUserById(socket.user._id);
   }
 
   @SubscribeMessage(EVENTS.CLIENT.GET_PLAYERS)

@@ -6,20 +6,15 @@ import { useGame } from "context/Game/GameProvider";
 import { SpeakerWaveIcon, SpeakerXMarkIcon } from "@heroicons/react/20/solid";
 import { ChatModal } from "components/Modal/ChatModal";
 import { ShowChatProps } from "models";
+import { useRouter } from "next/router";
 
 export const TopComponent = ({ showChat, setShowChat }: ShowChatProps) => {
-  const { leaveRoom, roomStatus } = useGame();
-
   const [sound, setSound] = useState(false);
   const [music] = useState(new Audio("/sounds/music1.mp3"));
 
-  useEffect(() => {
-    music.volume = 0.1;
+  const router = useRouter();
 
-    return () => {
-      music.pause();
-    };
-  }, [music]);
+  const { leaveRoom, roomStatus } = useGame();
 
   const playMusic = () => {
     setSound(true);
@@ -39,10 +34,24 @@ export const TopComponent = ({ showChat, setShowChat }: ShowChatProps) => {
     }
   };
 
+  useEffect(() => {
+    music.volume = 0.1;
+
+    return () => {
+      music.pause();
+    };
+  }, [music]);
+
   return (
     <div className="flex items-center justify-between mx-auto mb-3">
       <div className="flex justify-between w-full">
-        <button className="flex items-center" onClick={() => leaveRoom()}>
+        <button
+          className="flex items-center"
+          onClick={() => {
+            leaveRoom();
+            router.push("/app");
+          }}
+        >
           <IconSm Icon={MdChevronLeft} />
           <h4 className="hidden md:block">Salir</h4>
         </button>

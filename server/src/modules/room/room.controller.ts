@@ -10,10 +10,10 @@ import {
 } from '@nestjs/common';
 import { RoomService } from './room.service';
 import { RequestInterface } from 'src/models';
-import { CreateRoomDto } from 'src/dto';
-import { AdminGuard } from 'src/guards/adminGuard';
+import { CreateRoomDto } from 'src/modules/common/dto';
+import { AdminGuard, CreatorGuard } from 'src/modules/common/guards';
 import { Request } from 'express';
-import { CreatorGuard } from 'src/guards/creatorGuard';
+import { handleError } from 'src/utils/errorHandler';
 
 @Controller('room')
 export class RoomController {
@@ -24,7 +24,7 @@ export class RoomController {
     try {
       return this.roomService.findRooms();
     } catch (error) {
-      throw new InternalServerErrorException();
+      handleError(error);
     }
   }
 
@@ -33,7 +33,7 @@ export class RoomController {
     try {
       return this.roomService.findRoom(req.params.id);
     } catch (error) {
-      throw new InternalServerErrorException();
+      handleError(error);
     }
   }
 
@@ -43,7 +43,7 @@ export class RoomController {
     try {
       return this.roomService.createRoom(values);
     } catch (error) {
-      throw new InternalServerErrorException();
+      handleError(error);
     }
   }
 
@@ -53,7 +53,7 @@ export class RoomController {
     try {
       return this.roomService.deleteRoom(req.params.id);
     } catch (error) {
-      throw new InternalServerErrorException();
+      handleError(error);
     }
   }
 
@@ -63,7 +63,7 @@ export class RoomController {
     try {
       return this.roomService.deleteAllRooms();
     } catch (error) {
-      throw new InternalServerErrorException();
+      handleError(error);
     }
   }
 }

@@ -43,7 +43,7 @@ export const CardIcon = ({
   } else if (type === CardIconTypeEnum.loading) {
     body = (
       <div
-        style={{ animationDelay: `${delay}ms` }}
+        style={{ animationDelay: `${Number(delay)/2}ms` }}
         className={`${style} card-animation invisible relative w-10 h-14 border-[1.5px] border-[#3A3A3A] bg-gray1 rounded-md overflow-hidden`}
       >
         <div className="absolute top-[2px] left-[2px] flex flex-col items-center h-[50%] w-[30%]">

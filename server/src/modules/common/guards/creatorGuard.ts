@@ -7,7 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { WsException } from '@nestjs/websockets';
 import { SocketCustom, UserRoleEnum } from 'src/models';
-import { UserService } from 'src/user/user.service';
+import { UserService } from 'src/modules/user/user.service';
 
 @Injectable()
 export class CreatorGuard implements CanActivate {

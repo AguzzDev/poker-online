@@ -2,13 +2,11 @@ import { useGame } from "context/Game/GameProvider";
 import { useState } from "react";
 import { ButtonOne } from "components/Button/ButtonOne";
 import { ButtonTwo } from "components/Button/ButtonTwo";
-import { useRouter } from "next/router";
 
 export const ReBuyModal = () => {
   const [disabled, setDisabled] = useState<boolean>(false);
-  const router = useRouter();
 
-  const { setShowReBuyMenu, reBuyChips, reBuyMessage } = useGame();
+  const { reBuyChips, reBuyMessage, staySpectator, backToLobby } = useGame();
 
   return (
     <div className="absolute inset-0 w-screen h-screen flex justify-center items-center bg-black bg-opacity-20">
@@ -18,32 +16,33 @@ export const ReBuyModal = () => {
 
         <p className="text-xs text-red-500 my-5">{reBuyMessage}</p>
 
-        {reBuyMessage ? (
-          <div className="flex justify-between space-x-5">
-            <ButtonOne
-              onClick={() => {
-                setShowReBuyMenu(false);
-                router.push("/");
-              }}
-            >
-              Back to lobby
-            </ButtonOne>
-            <ButtonTwo onClick={() => setShowReBuyMenu(false)}>
-              Stay as a spectator
-            </ButtonTwo>
-          </div>
-        ) : (
+        <ButtonOne
+          className="w-full"
+          disabled={disabled}
+          onClick={() => {
+            setDisabled(!disabled);
+            reBuyChips();
+          }}
+        >
+          Rebuy
+        </ButtonOne>
+
+        <div className="flex justify-between space-x-5 mt-3">
           <ButtonOne
-            style="w-full"
-            disabled={disabled}
             onClick={() => {
-              setDisabled(!disabled);
-              reBuyChips();
+              backToLobby();
             }}
           >
-            Rebuy
+            Back to lobby
           </ButtonOne>
-        )}
+          <ButtonTwo
+            onClick={() => {
+              staySpectator();
+            }}
+          >
+            Stay as a spectator
+          </ButtonTwo>
+        </div>
       </div>
     </div>
   );

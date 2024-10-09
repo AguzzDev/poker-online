@@ -21,4 +21,4 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return await checkNoAuth(data, "/");
 };
 
-export default Dashboard
+export default Dashboard;

@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
+import { Mission, MissionSchema } from './mission.schema';
 
 @Schema({ timestamps: true, _id: true })
 export class User {
@@ -58,6 +59,21 @@ export class User {
 
   @Prop({ default: '' })
   accessToken: string;
+
+  @Prop(
+    raw({
+      daily: { type: MissionSchema, default: {} },
+      weekly: { type: MissionSchema, default: {} },
+      monthly: { type: MissionSchema, default: {} },
+      master: { type: MissionSchema, default: {} },
+    }),
+  )
+  missions: {
+    daily: Mission;
+    weekly: Mission;
+    monthly: Mission;
+    master: Mission;
+  };
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

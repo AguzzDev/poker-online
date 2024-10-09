@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
-
-import { UserModule } from './user/user.module';
-import { AuthModule } from './auth/auth.module';
-import { RoomModule } from './room/room.module';
-import { GameModule } from './game/game.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { GameModule } from './modules/game/game.module';
+import { MissionModule } from './modules/mission/mission.module';
+import { RoomModule } from './modules/room/room.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -15,6 +15,7 @@ import { GameModule } from './game/game.module';
     AuthModule,
     RoomModule,
     GameModule,
+    MissionModule,
   ],
 })
 export class AppModule {}

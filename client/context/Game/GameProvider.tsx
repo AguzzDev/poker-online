@@ -15,6 +15,8 @@ import {
   ErrorInterface,
   RoomInterface,
   UserInterface,
+  MissionResponse,
+  MessageInterface,
 } from "models";
 import { emitSound } from "utils/emitSound";
 import GameContext from "context/Game/GameContext";
@@ -100,7 +102,21 @@ const GameProvider = ({ children }: any) => {
     socket!.emit(EVENTS.CLIENT.LEAVE_ROOM);
     setRoom(null);
     setPlayer(null);
-    router.push("/app");
+    setShowReBuyMenu(false);
+  };
+
+  const staySpectator = () => {
+    socket!.emit(EVENTS.CLIENT.LEAVE_ROOM, { spectator: true });
+    setPlayer(null);
+    setShowReBuyMenu(false);
+  };
+
+  const backToLobby = () => {
+    socket!.emit(EVENTS.CLIENT.LEAVE_ROOM);
+    router.push("/");
+    setRoom(null);
+    setPlayer(null);
+    setShowReBuyMenu(false);
   };
 
   const newMessage = (values: NewMessageInput) => {
@@ -191,12 +207,12 @@ const GameProvider = ({ children }: any) => {
     });
 
     if (router.pathname !== "/app/room/[id]") {
-      socket!.emit(EVENTS.CLIENT.LEAVE_ROOM);
+      leaveRoom();
 
       const getRooms = async () => {
         try {
           let timeout: NodeJS.Timeout;
-          const time = 4000;
+          const time = 2000;
 
           timeout = setTimeout(async () => {
             const res = await getRoomsAdapter();
@@ -234,22 +250,41 @@ const GameProvider = ({ children }: any) => {
         socket.removeAllListeners();
       };
     } else {
+      socket.on(
+        EVENTS.SERVER.MISSION_PROGRESS,
+        (missions: MissionResponse[]) => {
+          missions.forEach((message, i: number) => {
+            setTimeout(() => {
+              toast(
+                <>
+                  <p>{message.name}</p>
+                  <p> {message.value}</p>
+                </>,
+                { ...toastValues, autoClose: 5000, hideProgressBar: true }
+              );
+            }, i * 1000);
+          });
+        }
+      );
       socket.on(EVENTS.SERVER.GAME_SOUND, (type: SoundsEnum) => {
         emitSound(SoundsEnum[type]);
       });
-      socket.on(EVENTS.SERVER.ROOM_STATUS, (status) => {
+      socket.on(EVENTS.SERVER.ROOM_STATUS, (status: string) => {
         if (status === "delete") {
           return router.push("/");
         }
       });
-      socket.on(EVENTS.SERVER.ROOM_INFO, ({ message, by }) => {
-        if (by === user!._id) {
-          setRoomStatus("Your turn");
-          return;
+      socket.on(
+        EVENTS.SERVER.ROOM_INFO,
+        ({ message, by }: { message: string; by: string }) => {
+          if (by === user!._id) {
+            setRoomStatus("Your turn");
+            return;
+          }
+          setRoomStatus(message);
         }
-        setRoomStatus(message);
-      });
-      socket.on(EVENTS.SERVER.MESSAGE_SEND, (res) => {
+      );
+      socket.on(EVENTS.SERVER.MESSAGE_SEND, (res: MessageInterface) => {
         setRoom((prev) => {
           if (!prev) return null;
 
@@ -261,6 +296,7 @@ const GameProvider = ({ children }: any) => {
       });
       socket.on(EVENTS.SERVER.PLAYER_REBUY, async (data: PlayerInterface[]) => {
         const itsMe = data.some(({ userId }) => userId === user!._id);
+
         if (itsMe) {
           setShowReBuyMenu(true);
           await new Promise((resolve) => setTimeout(resolve, 15000));
@@ -293,7 +329,6 @@ const GameProvider = ({ children }: any) => {
           return {
             ...prev,
             players: data.length,
-            desk: { ...prev.desk, players: data },
           };
         });
       });
@@ -346,6 +381,8 @@ const GameProvider = ({ children }: any) => {
         startGame,
         playMove,
         getPlayers,
+        staySpectator,
+        backToLobby,
       }}
     >
       {children}
