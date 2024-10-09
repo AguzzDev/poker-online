@@ -60,6 +60,7 @@ const GameProvider = ({ children }: any) => {
       setPlayersOnline(data);
     });
   };
+  
   const joinRoom = (values: { id: string }) => {
     socket!.emit(
       EVENTS.CLIENT.CONNECT_ROOM,

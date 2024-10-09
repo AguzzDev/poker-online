@@ -142,6 +142,10 @@ export class GameGateway implements OnModuleInit {
   @SubscribeMessage(EVENTS.CLIENT.GET_PLAYERS)
   @UseGuards(SocketGuard)
   async k(@ConnectedSocket() socket: SocketCustom) {
+    if (!socket.users || !Array.isArray(socket.users)) {
+      return [];
+    }
+
     const players = await Promise.all(
       socket.users.map(async (token) => {
         return await this.userService.getUserByToken(token);
