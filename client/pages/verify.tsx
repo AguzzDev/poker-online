@@ -7,7 +7,6 @@ import { LayoutTypeEnum, UserInterface } from "models";
 import { useUser } from "context/User/UserProvider";
 import { AxiosError } from "axios";
 import { useInterval } from "hooks/useInterval";
-import withUserProvider from "hoc/withUserProvider";
 import withAuth from "hoc/withAuth";
 
 const Verify: NextPage = () => {
