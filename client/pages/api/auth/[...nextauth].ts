@@ -20,7 +20,7 @@ const authOptions = {
       } as oAuthInput;
       try {
         const { data } = await fetchOAuth(values);
-       
+
         user.customData = data;
         return true;
       } catch (error: unknown) {
@@ -53,6 +53,8 @@ const authOptions = {
         httpOnly: false,
         sameSite: "lax",
         path: "/",
+        domain: process.env.NEXT_PUBLIC_API_URL || undefined,
+        secure: process.env.NODE_ENV === "production",
       },
     },
     csrfToken: {
@@ -61,6 +63,8 @@ const authOptions = {
         httpOnly: false,
         sameSite: "lax",
         path: "/",
+        domain: process.env.NEXT_PUBLIC_API_URL || undefined,
+        secure: process.env.NODE_ENV === "production",
       },
     },
   },
