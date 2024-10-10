@@ -8,6 +8,9 @@ export const handleApiCall = async (
   try {
     const res = await apiCall();
 
+    if ("message" in res) {
+      setErrors(res.message);
+    }
     return res;
   } catch (error: unknown) {
     const err = error as AxiosError;

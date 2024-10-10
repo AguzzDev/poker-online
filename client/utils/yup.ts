@@ -25,7 +25,7 @@ export const resetPasswordValidation = Yup.object().shape({
     .min(6, "Password must be at least 6 characters")
     .required("Required"),
   password2: Yup.string()
-    .min(6, "Password must be at least 6 characters")
+    .oneOf([Yup.ref("password"), null], "Passwords must match")
     .required("Required"),
 });
 export const changePasswordValidation = Yup.object().shape({

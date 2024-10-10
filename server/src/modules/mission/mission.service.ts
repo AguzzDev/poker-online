@@ -69,6 +69,26 @@ export class MissionService {
     );
   }
 
+  async generateMissions(id) {
+    const dailyMissions = this.generateRandomMissions(DAILY_MISSIONS, 3);
+    const weeklyMissions = this.generateRandomMissions(WEEKLY_MISSIONS, 3);
+    const monthlyMissions = this.generateRandomMissions(MONTHLY_MISSIONS, 3);
+    const masterMissions = this.generateRandomMissions(MASTER_MISSIONS, 3);
+
+    await this.userModel.findOneAndUpdate(id, {
+      $set: { [`missions.daily.missions`]: dailyMissions },
+    });
+    await this.userModel.findOneAndUpdate(id, {
+      $set: { [`missions.weekly.missions`]: weeklyMissions },
+    });
+    await this.userModel.findOneAndUpdate(id, {
+      $set: { [`missions.monthly.missions`]: monthlyMissions },
+    });
+    await this.userModel.findOneAndUpdate(id, {
+      $set: { [`missions.master.missions`]: masterMissions },
+    });
+  }
+
   async checkMissionProgress({
     sockets,
     player,

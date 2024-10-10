@@ -29,11 +29,9 @@ export class UserService {
   }
 
   async getUserByVerifyCode(token: string): Promise<UserInterface> {
-    const findUser = await this.userModel.findOne({
+    return await this.userModel.findOne({
       verifyCode: token,
     });
-    if (!findUser) throw new BadRequestException('User not found');
-    return findUser;
   }
 
   async getUserById(id: string): Promise<UserInterface> {

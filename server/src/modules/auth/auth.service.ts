@@ -11,11 +11,13 @@ import { LoginInputDto, RegisterInputDto } from 'src/modules/common/dto';
 import { MailTypeEnum, UserInterface } from 'src/models';
 import sendMail from 'src/utils/sendMail';
 import { userResponseWithAccessToken } from 'src/utils/userResponse';
+import { MissionService } from '../mission/mission.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UserService,
+    private missionService: MissionService,
     private jwtService: JwtService,
   ) {}
 
@@ -78,13 +80,15 @@ export class AuthService {
       email: body.email,
     })) as string;
 
-    await this.usersService.createUser({
+    const user = await this.usersService.createUser({
       ...body,
       verifyCode,
     });
 
+    await this.missionService.generateMissions(user._id);
+
     throw new HttpException(
-      { message: 'Account created, please check your mail' },
+      { message: { global: 'Account created, please check your mail' } },
       HttpStatus.CREATED,
     );
   }
@@ -110,9 +114,17 @@ export class AuthService {
   }
 
   async resetPassword(token, password) {
-    if (!token) throw new BadRequestException('Token is missing');
+    if (!token)
+      throw new BadRequestException({
+        message: { global: 'Token is missing' },
+      });
 
     const findUser = await this.usersService.getUserByVerifyCode(token);
+    if (!findUser) {
+      throw new BadRequestException({
+        message: { global: 'Generate token again' },
+      });
+    }
 
     await sendMail({
       type: MailTypeEnum.resetPasswordSuccesful,
@@ -121,11 +133,14 @@ export class AuthService {
 
     await this.usersService.updateUser({
       id: findUser._id,
-      values: { password: bcrypt.hashSync(password, 12) },
+      values: { password: bcrypt.hashSync(password, 12), verifyCode: null },
     });
 
     throw new HttpException(
-      { message: 'Password changed', user: await this.signJWT(findUser._id) },
+      {
+        message: { global: 'Password changed' },
+        user: await this.signJWT(findUser._id),
+      },
       HttpStatus.OK,
     );
   }
@@ -153,7 +168,10 @@ export class AuthService {
       values: { verifyCode },
     });
 
-    throw new HttpException({ message: 'Mail send' }, HttpStatus.OK);
+    throw new HttpException(
+      { message: { global: 'Mail send' } },
+      HttpStatus.OK,
+    );
   }
 
   async oAuth(values: any) {
@@ -165,13 +183,17 @@ export class AuthService {
         verify: true,
         provider: values.provider,
       });
+      await this.missionService.generateMissions(user._id);
+      const userRes = await this.usersService.getUserById(user._id);
 
-      await sendMail({ type: MailTypeEnum.welcome, email: user.email });
-      return await this.signJWT(user._id);
+      await sendMail({ type: MailTypeEnum.welcome, email: userRes.email });
+      return await this.signJWT(userRes._id);
     }
 
     if (!findUser.provider) {
-      throw new BadRequestException({ message: 'Your account is not OAuth' });
+      throw new BadRequestException({
+        message: 'Your account is not OAuth account',
+      });
     }
 
     return await this.signJWT(findUser._id);

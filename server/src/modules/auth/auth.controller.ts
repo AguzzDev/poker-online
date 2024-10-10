@@ -20,7 +20,7 @@ export class AuthController {
     try {
       return await this.authService.login(body);
     } catch (error) {
-      handleError(error)
+      handleError(error);
     }
   }
 
@@ -29,7 +29,7 @@ export class AuthController {
     try {
       await this.authService.register(body);
     } catch (error) {
-      handleError(error)
+      handleError(error);
     }
   }
 
@@ -40,27 +40,27 @@ export class AuthController {
 
       return this.authService.verify(token);
     } catch (error) {
-      handleError(error)
+      handleError(error);
     }
   }
 
   @Post('changePassword')
-  d(@Body() { email }: { email: string }) {
+  async d(@Body() { email }: { email: string }) {
     try {
-      return this.authService.changePassword(email);
+      await this.authService.changePassword(email);
     } catch (error) {
-      handleError(error)
+      handleError(error);
     }
   }
 
   @Post('resetPassword')
-  e(@Req() req: Request, @Body() values: { password: string }) {
+  async e(@Req() req: Request, @Body() values: { password: string }) {
     try {
       const { token } = req.query;
 
-      return this.authService.resetPassword(token, values.password);
+      await this.authService.resetPassword(token, values.password);
     } catch (error) {
-      handleError(error)
+      handleError(error);
     }
   }
 
@@ -69,7 +69,7 @@ export class AuthController {
     try {
       return await this.authService.oAuth(values);
     } catch (error) {
-      handleError(error)
+      handleError(error);
     }
   }
 }

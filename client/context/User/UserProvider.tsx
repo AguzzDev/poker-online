@@ -19,7 +19,7 @@ const UserProvider = ({ children }: { children: ChildrenType }) => {
       maxAge: 30 * 24 * 60 * 60 * 3,
       path: "/",
     });
-    router.replace(router.asPath);
+    router.reload();
   };
 
   const removeAccount = () => {

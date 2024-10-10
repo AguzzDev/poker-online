@@ -3,6 +3,7 @@ import { Form } from "components/Form/Form";
 import { Layout } from "components/Layout/Layout";
 import { useUser } from "context/User/UserProvider";
 import { Formik } from "formik";
+import withAuth from "hoc/withAuth";
 import { LayoutTypeEnum, ResetPasswordInput } from "models";
 import { GetServerSideProps, NextPage } from "next";
 import { useRouter } from "next/router";
@@ -12,6 +13,7 @@ import { resetPasswordValidation } from "utils/yup";
 
 const ResetPassword: NextPage = () => {
   const { setAccount } = useUser();
+
   const { query } = useRouter();
 
   const values: ResetPasswordInput = {
@@ -62,4 +64,4 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return await checkAuth(isLogged, "/app");
 };
 
-export default ResetPassword;
+export default withAuth(ResetPassword);

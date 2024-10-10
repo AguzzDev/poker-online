@@ -8,6 +8,7 @@ import { useUser } from "context/User/UserProvider";
 import { AxiosError } from "axios";
 import { useInterval } from "hooks/useInterval";
 import withUserProvider from "hoc/withUserProvider";
+import withAuth from "hoc/withAuth";
 
 const Verify: NextPage = () => {
   const router = useRouter();
@@ -70,4 +71,4 @@ const Verify: NextPage = () => {
   );
 };
 
-export default withUserProvider(Verify);
+export default withAuth(Verify);
