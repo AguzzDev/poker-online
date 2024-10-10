@@ -53,8 +53,6 @@ const authOptions = {
         httpOnly: false,
         sameSite: "lax",
         path: "/",
-        domain: process.env.NEXT_PUBLIC_API_URL || undefined,
-        secure: process.env.NODE_ENV === "production",
       },
     },
     csrfToken: {
@@ -63,8 +61,6 @@ const authOptions = {
         httpOnly: false,
         sameSite: "lax",
         path: "/",
-        domain: process.env.NEXT_PUBLIC_API_URL || undefined,
-        secure: process.env.NODE_ENV === "production",
       },
     },
   },

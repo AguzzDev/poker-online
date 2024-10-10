@@ -25,7 +25,7 @@ const UserProvider = ({ children }: { children: ChildrenType }) => {
   const removeAccount = () => {
     document.cookie.split(";").forEach((cookie) => {
       const cookieName = cookie.split("=")[0].trim();
-      document.cookie = `${cookieName}=; max-age=0; path=/; domain=${process.env.NEXT_PUBLIC_API_URL}`;
+      document.cookie = `${cookieName}=; max-age=0; path=/;`;
     });
 
     setTimeout(() => {
