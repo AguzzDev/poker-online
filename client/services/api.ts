@@ -2,7 +2,7 @@ import axios, { AxiosError, AxiosInstance } from "axios";
 import { CreateRoomInput, LoginInput, oAuthInput, RegisterInput } from "models";
 import { parseCookies } from "nookies";
 
-const URL = process.env.NEXT_PUBLIC_API_URL;
+const URL = process.env.NEXT_PUBLIC_API_URL as string;
 const errInterceptor = (err: AxiosError) => {
   if (err.code === "ERR_NETWORK" || err.status === 500) {
     throw { status: 500, message: "Server is down, try again later" };
@@ -19,6 +19,7 @@ API_DEFAULT.interceptors.response.use(
 
 const API_TOKEN = (id?: string): AxiosInstance => {
   const { user } = parseCookies();
+  if (!user) throw new Error("User not authenticated. Please log in.");
 
   const API = axios.create({
     baseURL: URL,

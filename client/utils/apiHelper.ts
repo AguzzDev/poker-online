@@ -29,18 +29,20 @@ export const handleApiCall = async (
       if (Array.isArray(data.message)) {
         const errors = {};
         data.message.forEach((err: Record<string, any>) => {
-          const fieldName = Object.keys(err)[0];
-          err[fieldName] = Object.values(err)[0];
+          const field = Object.keys(err)[0] as string;
+          err[field] = Object.values(err)[0];
         });
 
         setErrors(errors);
       } else {
-        const fieldName = data.message as Record<string, string>;
+        const field = data.message as Record<string, string>;
+        const key = Object.keys(field)[0] as string;
+        const value = Object.values(field)[0] as string | number;
 
-        setErrors({
-          [Object.keys(fieldName)[0]]: [Object.values(fieldName)[0]],
-        });
+        setErrors({ [key]: [value] });
       }
+    } else {
+      setErrors({ global: "An unknown error occurred." });
     }
   }
 };

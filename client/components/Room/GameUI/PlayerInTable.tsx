@@ -115,7 +115,7 @@ export const PlayerInTable = ({
   const { status } = room!.desk;
   const allInStatus = status === Status.allIn;
   const isSitTaken = room!.desk.players.filter((v) => v!.sit === sit)[0];
-  
+
   return (
     <div className={`absolute ${position}`}>
       {isSitTaken && !player ? (

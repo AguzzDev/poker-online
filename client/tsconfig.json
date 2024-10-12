@@ -4,10 +4,10 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,  // Desactiva todas las opciones estrictas
+    "strict": true,  
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true,  // Asegúrate de que no se genere salida durante el build
-    "noEmitOnError": true,  // Ignora errores de compilación
+    "noEmit": true,  
+    "noEmitOnError": true,  
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "node",
@@ -16,10 +16,21 @@
     "jsx": "preserve",
     "incremental": true,
     "baseUrl": ".",
-    "noUnusedLocals": true,  // Ignora errores por variables no usadas
-    "noUnusedParameters": true,  // Ignora errores por parámetros no usados
-    "noImplicitAny": true,  // Permite el tipo 'any' implícito
+    "noUnusedLocals": true,  
+    "noUnusedParameters": true,  
+    "noImplicitAny": true, 
+    "noImplicitReturns": true,  
+    "noImplicitThis": true,  
+    "alwaysStrict": true,  
+    "strictNullChecks": true, 
+    "strictFunctionTypes": true,  
+    "strictPropertyInitialization": true, 
+    "useUnknownInCatchVariables": true,  
+    "exactOptionalPropertyTypes": true,  
+    "noFallthroughCasesInSwitch": true,  
+    "noUncheckedIndexedAccess": true  
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "cypress/**/*.ts",
+  "cypress/support/**/*.d.ts"],
   "exclude": ["node_modules"]
 }

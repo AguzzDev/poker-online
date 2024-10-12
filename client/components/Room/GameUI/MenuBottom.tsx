@@ -54,7 +54,11 @@ const ActionButtons = () => {
 
     if (userId == turn) {
       body = (
-        <button className={style} onClick={() => playMove(statusType)}>
+        <button
+          data-id={`button-${type}`}
+          className={style}
+          onClick={() => playMove(statusType)}
+        >
           {text}
           <br />
           <span className="text-sm">{type === "call" && playerBidToPay}</span>
@@ -106,6 +110,7 @@ const PotButtons = () => {
         Pot
       </button>
       <button
+        data-id="buttonPot-allIn"
         onClick={() => {
           setBid(player!.chips);
         }}
@@ -123,7 +128,10 @@ export const MenuBottom = () => {
 
   return (
     <section className="flex justify-between w-full">
-      <div className="hidden md:flex flex-1 flex-col justify-end">
+      <div
+        data-id="info"
+        className="hidden md:flex flex-1 flex-col justify-end"
+      >
         <h3>{room!.name}</h3>
         <h6>Blind: {blind}</h6>
         <h6>Buy in: {formatChips(room!.buyIn)}</h6>

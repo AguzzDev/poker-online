@@ -27,7 +27,7 @@ export const Rooms = () => {
           <LoadingSpinner />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 overflow-y-auto mt-3 pr-5 md:pr-3">
+        <div data-id="rooms" className="grid grid-cols-1 md:grid-cols-2 gap-5 overflow-y-auto mt-3 pr-5 md:pr-3">
           {roomsData}
         </div>
       )}

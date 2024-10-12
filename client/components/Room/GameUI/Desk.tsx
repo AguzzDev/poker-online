@@ -30,7 +30,7 @@ const DeskComponent = ({ room }: { room: RoomInterface }) => (
         ))}
       </div>
 
-      <div>
+      <div data-id="seats">
         <PlayerInTable
           sit={1}
           position="bottom-8 sm:bottom-5 md:-bottom-5 xl:-bottom-2 -left-14 md:-left-24 lg:-left-32"

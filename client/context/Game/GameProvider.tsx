@@ -60,7 +60,7 @@ const GameProvider = ({ children }: any) => {
       setPlayersOnline(data);
     });
   };
-  
+
   const joinRoom = (values: { id: string }) => {
     socket!.emit(
       EVENTS.CLIENT.CONNECT_ROOM,
@@ -70,6 +70,7 @@ const GameProvider = ({ children }: any) => {
           return toast.error(res.message, toastValues);
         }
         setRoom(res);
+        return;
       }
     );
   };
@@ -95,6 +96,8 @@ const GameProvider = ({ children }: any) => {
         if (res.room.desk.players.length >= 2) {
           return startGame(res.room._id);
         }
+
+        return;
       }
     );
   };
@@ -223,6 +226,7 @@ const GameProvider = ({ children }: any) => {
           return () => clearInterval(timeout);
         } catch (error) {
           setRooms(error as string);
+          return;
         }
       };
 
@@ -274,6 +278,7 @@ const GameProvider = ({ children }: any) => {
         if (status === "delete") {
           return router.push("/");
         }
+        return;
       });
       socket.on(
         EVENTS.SERVER.ROOM_INFO,

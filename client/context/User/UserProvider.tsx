@@ -23,8 +23,11 @@ const UserProvider = ({ children }: { children: ChildrenType }) => {
   };
 
   const removeAccount = () => {
+    if (!document.cookie) return;
+
     document.cookie.split(";").forEach((cookie) => {
-      const cookieName = cookie.split("=")[0].trim();
+      const cookieName = (cookie.split("=")[0] as string).trim();
+
       document.cookie = `${cookieName}=; max-age=0; path=/;`;
     });
 
@@ -39,6 +42,8 @@ const UserProvider = ({ children }: { children: ChildrenType }) => {
 
   const updateUser = (values: Partial<UserInterface>) => {
     const { user } = parseCookies();
+    if (!user) return;
+    
     const userParse = JSON.parse(user);
     const update = { ...userParse, ...values };
 

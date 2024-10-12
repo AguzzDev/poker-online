@@ -5,7 +5,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "cypress open",
+    "test:player1": "cypress run --spec cypress/e2e/multiplayer/player1.cy.ts",
+    "test:player2": "cypress run --spec cypress/e2e/multiplayer/player2.cy.ts",
+    "test:multiplayer": "npm-run-all -p test:player1 test:player2",
+    "test:all": "cypress run --spec cypress/e2e/singleplayer/*.cy.ts && npm run test:multiplayer"
+
   },
   "dependencies": {
     "@heroicons/react": "^2.1.5",
@@ -34,8 +40,10 @@
     "@types/node": "17.0.23",
     "@types/react": "18.0.3",
     "autoprefixer": "^10.4.19",
+    "cypress": "^13.15.0",
     "eslint": "7.32.0",
     "eslint-config-next": "12.1.5",
+    "npm-run-all": "^4.1.5",
     "postcss": "^8.4.39",
     "tailwindcss": "^3.4.6",
     "typescript": "^5.5.4"

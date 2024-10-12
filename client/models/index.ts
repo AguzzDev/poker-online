@@ -70,7 +70,7 @@ export interface FormProps {
 export interface InputFieldProps {
   name: string;
   type?: string;
-  options?: { label: string; value: string }[];
+  options?: { label: string; value: string }[] | undefined;
   [key: string]: any;
 }
 export interface PlayerInTableProps {

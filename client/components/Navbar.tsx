@@ -47,7 +47,7 @@ export const Navbar = ({ type = NavbarTypeEnum.default }: NavbarProps) => {
 
   if (type === NavbarTypeEnum.app) {
     body = (
-      <section className="flex justify-between px-3 md:px-5 py-2 border-2 border-border rounded-3xl bg-secondary my-3 md:my-5">
+      <nav className="flex justify-between px-3 md:px-5 py-2 border-2 border-border rounded-3xl bg-secondary my-3 md:my-5">
         <div className="flex space-x-5 items-center my-auto">
           <Link href={links.app} passHref>
             <a className="cursor-pointer">
@@ -62,11 +62,11 @@ export const Navbar = ({ type = NavbarTypeEnum.default }: NavbarProps) => {
         </div>
 
         {user ? <UserNavbarDropdown /> : null}
-      </section>
+      </nav>
     );
   } else {
     body = (
-      <section className="w-full flex items-center justify-between px-3 sm:px-10 py-2 border-2 border-border rounded-3xl bg-secondary my-5">
+      <nav className="w-full flex items-center justify-between px-3 sm:px-10 py-2 border-2 border-border rounded-3xl bg-secondary my-5">
         <div className="my-auto">
           <LogoIcon />
         </div>
@@ -78,7 +78,7 @@ export const Navbar = ({ type = NavbarTypeEnum.default }: NavbarProps) => {
             </a>
           </Link>
         </div>
-      </section>
+      </nav>
     );
   }
   return body;

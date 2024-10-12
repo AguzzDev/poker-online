@@ -1,6 +1,6 @@
 import { AxiosError } from "axios";
 import { oAuthInput } from "models";
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { fetchOAuth } from "services";
 
@@ -64,6 +64,6 @@ const authOptions = {
       },
     },
   },
-};
+} as NextAuthOptions;
 
 export default NextAuth(authOptions);
