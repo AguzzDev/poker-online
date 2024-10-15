@@ -4,14 +4,14 @@ on:
   pull_request: 
     branches: [develop]
   push: 
-    branches: [main]
+    branches: [develop]
     
 jobs:
   avoid_reduncy: 
     runs-on: ubuntu-latest
     steps:
       - name: Cancel previous redundant build
-        uses: styfle/cancel-workflow-action0.9.1
+        uses: styfle/cancel-workflow-action@0.9.1
         with: 
           access_token: ${{ github.token }}  
   test:
@@ -24,7 +24,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "14"
+          node-version: "16"
+
+      - name: Install pnpm 
+        run: npm i -g pnpm
 
       - name: Server - Install dependencies
         run: pnpm i
@@ -38,31 +41,13 @@ jobs:
         run: sleep 10 
 
       - name: Client - Install dependencies
-        run: npm install
+        run: pnpm i
 
       - name: Client - Start
-        run: npm run dev &
+        run: pnpm run dev &
        
       - name: Wait for client to be ready
         run: sleep 10 
 
       - name: Run Cypress Tests
         run: npm run test:all
-
-  create_pull_request:
-    needs: test 
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Create Pull Request from develop to main
-        uses: peter-evans/create-pull-request@v4
-        with:
-          token: ${{ github.token }}
-          commit-message: Merge develop into main
-          title: Merge develop into main
-          body: "Automated PR - merging changes from develop into main."
-          base: main
-          head: develop
-          draft: false
