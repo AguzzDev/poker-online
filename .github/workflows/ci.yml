@@ -1,19 +1,19 @@
 name: CI/CD Pipeline
 
 on:
-  pull_request: 
+  pull_request:
     branches: [develop]
-  push: 
+  push:
     branches: [develop]
-    
+
 jobs:
-  avoid_reduncy: 
+  avoid_reduncy:
     runs-on: ubuntu-latest
     steps:
       - name: Cancel previous redundant build
         uses: styfle/cancel-workflow-action@0.9.1
-        with: 
-          access_token: ${{ github.token }}  
+        with:
+          access_token: ${{ github.token }}
   test:
     runs-on: ubuntu-latest
 
@@ -26,19 +26,19 @@ jobs:
         with:
           node-version: "16"
 
-      - name: Install pnpm 
+      - name: Install pnpm
         run: npm i -g pnpm@7
 
       - name: Server - Install dependencies
         run: pnpm i --no-frozen-lockfile
         working-directory: ./server
-      
+
       - name: Server - Start
         run: pnpm run dev &
         working-directory: ./server
 
       - name: Wait for server to be ready
-        run: sleep 10 
+        run: sleep 10
 
       - name: Client - Install dependencies
         run: pnpm i --no-frozen-lockfile
@@ -47,10 +47,19 @@ jobs:
       - name: Client - Start
         run: pnpm run dev &
         working-directory: ./client
-       
+
       - name: Wait for client to be ready
-        run: sleep 10 
+        run: sleep 10
 
       - name: Run Cypress Tests
         run: npm run test:all
         working-directory: ./client
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: logs
+          path: |
+            ./client/cypress/screenshots
+            ./client/cypress/videos
