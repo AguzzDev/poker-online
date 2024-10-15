@@ -41,10 +41,12 @@ jobs:
         run: sleep 10 
 
       - name: Client - Install dependencies
-        run: pnpm i
+        run: pnpm i --no-frozen-lockfile
+        working-directory: ./client
 
       - name: Client - Start
         run: pnpm run dev &
+        working-directory: ./client
        
       - name: Wait for client to be ready
         run: sleep 10 
