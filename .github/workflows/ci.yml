@@ -41,7 +41,7 @@ jobs:
         run: sleep 10 
 
       - name: Client - Install dependencies
-        run: pnpm i --no-frozen-lockfile
+        run: pnpm i
 
       - name: Client - Start
         run: pnpm run dev &
