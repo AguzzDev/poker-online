@@ -30,7 +30,7 @@ jobs:
         run: npm i -g pnpm@7
 
       - name: Server - Install dependencies
-        run: pnpm i
+        run: pnpm i --no-frozen-lockfile
         working-directory: ./server
       
       - name: Server - Start
@@ -41,7 +41,7 @@ jobs:
         run: sleep 10 
 
       - name: Client - Install dependencies
-        run: pnpm i
+        run: pnpm i --no-frozen-lockfile
 
       - name: Client - Start
         run: pnpm run dev &
